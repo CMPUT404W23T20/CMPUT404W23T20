@@ -1,0 +1,4 @@
+# ignore nodemodules
+node_modules/
+# ignore venv
+venv/
