@@ -112,9 +112,11 @@ function Posts() {
                                 </Card>
                             </Box>
                             <Box style={{alignSelf: "flex-end"}}>
-                                <Button variant="contained" color="secondary" onClick={() => HandleDelete()} style = {{margin: 10, alignSelf: "flex-end"}}>
-                                    delete
-                                </Button>
+                                {edit && (
+                                    <Button variant="contained" color="secondary" onClick={() => HandleDelete()} style = {{margin: 10, alignSelf: "flex-end"}}>
+                                        Delete
+                                    </Button>
+                                )}
                                 {!edit ? (
                                     <Button variant="contained" color="primary" onClick={() => setedit(true)} style = {{margin: 10, alignSelf: "flex-end"}}>
                                         Edit
