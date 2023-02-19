@@ -15,7 +15,7 @@ class User(models.Model):
 
 class Comment(models.Model):
     id = models.CharField(max_length=200, primary_key=True)
-    auther = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
     comment = models.CharField(max_length=200)
     contentType = models.CharField(max_length=200)
     published = models.DateTimeField()
@@ -30,7 +30,7 @@ class Post(models.Model):
     origin = models.CharField(max_length=200)
     description = models.CharField(max_length=200)
     contentType = models.CharField(max_length=200)
-    auther = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
     categories = models.CharField(max_length=200)
     count = models.IntegerField()
     comments = models.CharField(max_length=200)
