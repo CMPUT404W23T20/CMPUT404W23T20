@@ -10,8 +10,8 @@ function Login() {
 
     const handleLogin = () => {
         axois.post("http://localhost:8000/api/login", {
-            username: "admin",
-            password: "admin"
+            username: document.getElementById("username").value,
+            password: document.getElementById("password").value
         }).then((response) => {
             if (response.status === 200) {
                 localStorage.setItem("token", response.data.token);
@@ -39,8 +39,8 @@ function Login() {
                                 <Typography variant="h6" sx={{ fontWeight: "bold", color: "red" }}>
                                     {invalid ? "Invalid Username or Password" : ""}
                                 </Typography>
-                                <TextField sx={{width: "300px",}} id="outlined-basic" label="Username" variant="outlined" onChange={() => setInvalid(false)} onKeyPress={(e) => {if (e.key === 'Enter') {handleLogin()}}}/>
-                                <TextField sx={{width: "300px",}} id="outlined-basic" label="Password" variant="outlined" onChange={() => setInvalid(false)} type='password' onKeyPress={(e) => {if (e.key === 'Enter') {handleLogin()}}}/>
+                                <TextField sx={{width: "300px",}} id="username" label="Username" variant="outlined" onChange={() => setInvalid(false)} onKeyPress={(e) => {if (e.key === 'Enter') {handleLogin()}}}/>
+                                <TextField sx={{width: "300px",}} id="password" label="Password" variant="outlined" onChange={() => setInvalid(false)} type='password' onKeyPress={(e) => {if (e.key === 'Enter') {handleLogin()}}}/>
                             </Box>
                             <Box sx={{flex: 1,display: "flex",flexDirection: "column",justifyContent: "center",alignItems: "center",}}>
                                 <Button sx={{width: "200px", height: "50px"}} variant="contained" color="primary" onClick= {() => handleLogin()}>
