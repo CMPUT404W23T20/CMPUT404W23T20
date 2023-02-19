@@ -22,10 +22,9 @@ router = routers.DefaultRouter()
 router.register(r'posts', views.PostViewSet)  
 router.register(r'users', views.UserViewSet)
 router.register(r'comments', views.CommentViewSet)
+router.register(r'create/post', views.CreatePostViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
-
-
 ]

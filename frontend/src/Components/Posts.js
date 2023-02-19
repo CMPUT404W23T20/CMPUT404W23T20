@@ -17,14 +17,22 @@ function Posts() {
     }, []);
 
     const CreatePost = async (title, description) => { 
-        await axios("http://localhost:8000/api/posts/", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            data: JSON.stringify({
-                title: title,
-                description: description,
-            }),
+        let path = "http://localhost:8000/api/create/post/";
+        let data = {
+            title: title,
+            description: description,
+        }
+        await axios.post(path, data, {
+            headers: {
+                "Content-Type": "application/json",
+            }
         });
+
+        setcreatePost(false);
+        getposts().then((data) => {
+            setPosts(data);
+        }
+        );
     }
 
 
