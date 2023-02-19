@@ -89,9 +89,11 @@ function Posts() {
                                 </ListItem>
                             ))}
                         </List>
-                        <Button variant="contained" color="primary" onClick={() => setcreatePost(true)} style = {{margin: 10, alignSelf: "flex-end"}}>
-                            Create Post
-                        </Button>
+                        {!createPost && 
+                            <Button variant="contained" color="primary" onClick={() => setcreatePost(true)} style = {{margin: 10, alignSelf: "flex-end"}}>
+                                Create Post
+                            </Button>
+                        }
                     </Box>
                     {openPost && (
                         <Box style={{ flex: 1,display: "flex", flexDirection: "column", margin: "10px", borderColor: "grey", borderStyle: "solid", borderRadius: "5px"}}>
