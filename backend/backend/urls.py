@@ -23,6 +23,8 @@ router.register(r'posts', views.PostViewSet)
 router.register(r'users', views.UserViewSet)
 router.register(r'comments', views.CommentViewSet)
 router.register(r'create/post', views.CreatePostViewSet)
+router.register(r'delete/post', views.DeletePostViewSet)
+router.register(r'edit/post', views.EditPostViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),

@@ -35,9 +35,37 @@ function Posts() {
         );
     }
 
+    const HandleDelete = async () => {
+        let path = "http://localhost:8000/api/delete/post/" + post.id;
+        await axios.delete(path);
+        setopenPost(false);
+        getposts().then((data) => {
+            setPosts(data);
+        }
+        );
+    }
+
+    const handleEditPost = async () => {
+        let path = "http://localhost:8000/api/edit/post/" + post.id + "/";
+        let data = {
+            title: post.title,
+            description: post.description,
+        }
+        await axios.put(path, data, {
+            headers: {
+                "Content-Type": "application/json",
+            }
+        });
+        setedit(false);
+        getposts().then((data) => {
+            setPosts(data);
+        }
+        );
+    }
 
     const [createPost, setcreatePost] = React.useState(false);
     const [openPost, setopenPost] = React.useState(false);
+    const [edit, setedit] = React.useState(false);
     const [post, setPost] = React.useState([{}]);
     return (
         <Box>
@@ -67,17 +95,33 @@ function Posts() {
                     </Box>
                     {openPost && (
                         <Box style={{ flex: 1,display: "flex", flexDirection: "column", margin: "10px", borderColor: "grey", borderStyle: "solid", borderRadius: "5px"}}>
-                            <Typography variant="h4">{post.title}</Typography>
-                            <Typography variant="body2">{post.author}</Typography>
+                            {edit ? (
+                                <TextField id="title" label="Title" variant="outlined" style={{width: "95%", margin: "25px"}} value={post.title} onChange={(e) => setPost({...post, title: e.target.value})}/>
+                            ) : (
+                                <Typography variant="h4">{post.title}</Typography>
+                            )}
                             <Box style={{flex: 1, margin: "5px"}}>
                                 <Card style = {{ width: "100%", height: "100%", borderRadius: "4px", boxShadow: "0 0 10px 0 rgba(0,0,0,0.5)"}}>
-                                    <Typography variant="body1">{post.description}</Typography>
+                                    {edit ? (
+                                        <TextField id="description" label="Description" variant="outlined" style={{width: "95%", margin: "25px"}} value={post.description} onChange={(e) => setPost({...post, description: e.target.value})}/>
+                                    ) : (
+                                        <Typography variant="body1">{post.description}</Typography>
+                                    )}
                                 </Card>
                             </Box>
                             <Box style={{alignSelf: "flex-end"}}>
-                                <Button variant="contained" color="primary" onClick={() => setopenPost(false)} style = {{margin: 10, alignSelf: "flex-end"}}>
-                                    Update
+                                <Button variant="contained" color="secondary" onClick={() => HandleDelete()} style = {{margin: 10, alignSelf: "flex-end"}}>
+                                    delete
                                 </Button>
+                                {!edit ? (
+                                    <Button variant="contained" color="primary" onClick={() => setedit(true)} style = {{margin: 10, alignSelf: "flex-end"}}>
+                                        Edit
+                                    </Button> 
+                                ) : (
+                                    <Button variant="contained" color="primary" onClick={() => handleEditPost()} style = {{margin: 10, alignSelf: "flex-end"}}>
+                                        Finish
+                                    </Button>
+                                )}
                                 <Button variant="contained" color="secondary" onClick={() => setopenPost(false)} style = {{margin: 10, alignSelf: "flex-end"}}>
                                     Close
                                 </Button>

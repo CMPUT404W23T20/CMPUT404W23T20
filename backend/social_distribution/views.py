@@ -27,5 +27,21 @@ class CreatePostViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status="201")
         return Response(serializer.errors, status="400")
     
+class DeletePostViewSet(viewsets.ModelViewSet):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    def delete(self, request, pk):
+        post = Post.objects.get(pk=pk)
+        post.delete()
+        return Response(status="204")
     
-    
+class EditPostViewSet(viewsets.ModelViewSet):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    def put(self, request, pk):
+        post = Post.objects.get(pk=pk)
+        serializer = CreatePostSerializer(post, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status="200")
+        return Response(serializer.errors, status="400")
