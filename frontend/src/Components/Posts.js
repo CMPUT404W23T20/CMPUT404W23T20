@@ -36,8 +36,8 @@ function Posts() {
     }
 
 
-    const [createPost, setcreatePost] = React.useState([false]);
-    const [openPost, setopenPost] = React.useState([false]);
+    const [createPost, setcreatePost] = React.useState(false);
+    const [openPost, setopenPost] = React.useState(false);
     const [post, setPost] = React.useState([{}]);
     return (
         <Box>
