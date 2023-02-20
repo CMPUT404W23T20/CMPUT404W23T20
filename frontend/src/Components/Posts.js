@@ -36,7 +36,7 @@ function Posts() {
     }
 
     const HandleDelete = async () => {
-        let path = "http://localhost:8000/api/delete/post/" + post.id;
+        let path = "http://localhost:8000/api/posts/" + post.id;
         await axios.delete(path);
         setopenPost(false);
         getposts().then((data) => {
@@ -46,7 +46,7 @@ function Posts() {
     }
 
     const handleEditPost = async () => {
-        let path = "http://localhost:8000/api/edit/post/" + post.id + "/";
+        let path = "http://localhost:8000/api/posts/" + post.id + "/";
         let data = {
             title: post.title,
             description: post.description,

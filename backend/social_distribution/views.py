@@ -13,31 +13,17 @@ class UserViewSet(viewsets.ModelViewSet):
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
-class CommentViewSet(viewsets.ModelViewSet):
-    queryset = Comment.objects.all()
-    serializer_class = CommentSerializer
-
-class CreatePostViewSet(viewsets.ModelViewSet):
-    queryset = Post.objects.all()
-    serializer_class = PostSerializer
-    def create(self, request):
-        serializer = CreatePostSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status="201")
-        return Response(serializer.errors, status="400")
-    
-class DeletePostViewSet(viewsets.ModelViewSet):
-    queryset = Post.objects.all()
-    serializer_class = PostSerializer
+    @api_view(['GET'])
+    def get(self, request, pk):
+        post = Post.objects.get(pk=pk)
+        serializer = PostSerializer(post)
+        return Response(serializer.data)
+    @api_view(['DELETE'])
     def delete(self, request, pk):
         post = Post.objects.get(pk=pk)
         post.delete()
         return Response(status="204")
-    
-class EditPostViewSet(viewsets.ModelViewSet):
-    queryset = Post.objects.all()
-    serializer_class = PostSerializer
+    @api_view(['PUT'])
     def put(self, request, pk):
         post = Post.objects.get(pk=pk)
         serializer = CreatePostSerializer(post, data=request.data)
@@ -45,3 +31,15 @@ class EditPostViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data, status="200")
         return Response(serializer.errors, status="400")
+    @api_view(['POST'])
+    def create(self, request):
+        serializer = CreatePostSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status="201")
+        return Response(serializer.errors, status="400")
+class CommentViewSet(viewsets.ModelViewSet):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+
+    
