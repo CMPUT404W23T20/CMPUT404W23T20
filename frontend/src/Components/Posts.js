@@ -83,7 +83,7 @@ function Posts() {
                                         <Box style = {{ paddingLeft: 2}}>
                                             <Typography variant="h5">{post.title}</Typography>
                                             <Typography variant="body2">{post.author}</Typography>
-                                            <Typography variant="body1">{post.description}</Typography>
+                                            <Typography variant="body1" style={{maxHeight: "200px", overflowY: "auto"}}>{post.description}</Typography>
                                         </Box>
                                     </Card>
                                 </ListItem>
@@ -105,9 +105,9 @@ function Posts() {
                             <Box style={{flex: 1, margin: "5px"}}>
                                 <Card style = {{ width: "100%", height: "100%", borderRadius: "4px", boxShadow: "0 0 10px 0 rgba(0,0,0,0.5)"}}>
                                     {edit ? (
-                                        <TextField id="description" label="Description" variant="outlined" style={{width: "95%", margin: "25px"}} value={post.description} onChange={(e) => setPost({...post, description: e.target.value})}/>
+                                        <TextField id="description" label="Description" variant="outlined" style={{width: "95%", margin: "25px"}} value={post.description} onChange={(e) => setPost({...post, description: e.target.value})} multiline maxRows={15}/>
                                     ) : (
-                                        <Typography variant="body1">{post.description}</Typography>
+                                        <Typography variant="body1" style={{maxHeight: "100%", overflowY: "auto"}}>{post.description}</Typography>
                                     )}
                                 </Card>
                             </Box>

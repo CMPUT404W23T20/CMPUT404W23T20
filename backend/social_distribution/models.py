@@ -25,7 +25,7 @@ class Post(models.Model):
     title = models.CharField(max_length=200, default="No title")
     source = models.CharField(max_length=200, default="No source")
     origin = models.CharField(max_length=200, default="No origin")
-    description = models.CharField(max_length=200, default="No description")
+    description = models.CharField(max_length=2000, default="No description")
     contentType = models.CharField(max_length=200, default="text/plain")
     #author = models.ForeignKey(User, on_delete=models.CASCADE, default=1)
     categories = models.CharField(max_length=200, default="No categories")
