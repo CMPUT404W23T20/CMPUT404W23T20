@@ -22,6 +22,7 @@ router = routers.DefaultRouter()
 router.register(r'posts', views.PostViewSet)  
 router.register(r'users', views.UserViewSet)
 router.register(r'comments', views.CommentViewSet)
+router.register(r'friendRequests',views.friendRequestViewSet)
 
 
 urlpatterns = [

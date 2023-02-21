@@ -1,11 +1,11 @@
 from pstats import Stats
 import statistics
 from django.shortcuts import render
-from .serializers import PostSerializer, UserSerializer, CommentSerializer, CreatePostSerializer
+from .serializers import PostSerializer, UserSerializer, CommentSerializer, CreatePostSerializer, friendRequestSerializer
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .models import Post, User, Comment
+from .models import Post, User, Comment, friendRequest
 # Create your views here.
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -42,4 +42,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
+class friendRequestViewSet(viewsets.ModelViewSet):
+    queryset = friendRequest.objects.all()
+    serializer_class = friendRequestSerializer
     

@@ -8,6 +8,8 @@ class User(models.Model):
     url = models.CharField(max_length=200)
     github = models.CharField(max_length=200)
     profileImage = models.CharField(max_length=200)
+    
+    friends = models.ManyToManyField("User", blank = True)
 
     def __str__(self):
         return self.displayName
@@ -39,5 +41,10 @@ class Post(models.Model):
     def __str__(self):
         return self.title
 
+class friendRequest(models.Model):
+    senderUser = models.ForeignKey(User, related_name = "sender", on_delete=models.CASCADE)
 
+    recieverUser = models.ForeignKey(User, related_name = "reciever", on_delete=models.CASCADE)
+
+    
 
