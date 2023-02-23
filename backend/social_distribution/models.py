@@ -2,18 +2,20 @@ from django.db import models
 
 # Create your models here.
 
-class User(models.Model):
+class Author(models.Model):
     host = models.CharField(max_length=200)
     displayName = models.CharField(max_length=200)
+    username = models.CharField(max_length=200)
     url = models.CharField(max_length=200)
     github = models.CharField(max_length=200)
     profileImage = models.CharField(max_length=200)
+    password = models.CharField(max_length=200)
 
     def __str__(self):
         return self.displayName
 
 class Comment(models.Model):
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE)
     comment = models.CharField(max_length=200)
     contentType = models.CharField(max_length=200)
     published = models.DateTimeField()

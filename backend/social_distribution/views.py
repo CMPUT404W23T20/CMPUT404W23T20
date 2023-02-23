@@ -1,15 +1,16 @@
 from pstats import Stats
 import statistics
 from django.shortcuts import render
-from .serializers import PostSerializer, UserSerializer, CommentSerializer, CreatePostSerializer
-from rest_framework import viewsets
-from rest_framework.decorators import api_view
+from rest_framework import viewsets, status
+from .serializers import PostSerializer, LoginSerializer, AuthorSerializer, CommentSerializer, CreatePostSerializer
+from .models import Post, Author, Comment
 from rest_framework.response import Response
-from .models import Post, User, Comment
+from rest_framework.views import APIView
+from rest_framework.decorators import api_view
 # Create your views here.
 class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+    queryset = Author.objects.all()
+    serializer_class = AuthorSerializer
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
@@ -42,4 +43,21 @@ class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
+class LoginView(APIView):
+
+    def post(self, request):
+        try:
+            data = LoginSerializer.validate(request.data)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(data, status=status.HTTP_200_OK)
     
+    
+
+
+        
+
+
+
+
+

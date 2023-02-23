@@ -5,6 +5,7 @@ import Profile from './Components/Profile';
 import Friends from './Components/Friends';
 import Posts from './Components/Posts';
 import Comments from './Components/Comments';
+import Login from './Components/Login';
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
       <Box className="App">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/Login" element={<Login />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/friends" element={<Friends />} />
           <Route path="/posts" element={<Posts />} />
