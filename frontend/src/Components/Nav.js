@@ -3,7 +3,6 @@ import {
     Drawer,
     List,
     ListItem,
-    ListItemIcon,
     ListItemText,
   } from "@mui/material";
 import { useNavigate } from "react-router-dom";
@@ -61,7 +60,7 @@ function Nav(){
           })}
         </List>
         <Button
-          onClick={() => navigate("/")}
+          onClick={() => { navigate("/login"); localStorage.clear(); }}
           variant="outlined"
           sx={{
             color: "#ffffff",
