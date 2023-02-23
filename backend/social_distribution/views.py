@@ -1,13 +1,9 @@
 from django.shortcuts import render
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from .serializers import PostSerializer, LoginSerializer
 from .models import Post
-from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
-from django.conf import settings
-
-
+from rest_framework.views import APIView
 # Create your views here.
 
 class PostView(viewsets.ModelViewSet):
