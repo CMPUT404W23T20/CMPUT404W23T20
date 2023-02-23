@@ -42,9 +42,16 @@ class Post(models.Model):
         return self.title
 
 class friendRequest(models.Model):
-    senderUser = models.ForeignKey(User, related_name = "sender", on_delete=models.CASCADE)
+    REQUEST_TYPE= [('none','None'),('friend',"Friend"),('follow','Follow')]
 
-    recieverUser = models.ForeignKey(User, related_name = "reciever", on_delete=models.CASCADE)
+    #summmary is message sent to inbox
+    summary = models.CharField(max_length=200,default= "None")
+    requestCategory = models.CharField(choices= REQUEST_TYPE,max_length=200,default='none')
+
+    #actor wants to follow object
+    actor = models.ForeignKey(User, related_name = "sender", on_delete=models.CASCADE)
+
+    object = models.ForeignKey(User, related_name = "reciever", on_delete=models.CASCADE)
 
     
 

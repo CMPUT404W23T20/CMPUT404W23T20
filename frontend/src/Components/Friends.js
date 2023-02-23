@@ -23,11 +23,9 @@ function Friends() {
     const handleClick = (x) => {
       setActive(!active);
 
-        
-      
       const btn = active ? document.getElementById(x).style.backgroundColor = "white": document.getElementById(x).style.backgroundColor = "lightgrey" ;
       
-      var btnText= active ? document.getElementById(x).innerText = "Add Friend": document.getElementById(x).innerText= "Request Sent" ;
+      var btnText= active ? document.getElementById(x).innerText = "Follow": document.getElementById(x).innerText= "Request Sent" ;
       
         
     };
@@ -51,7 +49,7 @@ function Friends() {
                                      <Button id = {Users.id} onClick={() => handleClick(Users.id)}  
                                         style={{backgroundColor: "white",float:"right",
                                         marginLeft:25, fontSize:15}}>
-                                            Add Friend
+                                            Follow
                                     </Button>
 
                                 </div>
