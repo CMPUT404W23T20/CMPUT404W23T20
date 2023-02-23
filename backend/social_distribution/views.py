@@ -1,31 +1,33 @@
 from django.shortcuts import render
-from .serializers import PostSerializer
 from rest_framework import viewsets
+from .serializers import PostSerializer, LoginSerializer
 from .models import Post
-from rest_framework.decorators import api_view
+from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.contrib.auth import authenticate
+from rest_framework import status
+from django.conf import settings
+
+
 # Create your views here.
 
 class PostView(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
 
-@api_view(['POST'])
-def login(request):
-    if  request.method == 'POST':
-        username = request.POST['username']
-        password =request.POST['password']
+class LoginView(APIView):
 
-        user = authenticate(username = username, password = password)
+    def post(self, request):
+        try:
+            data = LoginSerializer.validate(request.data)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(data, status=status.HTTP_200_OK)
+    
+    
 
-        if user is not None: 
-            authenticate.login(request, user)
-            return redirect('/')
-        else:
-            pass
-    else:
-        return render(request, 'login.js')
+
+        
+
 
 
 

@@ -1,25 +1,32 @@
 import { Box, Button, Card, TextField, Typography } from '@mui/material';
-import axois from 'axios';
+import axios from 'axios';
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 
 
 function Login() {
+    const navigate = useNavigate();
 
     const [invalid, setInvalid] = React.useState(false);
 
     const handleLogin = () => {
-        axois.post("http://localhost:8000/api/login", {
-            username: document.getElementById("username").value,
-            password: document.getElementById("password").value
-        }).then((response) => {
+        let username = document.getElementById("username").value;
+        let password = document.getElementById("password").value;
+        axios.post("http://localhost:8000/login", {
+            username: username,
+            password: password
+        }   
+        ).then((response) => {
             if (response.status === 200) {
                 localStorage.setItem("token", response.data.token);
+                navigate("/");
             }
         }).catch((error) => {
             setInvalid(true);
             console.log(error);
-        })
+        }
+        )
         
     }
 

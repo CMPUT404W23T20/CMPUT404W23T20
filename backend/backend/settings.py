@@ -31,6 +31,12 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
+jwt_auth = {
+    'JWT_VERIFY_EXPIRATION': False,
+    'JWT_VERIFY': True,
+    'JWT_AUTH_HEADER_PREFIX': 'Bearer',
+}
+
 INSTALLED_APPS = [
     'social_distribution',
     'django.contrib.admin',
