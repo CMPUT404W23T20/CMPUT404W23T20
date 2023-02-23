@@ -31,12 +31,11 @@ class LoginSerializer(serializers.Serializer):
         password = data.get("password", "")
 
         if username and password:
-            user = authenticate(username=username, password=password)
+            user = Author.objects.get(username=username, password=password)
             if user:
                 try:
                     payload = jwt_payload_handler(user)
                     jwt_token = jwt.encode(payload, settings.SECRET_KEY)
-                    update_last_login(None, user)
                 except Exception as e:
                     raise serializers.ValidationError("Can't generate token", e)
                 return {
