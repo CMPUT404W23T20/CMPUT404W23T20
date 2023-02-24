@@ -33,7 +33,7 @@ class PostViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status="200")
         return Response(serializer.errors, status="400")
     @api_view(['POST'])
-    def create(self, request):
+    def post(self, request):
         serializer = CreatePostSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()

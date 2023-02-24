@@ -17,7 +17,7 @@ function Posts() {
     }, []);
 
     const CreatePost = async (title, description) => { 
-        let path = "http://localhost:8000/api/create/post/";
+        let path = "http://localhost:8000/api/posts/";
         let data = {
             title: title,
             description: description,

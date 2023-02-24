@@ -23,7 +23,6 @@ router.register(r'posts', views.PostViewSet)
 router.register(r'users', views.UserViewSet)
 router.register(r'comments', views.CommentViewSet)
 
-
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
