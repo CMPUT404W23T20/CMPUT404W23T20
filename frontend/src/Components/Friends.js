@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Button, Card,CardContent,List, ListItem, RadioGroup, TextField, Typography } from '@material-ui/core';
+import { Box, Button, Card,CardContent } from '@material-ui/core';
 import Nav from './Nav';
 import axios from 'axios';
 
@@ -20,15 +20,61 @@ function Friends() {
     //https://reactgo.com/react-change-button-color-onclick/
     const [active, setActive] = useState(false);
   
-    const handleClick = (x) => {
+    const handleClick = (user) => {
       setActive(!active);
 
-      const btn = active ? document.getElementById(x).style.backgroundColor = "white": document.getElementById(x).style.backgroundColor = "lightgrey" ;
+      active ? document.getElementById(user.id).style.backgroundColor = "white": document.getElementById(user.id).style.backgroundColor = "lightgrey" ;
+      var btnText= active ? document.getElementById(user.id).innerText = "Follow": document.getElementById(user.id).innerText= "Request Sent" ;
       
-      var btnText= active ? document.getElementById(x).innerText = "Follow": document.getElementById(x).innerText= "Request Sent" ;
+      //if btn text is now set to "Request sent", we send a message to the inbox and create a new friendRequest object.
+      if (btnText === "Request Sent"){
+        sendRequest(user);
+      }
+      if (btnText === "Follow"){
+        cancelRequest(user)
+      }
       
-        
     };
+
+    const sendRequest = async(user) => {
+
+        let path = "http://127.0.0.1:8000/api/friendRequests/"
+
+
+        /* TODO: We need to find a way to see if this request is a "Friend request"
+        or if its a "follow request". We need this to determine what message to send
+        the inbox and for the summary*/
+
+        //maybe GET request and see if object is in actor's list of friends?
+        
+        //how do I get the id of person's account we're currently in
+        let data = {
+            "summary":"None",
+            "requestCategory":"follow",
+            "actor":5, //change id later
+            "object": user.id
+        }
+        await axios.post(path, data, {
+            headers: {
+                "Content-Type": "application/json",
+            }
+        });
+
+    };
+
+    //TODO
+    const cancelRequest= async(user,name) =>{
+        //destroy the friendRequest object associated with that name (using the id of the friendreuqest object)
+        let path = "http://127.0.0.1:8000/api/friendRequests/"
+        
+
+    }
+
+    const sendMessage = (selfId,otherId,name) => {
+
+        /*Using the id, do a get request, get the reuqest based on the id we want */
+    }
+
     
     return (
         <Box>
@@ -46,7 +92,7 @@ function Friends() {
                                      <span>
                                         <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}>{Users.displayName}  </h4></a>
                                      </span>
-                                     <Button id = {Users.id} onClick={() => handleClick(Users.id)}  
+                                     <Button id = {Users.id} onClick={() => handleClick(Users)}  
                                         style={{backgroundColor: "white",float:"right",
                                         marginLeft:25, fontSize:15}}>
                                             Follow
@@ -60,6 +106,11 @@ function Friends() {
                         ))}
 
                 </Card>
+            </div>
+
+            <div class = "friendsList">
+              <h2> Your list of friends:</h2>
+
             </div>
                  
                 

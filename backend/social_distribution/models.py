@@ -4,13 +4,12 @@ from django.db import models
 
 class User(models.Model):
     host = models.CharField(max_length=200)
-    displayName = models.CharField(max_length=200)
+    displayName = models.CharField(max_length=200,unique=True)
     url = models.CharField(max_length=200)
     github = models.CharField(max_length=200)
     profileImage = models.CharField(max_length=200)
     
-    friends = models.ManyToManyField("User", blank = True)
-
+    
     def __str__(self):
         return self.displayName
 
@@ -40,6 +39,19 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title
+    
+class Followers(models.Model):
+    '''
+    returns the list of friends that a user has
+    '''
+    RELATION_TYPE = [('friend','Friend')]
+    type = models.CharField(max_length=200, default="Followers")
+
+    #user = account owner
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null= True,related_name = 'user')
+
+    #friends/followers that account owner has
+    items = models.ManyToManyField(User, blank = True, null = True)
 
 class friendRequest(models.Model):
     REQUEST_TYPE= [('none','None'),('friend',"Friend"),('follow','Follow')]
