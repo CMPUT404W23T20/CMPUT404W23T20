@@ -24,18 +24,20 @@ class Comment(models.Model):
         return self.comment
 
 class Post(models.Model):
-    title = models.CharField(max_length=200)
-    source = models.CharField(max_length=200)
-    description = models.CharField(max_length=200)
-    contentType = models.CharField(max_length=200)
-    #author = models.ForeignKey(Author, on_delete=models.CASCADE)
-    categories = models.CharField(max_length=200)
-    count = models.IntegerField()
-    comments = models.CharField(max_length=200)
-    #commentSrc = models.ForeignKey(Comment, on_delete=models.CASCADE)
-    published = models.DateTimeField()
-    visibility = models.CharField(max_length=200)
-    unlisted = models.BooleanField()
+    title = models.CharField(max_length=200, default="No title")
+    source = models.CharField(max_length=200, default="No source")
+    origin = models.CharField(max_length=200, default="No origin")
+    description = models.CharField(max_length=2000, default="No description")
+    contentType = models.CharField(max_length=200, default="text/plain")
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, default=1)
+    authorName = models.CharField(max_length=200, default="No authorName")
+    categories = models.CharField(max_length=200, default="No categories")
+    count = models.IntegerField(default=0)
+    comments = models.CharField(max_length=200,default="No comments")
+    #commentSrc = models.ForeignKey(Comment, on_delete=models.CASCADE, default=1)
+    published = models.DateTimeField(auto_now_add=True)
+    visibility = models.CharField(max_length=200, default="No visibility")
+    unlisted = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
