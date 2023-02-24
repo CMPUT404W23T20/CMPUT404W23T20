@@ -21,13 +21,9 @@ class PostSerializer(serializers.ModelSerializer):
         model = Post
         fields = '__all__'
 
-class CreatePostSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Post
-        fields = ("title", "description")
 class LoginSerializer(serializers.Serializer):
 
-    def validate( data):
+    def validate(data):
         username = data.get("username", "")
         password = data.get("password", "")
 
@@ -48,3 +44,16 @@ class LoginSerializer(serializers.Serializer):
         else:
             msg = "Must include 'username' and 'password'."
             raise serializers.ValidationError(msg)
+        
+    def validateToken(token):
+        try:
+            payload = jwt.decode(token, settings.SECRET_KEY)
+        except jwt.DecodeError as identifier:
+            raise serializers.ValidationError("Error decoding signature." + str(identifier) + " token: " + str(token))
+        except jwt.InvalidTokenError:
+            raise serializers.ValidationError("Invalid token." + str(token))
+
+        return payload
+
+
+    
