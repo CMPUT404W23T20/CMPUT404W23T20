@@ -2,8 +2,8 @@ from pstats import Stats
 import statistics
 from django.shortcuts import render
 from rest_framework import viewsets, status
-from .serializers import PostSerializer, LoginSerializer, AuthorSerializer, CommentSerializer
-from .models import Post, Author, Comment
+from .serializers import PostSerializer, LoginSerializer, AuthorSerializer, CommentSerializer, friendRequestSerializer, FollowersSerializer
+from .models import Post, Author, Comment, friendRequest, Followers
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
