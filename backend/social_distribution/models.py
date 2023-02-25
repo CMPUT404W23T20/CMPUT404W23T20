@@ -2,19 +2,20 @@ from django.db import models
 
 # Create your models here.
 
-class User(models.Model):
+class Author(models.Model):
     host = models.CharField(max_length=200)
-    displayName = models.CharField(max_length=200,unique=True)
+    displayName = models.CharField(max_length=200)
+    username = models.CharField(max_length=200)
     url = models.CharField(max_length=200)
     github = models.CharField(max_length=200)
     profileImage = models.CharField(max_length=200)
-    
-    
+    password = models.CharField(max_length=200)
+
     def __str__(self):
         return self.displayName
 
 class Comment(models.Model):
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE)
     comment = models.CharField(max_length=200)
     contentType = models.CharField(max_length=200)
     published = models.DateTimeField()
@@ -28,7 +29,8 @@ class Post(models.Model):
     origin = models.CharField(max_length=200, default="No origin")
     description = models.CharField(max_length=2000, default="No description")
     contentType = models.CharField(max_length=200, default="text/plain")
-    #author = models.ForeignKey(User, on_delete=models.CASCADE, default=1)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, default=1)
+    authorName = models.CharField(max_length=200, default="No authorName")
     categories = models.CharField(max_length=200, default="No categories")
     count = models.IntegerField(default=0)
     comments = models.CharField(max_length=200,default="No comments")
@@ -42,16 +44,16 @@ class Post(models.Model):
     
 class Followers(models.Model):
     '''
-    returns the list of friends that a user has
+    returns the list of friends that a Author has
     '''
     RELATION_TYPE = [('friend','Friend')]
     type = models.CharField(max_length=200, default="Followers")
 
     #user = account owner
-    user = models.OneToOneField(User, on_delete=models.CASCADE, null= True,related_name = 'user')
+    user = models.OneToOneField(Author, on_delete=models.CASCADE, null= True,related_name = 'Author')
 
     #friends/followers that account owner has
-    items = models.ManyToManyField(User, blank = True, null = True)
+    items = models.ManyToManyField(Author, blank = True, null = True)
 
 class friendRequest(models.Model):
     REQUEST_TYPE= [('none','None'),('friend',"Friend"),('follow','Follow')]
@@ -61,9 +63,9 @@ class friendRequest(models.Model):
     requestCategory = models.CharField(choices= REQUEST_TYPE,max_length=200,default='none')
 
     #actor wants to follow object
-    actor = models.ForeignKey(User, related_name = "sender", on_delete=models.CASCADE)
+    actor = models.ForeignKey(Author, related_name = "sender", on_delete=models.CASCADE)
 
-    object = models.ForeignKey(User, related_name = "reciever", on_delete=models.CASCADE)
+    object = models.ForeignKey(Author, related_name = "reciever", on_delete=models.CASCADE)
 
     
 

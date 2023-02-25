@@ -6,7 +6,14 @@ import axios from 'axios';
 function Posts() {
     const getposts = async () => {
         let path = "http://localhost:8000/api/posts/";
-        let response = await axios.get(path);
+        let response = await axios.get(path, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem("token")
+            }
+        });
+
+        console.log(response.data);
         return response.data;
     }
     const [Posts, setPosts] = React.useState([]);
@@ -17,14 +24,17 @@ function Posts() {
     }, []);
 
     const CreatePost = async (title, description) => { 
-        let path = "http://localhost:8000/api/create/post/";
+        let path = "http://localhost:8000/api/posts/";
         let data = {
             title: title,
             description: description,
         }
+        let token = localStorage.getItem("token");
+        console.log(token);
         await axios.post(path, data, {
             headers: {
                 "Content-Type": "application/json",
+                "Authorization": token
             }
         });
 
@@ -36,8 +46,13 @@ function Posts() {
     }
 
     const HandleDelete = async () => {
-        let path = "http://localhost:8000/api/posts/" + post.id;
-        await axios.delete(path);
+        let path = "http://localhost:8000/api/posts/" + post.id + "/";
+        let response = await axios.delete(path, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem("token")
+            }
+        });
         setopenPost(false);
         getposts().then((data) => {
             setPosts(data);
@@ -54,6 +69,7 @@ function Posts() {
         await axios.put(path, data, {
             headers: {
                 "Content-Type": "application/json",
+                "Authorization": localStorage.getItem("token")
             }
         });
         setedit(false);
@@ -82,7 +98,7 @@ function Posts() {
                                     <Card style = {{ width: "100%", backgroundColor: "#66aeec"}}>
                                         <Box style = {{ paddingLeft: 2}}>
                                             <Typography variant="h5">{post.title}</Typography>
-                                            <Typography variant="body2">{post.author}</Typography>
+                                            <Typography variant="body2">{post.authorName}</Typography>
                                             <Typography variant="body1" style={{maxHeight: "200px", overflowY: "auto"}}>{post.description}</Typography>
                                         </Box>
                                     </Card>

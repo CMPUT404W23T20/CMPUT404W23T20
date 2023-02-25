@@ -16,7 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
-from social_distribution import views
+from social_distribution import views         
 
 router = routers.DefaultRouter()                   
 router.register(r'posts', views.PostViewSet)  
@@ -28,5 +28,10 @@ router.register(r'followers',views.FollowersViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include(router.urls)),
+    path('api/posts/', views.PostViewSet.as_view(), name='posts'),
+    path('api/posts', views.PostViewSet.as_view(), name='posts'),
+    path('api/posts/<int:pk>', views.PostViewSet.as_view(), name='post'),
+    path('api/posts/<int:pk>/', views.PostViewSet.as_view(), name='post'),
+    path('login', views.LoginView.as_view(), name='login'),
+
 ]
