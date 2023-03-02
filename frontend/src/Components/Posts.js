@@ -23,11 +23,18 @@ function Posts() {
         });
     }, []);
 
-    const CreatePost = async (title, description) => { 
+    const CreatePost = async (title, description, unlisted, visibility) => {
         let path = "http://localhost:8000/api/posts/";
+        if (visibility) {
+            visibility = "FRIENDS"
+        }  else {
+            visibility = "PUBLIC"
+        }
         let data = {
             title: title,
             description: description,
+            unlisted: unlisted,
+            visibility: visibility
         }
         let token = localStorage.getItem("token");
         console.log(token);
@@ -154,9 +161,11 @@ function Posts() {
                             <Box style={{ display: "flex", flexDirection: "column", flex: 1, margin: "10px", alignItems: "center"}}>
                                 <TextField id="title" label="Title" variant="outlined" style={{width: "95%", margin: "25px"}}/>
                                 <TextField id="description" label="Description" variant="outlined" style={{width: "95%", margin: "25px"}} multiline minRows={20}/>
+                                <FormControlLabel control={<Checkbox id="unlisted" name="unlisted" />} label="Unlisted" />
+                                <FormControlLabel control={<Checkbox id="visibility" name="visibility" />} label="Friends Only" />
                             </Box>
                             <Box style={{alignSelf: "flex-end"}}>
-                                <Button variant="contained" color="primary" onClick={() => CreatePost(document.getElementById("title").value, document.getElementById("description").value)} style = {{margin: 10, alignSelf: "flex-end"}}>
+                                <Button variant="contained" color="primary" onClick={() => CreatePost(document.getElementById("title").value, document.getElementById("description").value, document.getElementById("unlisted").value)} style = {{margin: 10, alignSelf: "flex-end"}}>
                                     Create
                                 </Button>
                                 <Button variant="contained" color="secondary" onClick={() => setcreatePost(false)} style = {{margin: 10, alignSelf: "flex-end"}}>
