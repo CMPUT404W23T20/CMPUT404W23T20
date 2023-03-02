@@ -20,6 +20,16 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = '__all__'
+        
+    def validateToken(token):
+        try:
+            payload = jwt.decode(token, settings.SECRET_KEY)
+        except jwt.DecodeError as identifier:
+            raise serializers.ValidationError("Error decoding signature." + str(identifier) + " token: " + str(token))
+        except jwt.InvalidTokenError:
+            raise serializers.ValidationError("Invalid token." + str(token))
+
+        return payload
 
 class LoginSerializer(serializers.Serializer):
 
@@ -54,6 +64,3 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError("Invalid token." + str(token))
 
         return payload
-
-
-    

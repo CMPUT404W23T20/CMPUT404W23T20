@@ -42,5 +42,18 @@ class Post(models.Model):
     def __str__(self):
         return self.title
 
+class Request(models.Model):
+    type = models.CharField(max_length=200)
+    summary = models.CharField(max_length=200)
+    actor = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='actor')
+    object = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='object')
 
+    def __str__(self):
+        return self.request
+    
+class Inbox(models.Model):
+    author = models.ForeignKey(Author, on_delete=models.CASCADE)
+    inboxItems = models.array(models.ForeignKey(Post, on_delete=models.CASCADE))
 
+    def __str__(self):
+        return self.inbox
