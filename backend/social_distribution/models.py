@@ -1,5 +1,5 @@
 from django.db import models
-
+import uuid
 # Create your models here.
 
 class Author(models.Model):
@@ -13,7 +13,8 @@ class Author(models.Model):
 
     def __str__(self):
         return self.displayName
-
+    
+    
 class Comment(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
     comment = models.CharField(max_length=200)
@@ -45,18 +46,19 @@ class Post(models.Model):
 class Followers(models.Model):
     '''
     returns the list of friends that a Author has
+    friend = author follows them back (true friend)
+    follower = author does not follow them back
     '''
-    RELATION_TYPE = [('friend','Friend')]
-    type = models.CharField(max_length=200, default="Followers")
-
+    RELATION_TYPE = [('friend','Friend'),('follower','Follower')]
+    type = models.CharField(max_length=200, default="Follower")
     #user = account owner
     user = models.OneToOneField(Author, on_delete=models.CASCADE, null= True,related_name = 'Author')
-
     #friends/followers that account owner has
-    items = models.ManyToManyField(Author, blank = True, null = True)
+    items = models.ManyToManyField(Author, symmetrical = False, blank = True, null = True)
+
 
 class friendRequest(models.Model):
-    REQUEST_TYPE= [('none','None'),('friend',"Friend"),('follow','Follow')]
+    REQUEST_TYPE= [('none','None'),('friend',"Friend"),('follow','Follow'),('accept','Accept')]
 
     #summmary is message sent to inbox
     summary = models.CharField(max_length=200,default= "None")
@@ -66,6 +68,12 @@ class friendRequest(models.Model):
     actor = models.ForeignKey(Author, related_name = "sender", on_delete=models.CASCADE)
 
     object = models.ForeignKey(Author, related_name = "reciever", on_delete=models.CASCADE)
+
+    def accept(self):
+        self.requestCategory = "Accept"
+        self.save()
+
+    
 
     
 

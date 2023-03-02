@@ -18,9 +18,8 @@ from django.urls import path, include
 from rest_framework import routers
 from social_distribution import views         
 
-router = routers.DefaultRouter()                   
-router.register(r'friendRequests',views.friendRequestViewSet)
-router.register(r'followers',views.FollowersViewSet)
+router = routers.DefaultRouter()     
+
 
 
 urlpatterns = [
@@ -30,5 +29,10 @@ urlpatterns = [
     path('api/posts/<int:pk>', views.PostViewSet.as_view(), name='post'),
     path('api/posts/<int:pk>/', views.PostViewSet.as_view(), name='post'),
     path('login', views.LoginView.as_view(), name='login'),
-
+    path('api/authors', views.AuthorViewSet.as_view(), name='author'),
+    path('api/authors/<int:pk>', views.AuthorViewSet.as_view(), name='author'),
+    path('api/friendrequest',views.friendRequestViewSet.as_view(),name='friendRequest'),
+    path('api/friendrequest/<int:pk>',views.friendRequestViewSet.as_view(),name='friendReq'),
+    path('api/authors/<int:pk>/followers/<int:fk>',views.FollowersViewSet.as_view(),name='followers'),
+    path('api/authors/<int:pk>/followers/',views.FollowersViewSet.as_view(),name='followers'),  
 ]

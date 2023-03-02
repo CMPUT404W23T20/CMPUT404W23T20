@@ -9,7 +9,8 @@ jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
 class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Author
-        fields = '__all__'
+        #exclude password
+        fields = ("id","host","displayName","username","url","github","profileImage")
     
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -34,7 +35,7 @@ class friendRequestSerializer(serializers.ModelSerializer):
 class FollowersSerializer(serializers.ModelSerializer):
     class Meta:
         model = Followers
-        fields = '__all__'
+        fields = ("type","items")
 class LoginSerializer(serializers.Serializer):
 
     def validate(data):
