@@ -1,7 +1,9 @@
 import React from 'react';
-import { Box, Button, Card,List, ListItem, TextField, Typography } from '@material-ui/core';
+import { Box, Button, Card,List, ListItem, TextField, Typography,FormControlLabel, Checkbox } from '@material-ui/core';
 import Nav from './Nav';
 import axios from 'axios';
+
+
 
 function Posts() {
     const getposts = async () => {
