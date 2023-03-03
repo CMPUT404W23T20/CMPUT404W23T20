@@ -19,6 +19,7 @@ class Comment(models.Model):
     comment = models.CharField(max_length=200)
     contentType = models.CharField(max_length=200)
     published = models.DateTimeField()
+    post = models.ForeignKey('Post', on_delete=models.CASCADE)
 
     def __str__(self):
         return self.comment
@@ -42,5 +43,11 @@ class Post(models.Model):
     def __str__(self):
         return self.title
 
+class Request(models.Model):
+    type = models.CharField(max_length=200)
+    summary = models.CharField(max_length=200)
+    actor = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='actor')
+    object = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='object')
 
-
+    def __str__(self):
+        return self.request

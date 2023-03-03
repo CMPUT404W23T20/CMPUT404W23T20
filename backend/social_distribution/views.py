@@ -2,10 +2,13 @@ from pstats import Stats
 import statistics
 from django.shortcuts import render
 from rest_framework import viewsets, status
-from .serializers import PostSerializer, LoginSerializer, AuthorSerializer, CommentSerializer
-from .models import Post, Author, Comment
+from .serializers import PostSerializer, LoginSerializer, CommentSerializer
+from .models import Post, Author, Comment, Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.core import serializers
+from django.http import JsonResponse
+import json
 
 # Create your views here.
 class UserViewSet(viewsets.ModelViewSet):
@@ -78,9 +81,98 @@ class LoginView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(data, status=status.HTTP_200_OK)
     
+def authors(request, author_id = None):
+    authors = Author.objects.all()
+    if author_id:
+        authors = authors.filter(pk = author_id)
+    data = serializers.serialize('json', authors)
+    return JsonResponse(data, safe=False)
+
+def followers(request, author_id = None):
+    # not implemented
+    return JsonResponse(status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
+
+def requests(request, author_id):
+    # not implemented
+    return JsonResponse(status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
+
+def friends(request, author_id):
+    # not implemented
+    return JsonResponse(status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
+
+def posts(request, author_id, post_id = None):
+    if request.method == 'GET':
+        author = Author.objects.get(pk = author_id)
+        posts = Post.objects.filter(author= author)
+        if post_id:
+            posts = posts.filter(pk = post_id)
+        data = serializers.serialize('json', posts)
+        return JsonResponse(data, safe=False)
+    elif request.method == 'POST':
+        author = Author.objects.get(pk = author_id)
+        data = request.data
+        data['author'] = author.id
+        data['authorName'] = author.displayName
+        data = PostSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data, status=status.HTTP_201_CREATED, safe=False)
+        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST, safe=False)
+    elif request.method == 'PUT':
+        author = Author.objects.get(pk = author_id)
+        post = Post.objects.get(pk = post_id)
+        if post.author == author:
+            serializer = PostSerializer(post, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return JsonResponse(serializer.data, status=status.HTTP_200_OK, safe=False)
+            return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST, safe=False)
+        return JsonResponse(status=status.HTTP_401_UNAUTHORIZED, safe=False)
+    elif request.method == 'DELETE':
+        author = Author.objects.get(pk = author_id)
+        post = Post.objects.get(pk = post_id)
+        if post.author == author:
+            post.delete()
+            return JsonResponse(status=status.HTTP_204_NO_CONTENT, safe=False)
+        return JsonResponse(status=status.HTTP_401_UNAUTHORIZED, safe=False)
+
+def comments(request, author_id, post_id):
+    if request.method == 'GET':
+        comments = Comment.objects.filter(post = post_id)
+        comments = comments.filter(author = author_id)
+        data = serializers.serialize('json', comments)
+        return JsonResponse(data, safe=False)
+    elif request.method == 'POST':
+        author = Author.objects.get(pk = author_id)
+        data = request.data
+        data['author'] = author.id
+        data['authorName'] = author.displayName
+        serializer = CommentSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data, status=status.HTTP_201_CREATED, safe=False)
+        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST, safe=False)
+
+def commentLikes(request, comment_id):
+    # not implemented
+    return JsonResponse(status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
+
+def likedPosts(request, author_id):
+    # not implemented
+    return JsonResponse(status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
+
+def authorFollowersPosts(request, author_id):
+    # not implemented
+    return JsonResponse(status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
+
+def inbox(request, author_id):
+    if request.method == 'GET':
+        # not implemented
+        return JsonResponse(status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
+    elif request.method == 'POST':
+        # not implemented
+        return JsonResponse(status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
     
-
-
         
 
 

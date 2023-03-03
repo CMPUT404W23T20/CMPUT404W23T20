@@ -25,6 +25,16 @@ urlpatterns = [
     path('api/posts', views.PostViewSet.as_view(), name='posts'),
     path('api/posts/<int:pk>', views.PostViewSet.as_view(), name='post'),
     path('api/posts/<int:pk>/', views.PostViewSet.as_view(), name='post'),
+    path('login', views.LoginView.as_view(), name='login'),
+    path('service/authors', views.authors, name='authors'),
+    path('service/authors/<str:author_id>', views.authors, name='author'),
+    path('service/authors/<str:author_id>/followers', views.followers, name='followers'),
+    path('service/authors/<str:author_id>/friends', views.friends, name='friends'),
+    path('service/authors/<str:author_id>/posts', views.posts, name='posts'),
+    path('service/authors/<str:author_id>/posts/<str:post_id>', views.posts, name='posts'),
+    path('service/authors/<str:author_id>/posts/<str:post_id>/comments', views.comments, name='comments'),
+    path('service/authors/<str:author_id>/inbox', views.inbox, name='inbox'),
+    path('service/authors/<str:author_id>/liked', views.likedPosts, name='liked'),
     path('api/inbox/', views.InboxViewSet.as_view(), name='inbox'),
     path('login', views.LoginView.as_view(), name='login')
 ]
