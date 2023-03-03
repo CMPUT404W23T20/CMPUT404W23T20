@@ -19,6 +19,7 @@ class Comment(models.Model):
     comment = models.CharField(max_length=200)
     contentType = models.CharField(max_length=200)
     published = models.DateTimeField()
+    post = models.ForeignKey('Post', on_delete=models.CASCADE)
 
     def __str__(self):
         return self.comment
@@ -50,10 +51,3 @@ class Request(models.Model):
 
     def __str__(self):
         return self.request
-    
-class Inbox(models.Model):
-    author = models.ForeignKey(Author, on_delete=models.CASCADE)
-    inboxItems = models.array(models.ForeignKey(Post, on_delete=models.CASCADE))
-
-    def __str__(self):
-        return self.inbox
