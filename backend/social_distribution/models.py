@@ -37,7 +37,7 @@ class Post(models.Model):
     comments = models.CharField(max_length=200,default="No comments")
     #commentSrc = models.ForeignKey(Comment, on_delete=models.CASCADE, default=1)
     published = models.DateTimeField(auto_now_add=True)
-    visibility = models.CharField(max_length=200, default="No visibility")
+    visibility = models.CharField(max_length=200, default="PUBLIC")
     unlisted = models.BooleanField(default=False)
 
     def __str__(self):

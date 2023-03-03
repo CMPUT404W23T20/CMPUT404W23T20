@@ -14,9 +14,16 @@ import json
 class UserViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
-        
+
+class InboxViewSet(APIView):
+    def get(self, request):
+        token = request.headers.get('Authorization', None)
+        payload = LoginSerializer.validateToken(token)
+        posts = Post.objects.all()
+        serializer = PostSerializer(posts, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 class PostViewSet(APIView):
-    
     def get(self, request):
         token = request.headers.get('Authorization', None)
         payload = LoginSerializer.validateToken(token)
