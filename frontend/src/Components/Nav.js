@@ -15,6 +15,10 @@ function Nav(){
             location: "/",
         },
         {
+          text: "Inbox",
+          location: "/inbox",
+        },
+        {
             text: "Profile",
             location: "/profile",
         },

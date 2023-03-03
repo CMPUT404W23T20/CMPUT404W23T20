@@ -25,6 +25,6 @@ urlpatterns = [
     path('api/posts', views.PostViewSet.as_view(), name='posts'),
     path('api/posts/<int:pk>', views.PostViewSet.as_view(), name='post'),
     path('api/posts/<int:pk>/', views.PostViewSet.as_view(), name='post'),
-    path('login', views.LoginView.as_view(), name='login'),
-
+    path('api/inbox/', views.InboxViewSet.as_view(), name='inbox'),
+    path('login', views.LoginView.as_view(), name='login')
 ]
