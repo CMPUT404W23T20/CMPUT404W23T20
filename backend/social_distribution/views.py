@@ -9,6 +9,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.http import JsonResponse
 from django.forms.models import model_to_dict
+from django.conf import settings
+import jwt
+from django.db.models import Q
+
 
 # Create your views here.
 class AuthorViewSet(APIView):
@@ -82,18 +86,18 @@ class LoginView(APIView):
 class friendRequestViewSet(APIView):
  
     def get(self, request, *args, **kwargs):
-        if (kwargs.get('pk')): #/api/friendrequest/<pk>
-            serializer = friendRequestSerializer(friendRequest.objects.get(pk=kwargs.get('pk')))
+        if (kwargs.get('pk') and not kwargs.get("fk") ): #/api/friendrequest/OBJECT(pk = OBJECT/RECIEVER)
+            serializer = friendRequestSerializer(friendRequest.objects.filter(object__id=kwargs.get('pk')),many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        
+        elif (kwargs.get("pk") and kwargs.get("fk")): #/api/ACTOR/friendrequest/OBJECT (pk = OBJECT/RECIEVER)
+            filter_data = friendRequest.objects.filter(actor__id=kwargs.get('pk'))
+            filter_data = filter_data.filter(object__id = kwargs.get('fk'))
+            serializer = friendRequestSerializer(filter_data,many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             serializer =  friendRequestSerializer(friendRequest.objects.all(),many=True) 
         return Response(serializer.data, status=status.HTTP_200_OK)
-#"author": int
-#author2 = Author.objects.get(id=author)
-# context["author"] = author2
-# contect["object"] = obj
-# return contect
+
     def post(self,request):
         serializer = friendRequestSerializer(data=request.data)
         if serializer.is_valid():
@@ -101,8 +105,14 @@ class friendRequestViewSet(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-
-
+    def delete(self,request,*args,**kwargs):
+        if (kwargs.get('pk')and kwargs.get("fk") ): #/api/ACTOR/friendrequest/OBJECT 
+            filter_data = friendRequest.objects.filter(actor__id=kwargs.get('pk'))
+            filter_data = filter_data.filter(object__id = kwargs.get('fk'))
+            filter_data.delete()
+            serializer = friendRequestSerializer(friendRequest.objects.filter(actor__id=kwargs.get('pk')),many=True)
+         
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class FollowersViewSet(APIView):
    def get(self, request, *args, **kwargs):
@@ -113,12 +123,13 @@ class FollowersViewSet(APIView):
             pk_val = kwargs.get("pk")
             fk_val = kwargs.get("fk")
             serializer =  FollowersSerializer(Followers.objects.filter(user__id=pk_val),many=True) 
-            context = Followers.objects.filter(user__id=pk_val)
+           
 
             if fk_val in serializer.data[0]["items"]:
-                return Response(True, status=status.HTTP_200_OK)
+                serializer =  FollowersSerializer(Followers.objects.filter(user__id=pk_val),many=True) 
+                return Response(serializer.data, status=status.HTTP_200_OK)
             else:
-                return Response(False, status=status.HTTP_200_OK)
+                return Response("Not a follower",status=status.HTTP_200_OK)
    
         else:
             serializer =  FollowersSerializer(Followers.objects.all(),many=True) 
@@ -126,16 +137,29 @@ class FollowersViewSet(APIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
    
-   def put(self, request, pk):
-       return "hi"
-   
-   def delete(self,*args, **kwargs ):
-        if kwargs.get("pk"):
-            pk_val = kwargs.get("pk")
-            fk_val = kwargs.get("fk")
-            serializer =  FollowersSerializer(Followers.objects.filter(user__id=pk_val),many=True) 
-            
+   def put(self, request, **kwargs):
+        token = request.headers.get('Authorization', None)
 
-        
+        if kwargs.get("pk") and not kwargs.get("fk"):
+           pk_val = kwargs.get("pk")
+           new_follower = request.data.get("items")
+    
+           followers =Followers.objects.get(user__id=pk_val)
+           followers.items.add(new_follower)
+
+           serializer =  FollowersSerializer(Followers.objects.filter(user__id=pk_val),many=True) 
+           
+
         return Response(serializer.data, status=status.HTTP_200_OK)
    
+   def delete(self,request,*args, **kwargs ):
+    pk_val = kwargs.get("pk")
+    fk_val = kwargs.get("fk")
+    serializer =  FollowersSerializer(Followers.objects.filter(user__id=pk_val),many=True) 
+    new_list = Followers.objects.get(pk=pk_val)
+    new_list.items.remove(fk_val)
+    
+    
+
+    return Response(serializer.data, status=status.HTTP_200_OK)
+    

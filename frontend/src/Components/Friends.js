@@ -3,8 +3,7 @@ import { Box, Button, Card,CardContent } from '@material-ui/core';
 import Nav from './Nav';
 import axios from 'axios';
 import jwt_decode from "jwt-decode";
-import { Alert } from '@mui/material';
-import { minWidth } from '@mui/system';
+
 
 /* Load all the ones that are NOT friends
 do a get request to http://127.0.0.1:8000/api/authors/{other}/followers/{user}
@@ -45,12 +44,16 @@ function Friends() {
             .then((data) => {
                 for (let item of data){  
                     getNonFollowers(item)
+                    
                     .then((data => {
-                        if ((data ===false) && (item.id !== userId)){ 
+                        if ((data == "Not a follower") && (item.id !== userId)){ 
+                            
                             setFollow(currentState => [...currentState,item])
+                            console.log(nonFollower.length)
                          
                         }
                         else if (item.id !== userId){
+                            console.log(data,item)
                             setFriend(thisState => [...thisState,item])
                         }
                       
@@ -58,6 +61,7 @@ function Friends() {
 
              }});
     }, []);
+    
     
     
 
@@ -77,12 +81,12 @@ function Friends() {
     };
 
     let userId= userInfo().user_id;
+    let userName =  userInfo().username;
     const sendRequest = async(author) =>{
-        alert(`A friend request to ${author.username} has been sent`)
+        alert(`${userName}  A friend request to ${author.username} has been sent`)
         
-        document.getElementById(author.id).style.display = 'none'
 
-        summary  =`${userInfo().username} sent ${author.displayName} a request`
+        let summary  =`${userName} wants to follow ${author.displayName}`
 
         //POST request to the inbox..
         let path = "http://127.0.0.1:8000/api/friendrequest" //CHANGE THIS TO INBOX ADDRESS
@@ -107,19 +111,73 @@ function Friends() {
     /*go to the the friend's followers page, and take out the user's id.
      Store their list of followers in an array. 
     */
-
     const deleteFriend = async(formerFriend)=> {
         let path = `http://localhost:8000/api/authors/${formerFriend.id}/followers/${userId}`;
         let response = await axios.delete(path, {
-            "items": userId
+            headers: {
+                "Authorization": localStorage.getItem("token"),
+
+            }
         });
-        return response.data;
-        
+        window.location.reload()  
+    }
+
+    const getFriendReq = async() =>{
+            let path = `http://localhost:8000/api/friendrequest/${userId}`;
+            let response = await axios.get(path, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": localStorage.getItem("token")
+                }
+            });
+            return response.data;
+        }
+
+
+    const [friendRequest, setRequest] =  React.useState([]);
+    React.useEffect(() => {
+        getFriendReq().then((data) => {
+            setRequest(data);
+        });
+    }, []);
+
+    const declineReq = async(actor) =>{
+        //destroy the friend request object
+        //remove + relode
+        let path = `http://localhost:8000/api/${actor.actor}/friendrequest/${userId}`;
+        let response = await axios.delete(path, {
+            headers: {
+                "Authorization": localStorage.getItem("token"),
+
+            }
+        });
+        window.location.reload()  
+
+    }
+    
+    const acceptReq = async(actor) =>{
+        /*
+        1. destroy the request (ie. call decline request)
+        2. add actor to list of object's followers (object = user),(actor = sender)
+        3. PUT  http://localhost:8000/api/authors/${userId}/followers/${actor.id}
+        */
+
+        declineReq(actor)
+        let path = `http://localhost:8000/api/authors/${userId}/followers/`;
+        let data = {
+            items: actor.actor
+        }
+        await axios.put(path, data, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem("token")
+            }
+        });
+        window.location.reload()
     }
 
 
-    
-   
+
     return (
         <Box>
             <h1>Friends</h1>
@@ -140,7 +198,7 @@ function Friends() {
                                         onClick={() => sendRequest(Authors)} 
                                         style={{backgroundColor: "white",float:"right",
                                         marginLeft:25, fontSize:15}} >
-                                          Add
+                                            Send Request
                                     </Button>
 
                                 </div>
@@ -152,7 +210,7 @@ function Friends() {
                 </Card>
             </div>
             <div class = "friendslist" >
-                <h2>Your friends</h2>
+                <h2>People you follow</h2>
                 <div class = "friendCard">
                     {friend.map((Authors) => (
                                 <CardContent >
@@ -163,7 +221,7 @@ function Friends() {
                                             <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}>{Authors.displayName}</h4></a>
                                         </span>
                                         <Button id = {Authors.username}
-                                            style={{backgroundColor: "pink",float:"right",
+                                            style={{backgroundColor:"pink",float:"right",
                                             marginLeft:25, fontSize:15,minWidth:90}}
                                             onClick={() => deleteFriend(Authors) } >
                                             Unfriend
@@ -176,11 +234,29 @@ function Friends() {
                             
                             ))}
                 </div>
-               
-
 
             </div>
-            
+              <div class = "friendRequest">
+                    <h2>Friend Requests</h2>
+                     {friendRequest.map((request) =>(
+                        <div>
+                            <h5>{request.summary}</h5>
+                            <Button onClick = {() => acceptReq(request)}>
+                                Accept
+                            </Button>
+                            <Button onClick={() => declineReq(request) }>
+                                Decline
+                            </Button>
+                        </div>
+
+                            
+
+                
+
+                     ))}
+                    
+
+                </div>
 
             <Nav/>
         </Box>

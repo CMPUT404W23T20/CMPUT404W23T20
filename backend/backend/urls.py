@@ -33,6 +33,7 @@ urlpatterns = [
     path('api/authors/<int:pk>', views.AuthorViewSet.as_view(), name='author'),
     path('api/friendrequest',views.friendRequestViewSet.as_view(),name='friendRequest'),
     path('api/friendrequest/<int:pk>',views.friendRequestViewSet.as_view(),name='friendReq'),
-    path('api/authors/<int:pk>/followers/<int:fk>',views.FollowersViewSet.as_view(),name='followers'),
+    path('api/<int:pk>/friendrequest/<int:fk>',views.friendRequestViewSet.as_view(),name='friendReq'),
+    path('api/authors/<int:fk>/followers/<int:pk>',views.FollowersViewSet.as_view(),name='followers'),
     path('api/authors/<int:pk>/followers/',views.FollowersViewSet.as_view(),name='followers'),  
 ]
