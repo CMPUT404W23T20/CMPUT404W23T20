@@ -2,8 +2,8 @@ from pstats import Stats
 import statistics
 from django.shortcuts import render
 from rest_framework import viewsets, status
-from .serializers import PostSerializer, LoginSerializer, CommentSerializer
-from .models import Post, Author, Comment, Request
+from .serializers import PostSerializer, LoginSerializer, CommentSerializer, AuthorSerializer, InboxSerializer, InboxItemSerializer, RequestSerializer
+from .models import Post, Author, Comment, Request, Inbox, InboxItem
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.core import serializers
@@ -19,9 +19,14 @@ class InboxViewSet(APIView):
     def get(self, request):
         token = request.headers.get('Authorization', None)
         payload = LoginSerializer.validateToken(token)
-        posts = Post.objects.all()
-        serializer = PostSerializer(posts, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        pk = payload.get('user_id', None)
+        return inbox(request, pk)
+    
+    def delete(self, request):
+        token = request.headers.get('Authorization', None)
+        payload = LoginSerializer.validateToken(token)
+        pk = payload.get('user_id', None)
+        return inbox(request, pk)
 
 class PostViewSet(APIView):
     def get(self, request):
@@ -90,15 +95,15 @@ def authors(request, author_id = None):
 
 def followers(request, author_id = None):
     # not implemented
-    return JsonResponse(status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
+    return JsonResponse("Not implemented", status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
 
 def requests(request, author_id):
     # not implemented
-    return JsonResponse(status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
+    return JsonResponse("Not implemented", status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
 
 def friends(request, author_id):
     # not implemented
-    return JsonResponse(status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
+    return JsonResponse("Not implemented", status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
 
 def posts(request, author_id, post_id = None):
     if request.method == 'GET':
@@ -127,14 +132,14 @@ def posts(request, author_id, post_id = None):
                 serializer.save()
                 return JsonResponse(serializer.data, status=status.HTTP_200_OK, safe=False)
             return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST, safe=False)
-        return JsonResponse(status=status.HTTP_401_UNAUTHORIZED, safe=False)
+        return JsonResponse("Not authorized", status=status.HTTP_401_UNAUTHORIZED, safe=False)
     elif request.method == 'DELETE':
         author = Author.objects.get(pk = author_id)
         post = Post.objects.get(pk = post_id)
         if post.author == author:
             post.delete()
-            return JsonResponse(status=status.HTTP_204_NO_CONTENT, safe=False)
-        return JsonResponse(status=status.HTTP_401_UNAUTHORIZED, safe=False)
+            return JsonResponse("Deleted", status=status.HTTP_204_NO_CONTENT, safe=False)
+        return JsonResponse("Not authorized", status=status.HTTP_401_UNAUTHORIZED, safe=False)
 
 def comments(request, author_id, post_id):
     if request.method == 'GET':
@@ -155,27 +160,45 @@ def comments(request, author_id, post_id):
 
 def commentLikes(request, comment_id):
     # not implemented
-    return JsonResponse(status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
+    return JsonResponse("Not implemented", status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
 
 def likedPosts(request, author_id):
     # not implemented
-    return JsonResponse(status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
+    return JsonResponse("Not implemented", status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
 
 def authorFollowersPosts(request, author_id):
     # not implemented
-    return JsonResponse(status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
+    return JsonResponse("Not implemented", status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
 
 def inbox(request, author_id):
     if request.method == 'GET':
-        # not implemented
-        return JsonResponse(status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
+        # get all inbox items for author
+        author = Author.objects.get(pk = author_id)
+        inbox = Inbox.objects.filter(author = author)
+        serializer = InboxSerializer(inbox, many=True)
+        # get InboxItem from data['items']
+        serializer.data[0]['items'] = InboxItemSerializer(InboxItem.objects.get(pk = serializer.data[0]['items'])).data
+        # get Post from data['items']['post']
+        for i in range(len(serializer.data[0]['items']['posts'])):
+            serializer.data[0]['items']['posts'][i] = PostSerializer(Post.objects.get(pk = serializer.data[0]['items']['posts'][i])).data
+        for i in range(len(serializer.data[0]['items']['requests'])):
+            serializer.data[0]['items']['requests'][i] = PostSerializer(Post.objects.get(pk = serializer.data[0]['items']['requests'][i])).data
+
+        # items becomes a list with all posts and requests
+        serializer.data[0]['items'] = serializer.data[0]['items']['posts'] + serializer.data[0]['items']['requests']
+        
+        return JsonResponse(serializer.data[0], safe=False)
+        
     elif request.method == 'POST':
         # not implemented
-        return JsonResponse(status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
+        return JsonResponse("Not implemented", status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)    
     
-        
-
-
-
-
-
+    elif request.method == 'DELETE':
+        # clear the items field of the inbox with author_id = author_id
+        author = Author.objects.get(pk = author_id)
+        inbox = Inbox.objects.get(author = author)
+        inbox.items.posts.clear()
+        inbox.items.requests.clear()
+        inbox.save()
+        return JsonResponse("Inbox cleared", status=status.HTTP_200_OK, safe=False)
+    

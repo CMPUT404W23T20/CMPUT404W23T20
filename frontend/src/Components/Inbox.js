@@ -12,10 +12,24 @@ function Posts() {
                 "Authorization": localStorage.getItem("token")
             }
         });
-
         console.log(response.data);
-        return response.data;
+        return response.data.items
     }
+
+    const handleClear = async () => {
+        let path = "http://localhost:8000/api/inbox";
+        let response = await axios.delete(path, { 
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem("token")
+            }
+        });
+        console.log(response.data);
+        get_all_posts().then((data) => {
+            setPosts(data);
+        });
+    }  
+
     const [Posts, setPosts] = React.useState([]);
     React.useEffect(() => {
         get_all_posts().then((data) => {
@@ -47,6 +61,12 @@ function Posts() {
                                 </ListItem>
                             ))}
                         </List>
+                        <Button variant="contained" color="secondary" onClick={() => handleClear()} style = {{margin: 10, alignSelf: "flex-end"}}>
+                            Clear
+                        </Button>
+                        <Button variant="contained" color="primary" onClick={() => get_all_posts()} style = {{margin: 10, alignSelf: "flex-end"}}>
+                            Refresh
+                        </Button>
                     </Box>
                     {openPost && (
                         <Box style={{ flex: 1,display: "flex", flexDirection: "column", margin: "10px", borderColor: "grey", borderStyle: "solid", borderRadius: "5px"}}>
