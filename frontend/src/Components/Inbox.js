@@ -64,7 +64,7 @@ function Posts() {
                         <Button variant="contained" color="secondary" onClick={() => handleClear()} style = {{margin: 10, alignSelf: "flex-end"}}>
                             Clear
                         </Button>
-                        <Button variant="contained" color="primary" onClick={() => get_all_posts()} style = {{margin: 10, alignSelf: "flex-end"}}>
+                        <Button variant="contained" color="primary" onClick={() => get_all_posts().then((data) => { setPosts(data); })} style = {{margin: 10, alignSelf: "flex-end"}}>
                             Refresh
                         </Button>
                     </Box>
