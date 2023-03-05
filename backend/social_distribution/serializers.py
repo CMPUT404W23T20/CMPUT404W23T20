@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Post, Author, Comment, Request, Inbox, InboxItem
+from .models import Post, Author, Comment, Request, Inbox, InboxItem, friendRequest, Followers
 from rest_framework_jwt.settings import api_settings
 from django.conf import settings
 import jwt
@@ -9,7 +9,8 @@ jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
 class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Author
-        fields = '__all__'
+        #exclude password
+        fields = ("id","host","displayName","username","url","github","profileImage")
     
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -46,6 +47,20 @@ class RequestSerializer(serializers.ModelSerializer):
 
         return payload
 
+class CreatePostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = ("title", "description")
+
+class friendRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = friendRequest
+        fields = '__all__'
+
+class FollowersSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Followers
+        fields = ("type","items")
 class LoginSerializer(serializers.Serializer):
 
     def validate(data):

@@ -18,6 +18,9 @@ from django.urls import path, include
 from rest_framework import routers
 from social_distribution import views         
 
+router = routers.DefaultRouter()     
+
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,6 +29,13 @@ urlpatterns = [
     path('api/posts/<int:pk>', views.PostViewSet.as_view(), name='post'),
     path('api/posts/<int:pk>/', views.PostViewSet.as_view(), name='post'),
     path('login', views.LoginView.as_view(), name='login'),
+    path('api/authors', views.AuthorViewSet.as_view(), name='author'),
+    path('api/authors/<int:pk>', views.AuthorViewSet.as_view(), name='author'),
+    path('api/friendrequest',views.friendRequestViewSet.as_view(),name='friendRequest'),
+    path('api/friendrequest/<int:pk>',views.friendRequestViewSet.as_view(),name='friendReq'),
+    path('api/<int:pk>/friendrequest/<int:fk>',views.friendRequestViewSet.as_view(),name='friendReq'),
+    path('api/authors/<int:fk>/followers/<int:pk>',views.FollowersViewSet.as_view(),name='followers'),
+    path('api/authors/<int:pk>/followers/',views.FollowersViewSet.as_view(),name='followers'),  
     path('service/authors', views.authors, name='authors'),
     path('service/authors/<str:author_id>', views.authors, name='author'),
     path('service/authors/<str:author_id>/followers', views.followers, name='followers'),
