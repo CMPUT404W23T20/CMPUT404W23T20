@@ -4,8 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Nav from './Nav';
 import axios from 'axios';
 import jwt_decode from "jwt-decode";
-import { letterSpacing } from '@mui/system';
-import { alertClasses } from '@mui/material';
+
 
 
 /* Load all the ones that are NOT friends
@@ -82,13 +81,37 @@ function Friends() {
         return decode_info;
         
     };
+    const friendReqExists = async(author) =>{
+        let userId= userInfo().user_id;
+        let path = `http://localhost:8000/api/${userId}/friendrequest/${author.id}`;
+        let response = await axios.get(path, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem("token"),
 
+            }
+        });
+        return response.data;
+    }
+   
+    
    //Sends a request
     const sendRequest = async(author) =>{
+        
+
+        const requestSent = await(friendReqExists(author))
+        
+        if (requestSent.length > 0){ //ensures there is no duplicate
+            alert("Friend Request is Pending")
+            return
+        }
+        else{
+            alert("A request has been sent")
+        }
+    
         let userId= userInfo().user_id;
         let userName =  userInfo().username;
-        alert(`A friend request to ${author.username} has been sent`)
-        
+
 
         let summary  =`${userName} wants to follow ${author.displayName}`
 
@@ -125,9 +148,9 @@ function Friends() {
         window.location.reload()  
     }
 
+    //get all friend requests
+    //paste this into inbox page
     const getFriendReq = async() =>{
-
-
             let userId= userInfo().user_id;
             let path = `http://localhost:8000/api/friendrequest/${userId}`;
             let response = await axios.get(path, {
@@ -139,27 +162,12 @@ function Friends() {
             return response.data;
         }
 
-    const friendReqExists = async(author) =>{
-        let userId= userInfo().user_id;
-        let path = `http://localhost:8000/api/${userId}/friendrequest/${author.id}`;
-        let response = await axios.get(path, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": localStorage.getItem("token"),
-
-            }
-        });
-        return response.data;
-    }
- 
     const [friendRequest, setRequest] =  React.useState([]);
     React.useEffect(() => {
         getFriendReq().then((data) => {
             setRequest(data);
         });
     }, []);
-
-
 
     const declineReq = async(actor) =>{
         //destroy the friend request object
@@ -213,19 +221,21 @@ function Friends() {
                             {followerCopy.map((Authors) => (
                              
                                 <CardContent >
-                                    <div id = {Authors.id} style = {{display:'flex',alignItems:'center',width:400,wordWrap:"break-word"}}>
+                                    <div style = {{display:'flex',alignItems:'center',width:400,wordWrap:"break-word"}}>
                                         <img src= {Authors.profileImage} alt = "Profile" style = {{borderRadius:"50%",marginRight:20}} width={55} height = {55}/>
                                         <span>
                                             <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}> {Authors.displayName}</h4></a>
     
                                         </span>
-                                        <Button id = {Authors.username}
+                                        <Button 
+                                            id = {Authors.id}
                                             style={{backgroundColor:"white",float:"right",
-                                            marginLeft:25, fontSize:15,minWidth:90}}
-                                            onClick={() => sendRequest(Authors) } >
-                                            Send Request
+                                            marginLeft:25, fontSize:15,minWidth:90}}onClick = {() => sendRequest(Authors)}
+                                           >
+                                            Follow
+                                               
                                         </Button>
-                                        
+                                       
                                     
 
                                     </div>
@@ -248,7 +258,7 @@ function Friends() {
                                         <span>
                                             <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}>{Authors.displayName}</h4></a>
                                         </span>
-                                        <Button id = {Authors.username}
+                                        <Button 
                                             style={{backgroundColor:"pink",float:"right",
                                             marginLeft:25, fontSize:15,minWidth:90}}
                                             onClick={() => deleteFriend(Authors) } >
