@@ -4,7 +4,7 @@ import Nav from './Nav';
 import axios from 'axios';
 
 function Posts() {
-    const get_all_posts = async () => {
+    const get_inbox_items = async () => {
         let path = "http://localhost:8000/api/inbox/";
         let response = await axios.get(path, {
             headers: {
@@ -25,14 +25,14 @@ function Posts() {
             }
         });
         console.log(response.data);
-        get_all_posts().then((data) => {
+        get_inbox_items().then((data) => {
             setPosts(data);
         });
     }  
 
     const [Posts, setPosts] = React.useState([]);
     React.useEffect(() => {
-        get_all_posts().then((data) => {
+        get_inbox_items().then((data) => {
             setPosts(data);
         });
     }, []);
@@ -64,7 +64,7 @@ function Posts() {
                         <Button variant="contained" color="secondary" onClick={() => handleClear()} style = {{margin: 10, alignSelf: "flex-end"}}>
                             Clear
                         </Button>
-                        <Button variant="contained" color="primary" onClick={() => get_all_posts().then((data) => { setPosts(data); })} style = {{margin: 10, alignSelf: "flex-end"}}>
+                        <Button variant="contained" color="primary" onClick={() => get_inbox_items().then((data) => { setPosts(data); })} style = {{margin: 10, alignSelf: "flex-end"}}>
                             Refresh
                         </Button>
                     </Box>

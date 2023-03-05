@@ -46,5 +46,6 @@ urlpatterns = [
     path('service/authors/<str:author_id>/inbox', views.inbox, name='inbox'),
     path('service/authors/<str:author_id>/liked', views.likedPosts, name='liked'),
     path('api/inbox/', views.InboxViewSet.as_view(), name='inbox'),
+    path('api/home/', views.HomeViewSet.as_view(), name='home'),
     path('login', views.LoginView.as_view(), name='login')
 ]
