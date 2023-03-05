@@ -3,8 +3,8 @@ import statistics
 from django.shortcuts import render
 from django.template import Context
 from rest_framework import viewsets, status
-from .serializers import PostSerializer, LoginSerializer, CommentSerializer, AuthorSerializer, InboxSerializer, InboxItemSerializer, RequestSerializer, friendRequestSerializer, FollowersSerializer
-from .models import Post, Author, Comment, Request, Inbox, InboxItem, friendRequest, Followers
+from .serializers import PostSerializer, LoginSerializer, CommentSerializer, AuthorSerializer, InboxSerializer, InboxItemSerializer, RequestSerializer, FriendRequestSerializer, FollowersSerializer
+from .models import Post, Author, Comment, Request, Inbox, InboxItem, FriendRequest, Followers
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.core import serializers
@@ -107,27 +107,27 @@ class LoginView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(data, status=status.HTTP_200_OK)
     
-class friendRequestViewSet(APIView):
+class FriendRequestViewSet(APIView):
  
     def get(self, request, *args, **kwargs):
         if (kwargs.get('pk') and not kwargs.get("fk") ): #/api/friendrequest/OBJECT(pk = OBJECT/RECIEVER)
-            serializer = friendRequestSerializer(friendRequest.objects.filter(object__id=kwargs.get('pk')),many=True)
+            serializer = FriendRequestSerializer(FriendRequest.objects.filter(object__id=kwargs.get('pk')),many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         elif (kwargs.get("pk") and kwargs.get("fk")): #/api/ACTOR/friendrequest/OBJECT (pk = OBJECT/RECIEVER)
-            filter_data = friendRequest.objects.filter(actor__id=kwargs.get('pk'))
+            filter_data = FriendRequest.objects.filter(actor__id=kwargs.get('pk'))
             filter_data = filter_data.filter(object__id = kwargs.get('fk'))
-            serializer = friendRequestSerializer(filter_data,many=True)
+            serializer = FriendRequestSerializer(filter_data,many=True)
 
             if (filter_data.exists()):
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
                 return Response(False, status=status.HTTP_200_OK)
         else:
-            serializer =  friendRequestSerializer(friendRequest.objects.all(),many=True) 
+            serializer =  FriendRequestSerializer(FriendRequest.objects.all(),many=True) 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self,request):
-        serializer = friendRequestSerializer(data=request.data)
+        serializer = FriendRequestSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -135,10 +135,10 @@ class friendRequestViewSet(APIView):
     
     def delete(self,request,*args,**kwargs):
         if (kwargs.get('pk')and kwargs.get("fk") ): #/api/ACTOR/friendrequest/OBJECT 
-            filter_data = friendRequest.objects.filter(actor__id=kwargs.get('pk'))
+            filter_data = FriendRequest.objects.filter(actor__id=kwargs.get('pk'))
             filter_data = filter_data.filter(object__id = kwargs.get('fk'))
             filter_data.delete()
-            serializer = friendRequestSerializer(friendRequest.objects.filter(actor__id=kwargs.get('pk')),many=True)
+            serializer = FriendRequestSerializer(FriendRequest.objects.filter(actor__id=kwargs.get('pk')),many=True)
          
         return Response(status=status.HTTP_204_NO_CONTENT)
 

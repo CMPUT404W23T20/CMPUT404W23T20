@@ -63,7 +63,7 @@ class Followers(models.Model):
     items = models.ManyToManyField(Author, symmetrical = False, blank = True, null = True)
 
 
-class friendRequest(models.Model):
+class FriendRequest(models.Model):
     REQUEST_TYPE= [('none','None'),('friend',"Friend"),('follow','Follow'),('accept','Accept')]
 
     #summmary is message sent to inbox

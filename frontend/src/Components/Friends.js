@@ -144,10 +144,10 @@ function Friends() {
         let path = `http://localhost:8000/api/authors/${formerFriend.id}/followers/${userId}`;
         let response = await axios.delete(path, {
             headers: {
-                "Authorization": localStorage.getItem("token"),
+                "Authorization": localStorage.getItem("token")
             }
         });
-        window.location.reload()  
+        window.location.reload();
     }
 
     //get all friend requests
