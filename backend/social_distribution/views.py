@@ -43,6 +43,11 @@ class InboxViewSet(APIView):
         pk = payload.get('user_id', None)
         return inbox(request, pk)
 
+class HomeViewSet(APIView):
+    def get(self, request):
+        posts = Post.objects.filter(visibility="PUBLIC")
+        serializer = PostSerializer(posts, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class PostViewSet(APIView):
     def get(self, request):
