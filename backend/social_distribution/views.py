@@ -93,7 +93,11 @@ class friendRequestViewSet(APIView):
             filter_data = friendRequest.objects.filter(actor__id=kwargs.get('pk'))
             filter_data = filter_data.filter(object__id = kwargs.get('fk'))
             serializer = friendRequestSerializer(filter_data,many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+
+            if (filter_data.exists()):
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response(False, status=status.HTTP_200_OK)
         else:
             serializer =  friendRequestSerializer(friendRequest.objects.all(),many=True) 
         return Response(serializer.data, status=status.HTTP_200_OK)

@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { Box, Button, Card,CardContent } from '@material-ui/core';
+import { useNavigate } from "react-router-dom";
 import Nav from './Nav';
 import axios from 'axios';
 import jwt_decode from "jwt-decode";
+import { letterSpacing } from '@mui/system';
+import { alertClasses } from '@mui/material';
 
 
 /* Load all the ones that are NOT friends
@@ -22,7 +25,8 @@ function Friends() {
         });
         return response.data;
     }
-    const getNonFollowers= async (other) => {
+    const getFollowing= async (other) => { //sees if user is following the other
+        let userId= userInfo().user_id;
         let path = `http://localhost:8000/api/authors/${other.id}/followers/${userId}`
         let response = await axios.get(path, {
             headers: {
@@ -35,25 +39,23 @@ function Friends() {
 
 
 
-    const [nonFollower,setFollow] = React.useState([]);
-    const [friend, setFriend] =  React.useState([]);
-
+    const [notFollowing,setNotFollow] = React.useState([]); //list of authors who are not friends w/ users
+    const [friend, setFriend] =  React.useState([]); //list of
+    
+    
     //Gets the list of authors that are not friends with users
     React.useEffect(() => {
         getusers()
             .then((data) => {
                 for (let item of data){  
-                    getNonFollowers(item)
-                    
+                    getFollowing(item)
                     .then((data => {
-                        if ((data == "Not a follower") && (item.id !== userId)){ 
-                            
-                            setFollow(currentState => [...currentState,item])
-                            console.log(nonFollower.length)
+                        let userId= userInfo().user_id;
+                        if ((data ==="Not a follower") && (item.id !== userId)){ 
+                            setNotFollow(currentState => [...currentState,item])
                          
                         }
                         else if (item.id !== userId){
-                            console.log(data,item)
                             setFriend(thisState => [...thisState,item])
                         }
                       
@@ -61,29 +63,31 @@ function Friends() {
 
              }});
     }, []);
-    
-    
-    
 
-
-    //Accept Request
-    /* get the sender detail and update the request */
+    //The call to ".then()" returns duplicates, so we need to filter them out
+    const followerCopy = notFollowing.filter((v,i) => {return notFollowing.map((data)=> data.id).indexOf(v.id)==i})
+    const friendsCopy = friend.filter((v,i) => {return friend.map((data)=> data.id).indexOf(v.id)==i})
+    
    
-    
+
+    //Ensures that we are logged in 
     let token =localStorage.getItem("token");
-   
-
+    const navigate = useNavigate();
     const userInfo = () =>{
+        if (token === null ){
+            navigate("/Login");
+        }
         var decoded = JSON.stringify(jwt_decode(token));
         var decode_info= JSON.parse(decoded)
         return decode_info;
         
     };
 
-    let userId= userInfo().user_id;
-    let userName =  userInfo().username;
+   //Sends a request
     const sendRequest = async(author) =>{
-        alert(`${userName}  A friend request to ${author.username} has been sent`)
+        let userId= userInfo().user_id;
+        let userName =  userInfo().username;
+        alert(`A friend request to ${author.username} has been sent`)
         
 
         let summary  =`${userName} wants to follow ${author.displayName}`
@@ -103,8 +107,7 @@ function Friends() {
                 "Authorization": localStorage.getItem("token")
             }
         });
-
-
+        window.location.reload()  
     }
 
     //delete friend
@@ -112,17 +115,20 @@ function Friends() {
      Store their list of followers in an array. 
     */
     const deleteFriend = async(formerFriend)=> {
+        let userId= userInfo().user_id;
         let path = `http://localhost:8000/api/authors/${formerFriend.id}/followers/${userId}`;
         let response = await axios.delete(path, {
             headers: {
                 "Authorization": localStorage.getItem("token"),
-
             }
         });
         window.location.reload()  
     }
 
     const getFriendReq = async() =>{
+
+
+            let userId= userInfo().user_id;
             let path = `http://localhost:8000/api/friendrequest/${userId}`;
             let response = await axios.get(path, {
                 headers: {
@@ -133,7 +139,19 @@ function Friends() {
             return response.data;
         }
 
+    const friendReqExists = async(author) =>{
+        let userId= userInfo().user_id;
+        let path = `http://localhost:8000/api/${userId}/friendrequest/${author.id}`;
+        let response = await axios.get(path, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem("token"),
 
+            }
+        });
+        return response.data;
+    }
+ 
     const [friendRequest, setRequest] =  React.useState([]);
     React.useEffect(() => {
         getFriendReq().then((data) => {
@@ -141,20 +159,23 @@ function Friends() {
         });
     }, []);
 
+
+
     const declineReq = async(actor) =>{
         //destroy the friend request object
-        //remove + relode
+        //remove + reload
+        let userId= userInfo().user_id;
         let path = `http://localhost:8000/api/${actor.actor}/friendrequest/${userId}`;
         let response = await axios.delete(path, {
             headers: {
                 "Authorization": localStorage.getItem("token"),
-
             }
         });
         window.location.reload()  
 
     }
     
+
     const acceptReq = async(actor) =>{
         /*
         1. destroy the request (ie. call decline request)
@@ -163,6 +184,7 @@ function Friends() {
         */
 
         declineReq(actor)
+        let userId= userInfo().user_id;
         let path = `http://localhost:8000/api/authors/${userId}/followers/`;
         let data = {
             items: actor.actor
@@ -180,39 +202,45 @@ function Friends() {
 
     return (
         <Box>
+
             <h1>Friends</h1>
-            
+             <Nav/>
             <div style = {{float:"right",paddingRight:150,width: 400,}}>
                 <Card style={{ width: 450,height:450, backgroundColor:"#66aeec",overflowY:"scroll"}}>
                     
                         <h2 style ={{color:"whitesmoke"}}>Local Authors</h2>
-                        
-                        {nonFollower.map((Authors) => (
-                             <CardContent >
-                                <div id = {Authors.id} style = {{display:'flex',alignItems:'center',width:400,wordWrap:"break-word"}}>
-                                     <img src= {Authors.profileImage} alt = "Profile" style = {{borderRadius:"50%",marginRight:20}} width={55} height = {55}/>
-                                     <span>
-                                        <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}>{Authors.displayName}</h4></a>
-                                     </span>
-                                     <Button id = {Authors.username}
-                                        onClick={() => sendRequest(Authors)} 
-                                        style={{backgroundColor: "white",float:"right",
-                                        marginLeft:25, fontSize:15}} >
+                        <div class = "localauthors"> 
+                            {followerCopy.map((Authors) => (
+                             
+                                <CardContent >
+                                    <div id = {Authors.id} style = {{display:'flex',alignItems:'center',width:400,wordWrap:"break-word"}}>
+                                        <img src= {Authors.profileImage} alt = "Profile" style = {{borderRadius:"50%",marginRight:20}} width={55} height = {55}/>
+                                        <span>
+                                            <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}> {Authors.displayName}</h4></a>
+    
+                                        </span>
+                                        <Button id = {Authors.username}
+                                            style={{backgroundColor:"white",float:"right",
+                                            marginLeft:25, fontSize:15,minWidth:90}}
+                                            onClick={() => sendRequest(Authors) } >
                                             Send Request
-                                    </Button>
+                                        </Button>
+                                        
+                                    
 
-                                </div>
-                           
+                                    </div>
+                            
 
-                            </CardContent>    
-                         
-                        ))}
+                                </CardContent>    
+                            
+                                ))}
+                         </div>
                 </Card>
             </div>
             <div class = "friendslist" >
                 <h2>People you follow</h2>
                 <div class = "friendCard">
-                    {friend.map((Authors) => (
+                    {friendsCopy.map((Authors) => (
                                 <CardContent >
                                     <div style = {{display:'flex',alignItems:'center',width:550,wordWrap:"break-word",
                                                      paddingLeft: 150}}>
@@ -236,8 +264,9 @@ function Friends() {
                 </div>
 
             </div>
-              <div class = "friendRequest">
-                    <h2>Friend Requests</h2>
+             <h2>Friend Requests</h2>
+              <div class = "friendRequests">
+                    
                      {friendRequest.map((request) =>(
                         <div>
                             <h5>{request.summary}</h5>
@@ -248,17 +277,12 @@ function Friends() {
                                 Decline
                             </Button>
                         </div>
-
-                            
-
-                
-
                      ))}
                     
 
                 </div>
 
-            <Nav/>
+           
         </Box>
  
       
