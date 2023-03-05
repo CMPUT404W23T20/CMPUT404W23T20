@@ -14,6 +14,7 @@ is user in that list
  - Yes => don't add to list of authors */
 
 function Friends() {
+   
     const getusers= async () => {
         let path = "http://localhost:8000/api/authors";
         let response = await axios.get(path, {
@@ -71,6 +72,7 @@ function Friends() {
 
     //Ensures that we are logged in 
     let token =localStorage.getItem("token");
+    console.log(token)
     const navigate = useNavigate();
     const userInfo = () =>{
         if (token === null ){
@@ -248,7 +250,7 @@ function Friends() {
                 </Card>
             </div>
             <div class = "friendslist" >
-                <h2>People you follow</h2>
+                <h2>Your friends</h2>
                 <div class = "friendCard">
                     {friendsCopy.map((Authors) => (
                                 <CardContent >

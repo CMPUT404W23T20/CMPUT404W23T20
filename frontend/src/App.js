@@ -1,6 +1,7 @@
 import './App.css';
 import { Box } from '@material-ui/core';
 import Home from './Components/Home';
+import Inbox from './Components/Inbox';
 import Profile from './Components/Profile';
 import Friends from './Components/Friends';
 import Posts from './Components/Posts';
@@ -15,6 +16,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/Login" element={<Login />} />
+          <Route path="/Inbox" element={<Inbox />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/friends" element={<Friends />} />
           <Route path="/posts" element={<Posts />} />

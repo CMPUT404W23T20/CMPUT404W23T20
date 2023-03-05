@@ -36,4 +36,15 @@ urlpatterns = [
     path('api/<int:pk>/friendrequest/<int:fk>',views.friendRequestViewSet.as_view(),name='friendReq'),
     path('api/authors/<int:fk>/followers/<int:pk>',views.FollowersViewSet.as_view(),name='followers'),
     path('api/authors/<int:pk>/followers/',views.FollowersViewSet.as_view(),name='followers'),  
+    path('service/authors', views.authors, name='authors'),
+    path('service/authors/<str:author_id>', views.authors, name='author'),
+    path('service/authors/<str:author_id>/followers', views.followers, name='followers'),
+    path('service/authors/<str:author_id>/friends', views.friends, name='friends'),
+    path('service/authors/<str:author_id>/posts', views.posts, name='posts'),
+    path('service/authors/<str:author_id>/posts/<str:post_id>', views.posts, name='posts'),
+    path('service/authors/<str:author_id>/posts/<str:post_id>/comments', views.comments, name='comments'),
+    path('service/authors/<str:author_id>/inbox', views.inbox, name='inbox'),
+    path('service/authors/<str:author_id>/liked', views.likedPosts, name='liked'),
+    path('api/inbox/', views.InboxViewSet.as_view(), name='inbox'),
+    path('login', views.LoginView.as_view(), name='login')
 ]

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Post, Author, Comment, friendRequest, Followers
+from .models import Post, Author, Comment, Request, Inbox, InboxItem, friendRequest, Followers
 from rest_framework_jwt.settings import api_settings
 from django.conf import settings
 import jwt
@@ -16,11 +16,36 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = '__all__'
+
+class InboxSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Inbox
+        fields = '__all__'
+
+class InboxItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InboxItem
+        fields = '__all__'
     
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = '__all__'
+
+class RequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Request
+        fields = '__all__'
+        
+    def validateToken(token):
+        try:
+            payload = jwt.decode(token, settings.SECRET_KEY)
+        except jwt.DecodeError as identifier:
+            raise serializers.ValidationError("Error decoding signature." + str(identifier) + " token: " + str(token))
+        except jwt.InvalidTokenError:
+            raise serializers.ValidationError("Invalid token." + str(token))
+
+        return payload
 
 class CreatePostSerializer(serializers.ModelSerializer):
     class Meta:
@@ -69,6 +94,3 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError("Invalid token." + str(token))
 
         return payload
-
-
-    
