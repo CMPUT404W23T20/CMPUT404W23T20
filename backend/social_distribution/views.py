@@ -184,7 +184,7 @@ class FollowersViewSet(APIView):
     pk_val = kwargs.get("pk")
     fk_val = kwargs.get("fk")
     serializer =  FollowersSerializer(Followers.objects.filter(user__id=pk_val),many=True) 
-    new_list = Followers.objects.get(pk=pk_val)
+    new_list = Followers.objects.get(user__id=pk_val)
     new_list.items.remove(fk_val)
     
     
