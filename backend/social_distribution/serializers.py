@@ -61,6 +61,7 @@ class FollowersSerializer(serializers.ModelSerializer):
     class Meta:
         model = Followers
         fields = ("type","items")
+      
 class LoginSerializer(serializers.Serializer):
 
     def validate(data):
