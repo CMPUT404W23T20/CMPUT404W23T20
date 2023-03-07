@@ -89,7 +89,7 @@ class FriendRequest(models.Model):
         self.requestCategory = "Accept"
         self.save()
 
-class like(models.Model):
+class Like(models.Model):
     type = models.CharField(max_length=200, default="like")
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
@@ -100,6 +100,8 @@ class InboxItem(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     requests = models.ManyToManyField(Request, blank=True)
     posts = models.ManyToManyField(Post, blank=True)
+    comments = models.ManyToManyField(Comment, blank=True)
+    likes = models.ManyToManyField(Like, blank=True)
 
 class Inbox(models.Model):
     type = models.CharField(max_length=200, default="inbox")

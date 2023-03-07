@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.template import Context
 from rest_framework import viewsets, status
 from .serializers import PostSerializer, LoginSerializer, CommentSerializer, AuthorSerializer, InboxSerializer, InboxItemSerializer, RequestSerializer, FriendRequestSerializer, FollowersSerializer, LikeSerializer
-from .models import Post, Author, Comment, Request, Inbox, InboxItem, FriendRequest, Followers
+from .models import Post, Author, Comment, Request, Inbox, InboxItem, FriendRequest, Followers, Like
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.core import serializers
@@ -198,9 +198,9 @@ def authors(request, author_id = None):
     if request.method == 'GET':
         authors = Author.objects.all()
         if author_id:
-            authors = authors.filter(id = author_id)
-        data = serializers.serialize('json', authors)
-        return JsonResponse(data, safe=False)
+            author = Author.objects.get(id = author_id)
+            return Response(AuthorSerializer(author).data, status=status.HTTP_200_OK)
+        return Response(AuthorSerializer(authors, many=True).data, status=status.HTTP_200_OK)
     elif request.method == 'POST':
         data = json.parse(request)
         serializer = AuthorSerializer(data=data)
@@ -212,28 +212,29 @@ def authors(request, author_id = None):
             # create inbox for new author
             inbox = Inbox.objects.create(author = serializer.data.get('id'))
             inbox.save()
-            return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     elif request.method == 'PUT':
-        data = json.parse(request)
         token = request.headers.get('Authorization', None)
         payload = LoginSerializer.validateToken(token)
-        author = Author.objects.get(id = payload.get('user_id', None))
-        if author_id != author.id:
-            return JsonResponse("Not authorized", status=status.HTTP_401_UNAUTHORIZED, safe=False)
-        serializer = AuthorSerializer(author, data=data)
+        if author_id != str(payload.get('user_id', None)):
+            return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
+        serializer = AuthorSerializer(Author.objects.get(id = author_id), data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return JsonResponse(serializer.data, status=status.HTTP_200_OK)
-        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     elif request.method == 'DELETE':
         token = request.headers.get('Authorization', None)
-        payload = LoginSerializer.validateToken(token)
+        try:
+            payload = LoginSerializer.validateToken(token)
+        except:
+            return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
         author = Author.objects.get(id = payload.get('user_id', None))
-        if author_id != author.id:
-            return JsonResponse("Not authorized", status=status.HTTP_401_UNAUTHORIZED, safe=False)
+        if author_id != str(author.id):
+            return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
         author.delete()
-        return JsonResponse("Deleted", status=status.HTTP_204_NO_CONTENT, safe=False)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 def followers(request, author_id = None):
     # not implemented
@@ -317,6 +318,7 @@ def posts(request, author_id, post_id = None):
             return JsonResponse("Deleted", status=status.HTTP_204_NO_CONTENT, safe=False)
         return JsonResponse("Not authorized", status=status.HTTP_401_UNAUTHORIZED, safe=False)
 
+@api_view(['GET', 'POST'])
 def comments(request, author_id, post_id):
     if request.method == 'GET':
         comments = Comment.objects.filter(post = post_id)
@@ -346,6 +348,7 @@ def authorFollowersPosts(request, author_id):
     # not implemented
     return JsonResponse("Not implemented", status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
 
+@api_view(['GET', 'POST'])
 def inbox(request, author_id):
     if request.method == 'GET':
         # get all inbox items for author
@@ -354,21 +357,27 @@ def inbox(request, author_id):
         serializer = InboxSerializer(inbox, many=True)
         # get InboxItem from data['items']
         serializer.data[0]['items'] = InboxItemSerializer(InboxItem.objects.get(id = serializer.data[0]['items'])).data
+        serializer.data[0]['author'] = AuthorSerializer(Author.objects.get(id = serializer.data[0]['author'])).data
         # get Post from data['items']['post']
         for i in range(len(serializer.data[0]['items']['posts'])):
             serializer.data[0]['items']['posts'][i] = PostSerializer(Post.objects.get(id = serializer.data[0]['items']['posts'][i])).data
+            serializer.data[0]['items']['posts'][i]['author'] = AuthorSerializer(Author.objects.get(id = serializer.data[0]['items']['posts'][i]['author'])).data
         for i in range(len(serializer.data[0]['items']['requests'])):
             serializer.data[0]['items']['requests'][i] = RequestSerializer(Request.objects.get(id = serializer.data[0]['items']['requests'][i])).data
+            serializer.data[0]['items']['requests'][i]['author'] = AuthorSerializer(Author.objects.get(id = serializer.data[0]['items']['requests'][i]['author'])).data
         for i in range(len(serializer.data[0]['items']['comments'])):
             serializer.data[0]['items']['comments'][i] = CommentSerializer(Comment.objects.get(id = serializer.data[0]['items']['comments'][i])).data
+            serializer.data[0]['items']['comments'][i]['author'] = AuthorSerializer(Author.objects.get(id = serializer.data[0]['items']['comments'][i]['author'])).data
+            serializer.data[0]['items']['comments'][i]['post'] = PostSerializer(Post.objects.get(id = serializer.data[0]['items']['comments'][i]['post'])).data
         for i in range(len(serializer.data[0]['items']['likes'])):
             serializer.data[0]['items']['likes'][i] = LikeSerializer(Like.objects.get(id = serializer.data[0]['items']['likes'][i])).data
+            serializer.data[0]['items']['likes'][i]['author'] = AuthorSerializer(Author.objects.get(id = serializer.data[0]['items']['likes'][i]['author'])).data
 
 
         # items becomes a list with all posts and requests
         serializer.data[0]['items'] = serializer.data[0]['items']['posts'] + serializer.data[0]['items']['requests'] + serializer.data[0]['items']['comments'] + serializer.data[0]['items']['likes']
         
-        return JsonResponse(serializer.data[0], safe=False)
+        return Response(serializer.data[0])
         
     elif request.method == 'POST':
         # not implemented

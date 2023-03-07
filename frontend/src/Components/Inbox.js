@@ -3,9 +3,9 @@ import { Box, Button, Card,List, ListItem, TextField, Typography } from '@materi
 import Nav from './Nav';
 import axios from 'axios';
 
-function Posts() {
+function Inbox() {
     const get_inbox_items = async () => {
-        let path = "http://localhost:8000/api/inbox/";
+        let path = "http://localhost:8000/service/authors/" + localStorage.getItem("id") + "/inbox";
         let response = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json",
@@ -17,7 +17,7 @@ function Posts() {
     }
 
     const handleClear = async () => {
-        let path = "http://localhost:8000/api/inbox";
+        let path = "http://localhost:8000/service/authors/" + localStorage.getItem("id") + "/inbox";
         let response = await axios.delete(path, { 
             headers: {
                 "Content-Type": "application/json",
@@ -26,19 +26,19 @@ function Posts() {
         });
         console.log(response.data);
         get_inbox_items().then((data) => {
-            setPosts(data);
+            setItems(data);
         });
     }  
 
-    const [Posts, setPosts] = React.useState([]);
+    const [Items, setItems] = React.useState([]);
     React.useEffect(() => {
         get_inbox_items().then((data) => {
-            setPosts(data);
+            setItems(data);
         });
     }, []);
 
-    const [openPost, setopenPost] = React.useState(false);
-    const [post, setPost] = React.useState([{}]);
+    const [openItem, setopenItem] = React.useState(false);
+    const [item, setItem] = React.useState([{}]);
     return (
         <Box>
             <Box className="App" style={{ display: "flex", flexDirection: "row", height : "100vh", width: "100vw", alignItems: "left", justifyContent: "left" }}>
@@ -49,13 +49,25 @@ function Posts() {
                     <Box style={{display: "flex", flexDirection: "column",flex: 1, margin: "10px", borderColor: "grey", borderStyle: "solid", borderRadius: "5px"}}>
                         <Typography variant="h4">Inbox</Typography>
                         <List style = {{ flex: 1, overflowY: "scroll"}}>
-                            {Posts.map((post) => (
-                                <ListItem key={post.id} onClick = {() => {setopenPost(true); setPost(post)}}>
+                            {Items.map((item) => (
+                                <ListItem key={item.id} onClick = {() => {setopenItem(true); setItem(item)}}>
                                     <Card style = {{ width: "100%", backgroundColor: "#66aeec"}}>
                                         <Box style = {{ paddingLeft: 2}}>
-                                            <Typography variant="h5">{post.title}</Typography>
-                                            <Typography variant="body2">{post.authorName}</Typography>
-                                            <Typography variant="body1" style={{maxHeight: "200px", overflowY: "auto"}}>{post.description}</Typography>
+                                            {item.type === "post" && (
+                                                <Box>
+                                                    <Typography variant="h4">Post</Typography>
+                                                    <Typography variant="h5">{item.title}</Typography>
+                                                    <Typography variant="body2">{item.author.displayName}</Typography>
+                                                    <Typography variant="body1" style={{maxHeight: "200px", overflowY: "auto"}}>{item.description}</Typography>
+                                                </Box>
+                                            )}
+                                            {item.type === "comment" && (
+                                                <Box>
+                                                    <Typography variant="h4">Comment</Typography>
+                                                    <Typography variant="body2">{item.author.displayName}</Typography>
+                                                    <Typography variant="body1" style={{maxHeight: "200px", overflowY: "auto"}}>{item.comment}</Typography>
+                                                </Box>
+                                            )}
                                         </Box>
                                     </Card>
                                 </ListItem>
@@ -64,15 +76,15 @@ function Posts() {
                         <Button variant="contained" color="secondary" onClick={() => handleClear()} style = {{margin: 10, alignSelf: "flex-end"}}>
                             Clear
                         </Button>
-                        <Button variant="contained" color="primary" onClick={() => get_inbox_items().then((data) => { setPosts(data); })} style = {{margin: 10, alignSelf: "flex-end"}}>
+                        <Button variant="contained" color="primary" onClick={() => get_inbox_items().then((data) => { setItems(data); })} style = {{margin: 10, alignSelf: "flex-end"}}>
                             Refresh
                         </Button>
                     </Box>
-                    {openPost && (
+                    {openItem && (
                         <Box style={{ flex: 1,display: "flex", flexDirection: "column", margin: "10px", borderColor: "grey", borderStyle: "solid", borderRadius: "5px"}}>
                             <Box style={{flex: 1, margin: "5px"}}>
                                 <Card style = {{ width: "100%", height: "100%", borderRadius: "4px", boxShadow: "0 0 10px 0 rgba(0,0,0,0.5)"}}>
-                                    <TextField id="description" label="Description" variant="outlined" style={{width: "95%", margin: "25px"}} value={post.description} onChange={(e) => setPost({...post, description: e.target.value})} multiline maxRows={15}/>
+                                    <TextField id="description" label="Description" variant="outlined" style={{width: "95%", margin: "25px"}} value={item.description} onChange={(e) => setItem({...item, description: e.target.value})} multiline maxRows={15}/>
                                 </Card>
                             </Box>
                         </Box>)
@@ -83,4 +95,4 @@ function Posts() {
     )
 }
 
-export default Posts;
+export default Inbox;
