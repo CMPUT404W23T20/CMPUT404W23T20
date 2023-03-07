@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Author, Post, Comment, Request, Inbox, InboxItem,FriendRequest,Followers
+from .models import Author, Post, Comment, Request, Inbox, InboxItem,FriendRequest,Followers, Like
 
 # Register your models here.
 
@@ -35,3 +35,7 @@ admin.site.register(FriendRequest, FriendRequestAdmin)
 class FollowersAdmin(admin.ModelAdmin):
     list_display = ('id',)
 admin.site.register(Followers, FollowersAdmin)
+
+class LikesAdmin(admin.ModelAdmin):
+    list_display = ('id',)
+admin.site.register(Like, LikesAdmin)

@@ -50,22 +50,33 @@ function Inbox() {
                         <Typography variant="h4">Inbox</Typography>
                         <List style = {{ flex: 1, overflowY: "scroll"}}>
                             {Items.map((item) => (
-                                <ListItem key={item.id} onClick = {() => {setopenItem(true); setItem(item)}}>
+                                <ListItem key={item.id} onClick = {() => {if (item.type === "post") {setItem(item); setopenItem(true);}}}>
                                     <Card style = {{ width: "100%", backgroundColor: "#66aeec"}}>
                                         <Box style = {{ paddingLeft: 2}}>
                                             {item.type === "post" && (
                                                 <Box>
-                                                    <Typography variant="h4">Post</Typography>
-                                                    <Typography variant="h5">{item.title}</Typography>
+                                                    <Typography variant="h5">Post</Typography>
+                                                    <Typography variant="h6">{item.title}</Typography>
                                                     <Typography variant="body2">{item.author.displayName}</Typography>
                                                     <Typography variant="body1" style={{maxHeight: "200px", overflowY: "auto"}}>{item.description}</Typography>
                                                 </Box>
                                             )}
                                             {item.type === "comment" && (
                                                 <Box>
-                                                    <Typography variant="h4">Comment</Typography>
+                                                    <Typography variant="h5">Comment</Typography>
                                                     <Typography variant="body2">{item.author.displayName}</Typography>
                                                     <Typography variant="body1" style={{maxHeight: "200px", overflowY: "auto"}}>{item.comment}</Typography>
+                                                </Box>
+                                            )}
+                                            {item.type === "request" && (
+                                                <Box>
+                                                    <Typography variant="h5">Friend Request</Typography>
+                                                    <Typography variant="body2">{item.actor.displayName+ " followed you"}</Typography>
+                                                </Box>
+                                            )}
+                                            {item.type === "like" && (
+                                                <Box>
+                                                    <Typography variant="h5">{item.author.displayName + " liked your post " + item.post.title}</Typography>
                                                 </Box>
                                             )}
                                         </Box>

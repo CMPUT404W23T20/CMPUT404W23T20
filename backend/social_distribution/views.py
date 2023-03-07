@@ -364,15 +364,17 @@ def inbox(request, author_id):
             serializer.data[0]['items']['posts'][i]['author'] = AuthorSerializer(Author.objects.get(id = serializer.data[0]['items']['posts'][i]['author'])).data
         for i in range(len(serializer.data[0]['items']['requests'])):
             serializer.data[0]['items']['requests'][i] = RequestSerializer(Request.objects.get(id = serializer.data[0]['items']['requests'][i])).data
-            serializer.data[0]['items']['requests'][i]['author'] = AuthorSerializer(Author.objects.get(id = serializer.data[0]['items']['requests'][i]['author'])).data
+            serializer.data[0]['items']['requests'][i]['actor'] = AuthorSerializer(Author.objects.get(id = serializer.data[0]['items']['requests'][i]['actor'])).data
+            serializer.data[0]['items']['requests'][i]['object'] = AuthorSerializer(Author.objects.get(id = serializer.data[0]['items']['requests'][i]['object'])).data
         for i in range(len(serializer.data[0]['items']['comments'])):
             serializer.data[0]['items']['comments'][i] = CommentSerializer(Comment.objects.get(id = serializer.data[0]['items']['comments'][i])).data
-            serializer.data[0]['items']['comments'][i]['author'] = AuthorSerializer(Author.objects.get(id = serializer.data[0]['items']['comments'][i]['author'])).data
             serializer.data[0]['items']['comments'][i]['post'] = PostSerializer(Post.objects.get(id = serializer.data[0]['items']['comments'][i]['post'])).data
+            serializer.data[0]['items']['comments'][i]['author'] = AuthorSerializer(Author.objects.get(id = serializer.data[0]['items']['comments'][i]['author'])).data
         for i in range(len(serializer.data[0]['items']['likes'])):
             serializer.data[0]['items']['likes'][i] = LikeSerializer(Like.objects.get(id = serializer.data[0]['items']['likes'][i])).data
             serializer.data[0]['items']['likes'][i]['author'] = AuthorSerializer(Author.objects.get(id = serializer.data[0]['items']['likes'][i]['author'])).data
-
+            serializer.data[0]['items']['likes'][i]['post'] = PostSerializer(Post.objects.get(id = serializer.data[0]['items']['likes'][i]['post'])).data
+            serializer.data[0]['items']['likes'][i]['post']['author'] = AuthorSerializer(Author.objects.get(id = serializer.data[0]['items']['likes'][i]['post']['author'])).data
 
         # items becomes a list with all posts and requests
         serializer.data[0]['items'] = serializer.data[0]['items']['posts'] + serializer.data[0]['items']['requests'] + serializer.data[0]['items']['comments'] + serializer.data[0]['items']['likes']

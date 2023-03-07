@@ -53,10 +53,10 @@ class Post(models.Model):
 class Request(models.Model):
     type = models.CharField(max_length=200, default="request")
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    type = models.CharField(max_length=200)
     summary = models.CharField(max_length=200)
     actor = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='actor')
     object = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='object')
+
 class Followers(models.Model):
     '''
     returns the list of friends that a Author has
