@@ -152,7 +152,6 @@ class FollowersViewSet(APIView):
             fk_val = kwargs.get("fk")
             serializer =  FollowersSerializer(Followers.objects.filter(user__id=pk_val),many=True) 
            
-
             if fk_val in serializer.data[0]["items"]:
                 serializer =  FollowersSerializer(Followers.objects.filter(user__id=pk_val),many=True) 
                 return Response(serializer.data, status=status.HTTP_200_OK)

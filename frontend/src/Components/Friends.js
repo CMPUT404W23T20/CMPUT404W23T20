@@ -37,10 +37,21 @@ function Friends() {
         return response.data;
     }
 
+    const getFollowers = async() =>{
+        let userId= userInfo().user_id;
+        let path = `http://localhost:8000/api/authors/${userId}/followers/`
+        let response = await axios.get(path, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem("token")
+            }
+        });
+        return response.data;
+    }
 
-
+    const [followers, setFollowers] = React.useState([]); // people who follow you/followers
     const [notFollowing,setNotFollow] = React.useState([]); //list of authors who are not friends w/ users
-    const [friend, setFriend] =  React.useState([]); //list of
+    const [friend, setFriend] =  React.useState([]); //people you follow/following
     
     
     //Gets the list of authors that are not friends with users
@@ -68,7 +79,18 @@ function Friends() {
     const followerCopy = notFollowing.filter((v,i) => {return notFollowing.map((data)=> data.id).indexOf(v.id)==i})
     const friendsCopy = friend.filter((v,i) => {return friend.map((data)=> data.id).indexOf(v.id)==i})
     
-   
+
+    React.useEffect(() => {
+        getFollowers().then((data) => {
+            console.log(Object.values(data))
+            setFollowers(data);
+        });
+    }, []);
+
+    const readFollowers = followers.map((value) => value.items)
+    
+    
+
 
     //Ensures that we are logged in 
     let token =localStorage.getItem("token");
@@ -171,6 +193,7 @@ function Friends() {
         });
     }, []);
 
+
     const declineReq = async(actor) =>{
         //destroy the friend request object
         //remove + reload
@@ -235,7 +258,6 @@ function Friends() {
                                             marginLeft:25, fontSize:15,minWidth:90}}onClick = {() => sendRequest(Authors)}
                                            >
                                             Follow
-                                               
                                         </Button>
                                        
                                     
@@ -244,13 +266,15 @@ function Friends() {
                             
 
                                 </CardContent>    
+
+                                
                             
                                 ))}
                          </div>
                 </Card>
             </div>
             <div class = "friendslist" >
-                <h2>Your friends</h2>
+                <h2>People you follow</h2>
                 <div class = "friendCard">
                     {friendsCopy.map((Authors) => (
                                 <CardContent >
@@ -264,7 +288,7 @@ function Friends() {
                                             style={{backgroundColor:"pink",float:"right",
                                             marginLeft:25, fontSize:15,minWidth:90}}
                                             onClick={() => deleteFriend(Authors) } >
-                                            Unfriend
+                                            Unfollow
                                         </Button>
 
                                     </div>
@@ -276,6 +300,7 @@ function Friends() {
                 </div>
 
             </div>
+            
              <h2>Friend Requests</h2>
               <div class = "friendRequests">
                     
