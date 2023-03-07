@@ -249,8 +249,17 @@ def friends(request, author_id):
     return JsonResponse("Not implemented", status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
 
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
-def posts(request, author_id, post_id = None):
+def posts(request, author_id = None, post_id = None):
     if request.method == 'GET':
+        if not author_id:
+            # get all public posts
+            posts = Post.objects.all()
+            posts = posts.filter(visibility = 'PUBLIC')
+            serializer = PostSerializer(posts, many=True)
+            for post in serializer.data:
+                post['author'] = AuthorSerializer(Author.objects.get(id = post['author'])).data
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
         author = Author.objects.get(id = author_id)
         posts = Post.objects.filter(author= author)
         token = request.headers.get('Authorization', None)
