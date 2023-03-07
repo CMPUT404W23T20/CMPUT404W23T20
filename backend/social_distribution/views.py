@@ -3,8 +3,8 @@ import statistics
 from django.shortcuts import render
 from django.template import Context
 from rest_framework import viewsets, status
-from .serializers import PostSerializer, LoginSerializer, CommentSerializer, AuthorSerializer, InboxSerializer, InboxItemSerializer, RequestSerializer, FriendRequestSerializer, FollowersSerializer, LikeSerializer
-from .models import Post, Author, Comment, Request, Inbox, InboxItem, FriendRequest, Followers, Like
+from .serializers import PostSerializer, LoginSerializer, CommentSerializer, AuthorSerializer, InboxSerializer, InboxItemSerializer, RequestSerializer, LikeSerializer
+from .models import Post, Author, Comment, Request, Inbox, InboxItem, Like
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.core import serializers
@@ -18,86 +18,7 @@ from django.db.models import Q
 from rest_framework.decorators import api_view
 
 # need to be changed to proper format
-class AuthorViewSet(APIView):
-    def get(self, request, *args, **kwargs):
-        if (kwargs.get('id')):
-            serializer = AuthorSerializer(Author.objects.filter(id=kwargs.get('id')),many=True) 
-        else:
-            serializer = AuthorSerializer(Author.objects.all(),many=True) 
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    
-class UserViewSet(viewsets.ModelViewSet):
-    queryset = Post.objects.all()
-    serializer_class = PostSerializer
-
-class InboxViewSet(APIView):
-    def get(self, request):
-        token = request.headers.get('Authorization', None)
-        payload = LoginSerializer.validateToken(token)
-        id = payload.get('user_id', None)
-        return inbox(request, id)
-    
-    def delete(self, request):
-        token = request.headers.get('Authorization', None)
-        payload = LoginSerializer.validateToken(token)
-        id = payload.get('user_id', None)
-        return inbox(request, id)
-
-class HomeViewSet(APIView):
-    def get(self, request):
-        posts = Post.objects.filter(visibility="PUBLIC")
-        serializer = PostSerializer(posts, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-class PostViewSet(APIView):
-    def get(self, request):
-        token = request.headers.get('Authorization', None)
-        payload = LoginSerializer.validateToken(token)
-        author = Author.objects.get(id = payload.get('user_id', None))
-        posts = Post.objects.filter(author= author)
-        serializer = PostSerializer(posts, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    
-    def post(self, request):
-        token = request.headers.get('Authorization', None)
-        payload = LoginSerializer.validateToken(token)
-        author = Author.objects.get(id = payload.get('user_id', None))
-        data = request.data
-        data['author'] = author.id
-        data['authorName'] = author.displayName
-        serializer = PostSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    def put(self, request, id):
-        token = request.headers.get('Authorization', None)
-        payload = LoginSerializer.validateToken(token)
-        author = Author.objects.get(id = payload.get('user_id', None))
-        post = Post.objects.get(id = id)
-        if post.author == author:
-            serializer = PostSerializer(post, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response(status=status.HTTP_401_UNAUTHORIZED)  
-    
-    def delete(self, request, id):
-        token = request.headers.get('Authorization', None)
-        payload = LoginSerializer.validateToken(token)
-        author = Author.objects.get(id = payload.get('user_id', None))
-        post = Post.objects.get(id = id)
-        if post.author == author:
-            post.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
-    
-class CommentViewSet(viewsets.ModelViewSet):
-    queryset = Comment.objects.all()
-    serializer_class = CommentSerializer
-
+# proper format
 class LoginView(APIView):
 
     def post(self, request):
@@ -106,93 +27,7 @@ class LoginView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(data, status=status.HTTP_200_OK)
-    
-class FriendRequestViewSet(APIView):
- 
-    def get(self, request, *args, **kwargs):
-        if (kwargs.get('id') and not kwargs.get("fk") ): #/api/friendrequest/OBJECT(id = OBJECT/RECIEVER)
-            serializer = FriendRequestSerializer(FriendRequest.objects.filter(object__id=kwargs.get('id')),many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        elif (kwargs.get("id") and kwargs.get("fk")): #/api/ACTOR/friendrequest/OBJECT (id = OBJECT/RECIEVER)
-            filter_data = FriendRequest.objects.filter(actor__id=kwargs.get('id'))
-            filter_data = filter_data.filter(object__id = kwargs.get('fk'))
-            serializer = FriendRequestSerializer(filter_data,many=True)
 
-            if (filter_data.exists()):
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            else:
-                return Response(False, status=status.HTTP_200_OK)
-        else:
-            serializer =  FriendRequestSerializer(FriendRequest.objects.all(),many=True) 
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def post(self,request):
-        serializer = FriendRequestSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    def delete(self,request,*args,**kwargs):
-        if (kwargs.get('id')and kwargs.get("fk") ): #/api/ACTOR/friendrequest/OBJECT 
-            filter_data = FriendRequest.objects.filter(actor__id=kwargs.get('id'))
-            filter_data = filter_data.filter(object__id = kwargs.get('fk'))
-            filter_data.delete()
-            serializer = FriendRequestSerializer(FriendRequest.objects.filter(actor__id=kwargs.get('id')),many=True)
-         
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-class FollowersViewSet(APIView):
-   def get(self, request, *args, **kwargs):
-        if kwargs.get("id") and not kwargs.get("fk"):
-           id_val = kwargs.get("id")
-           serializer =  FollowersSerializer(Followers.objects.filter(user__id=id_val),many=True) 
-        elif kwargs.get("fk"):
-            id_val = kwargs.get("id")
-            fk_val = kwargs.get("fk")
-            serializer =  FollowersSerializer(Followers.objects.filter(user__id=id_val),many=True) 
-           
-            if fk_val in serializer.data[0]["items"]:
-                serializer =  FollowersSerializer(Followers.objects.filter(user__id=id_val),many=True) 
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            else:
-                return Response("Not a follower",status=status.HTTP_200_OK)
-   
-        else:
-            serializer =  FollowersSerializer(Followers.objects.all(),many=True) 
-       
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
-   
-   def put(self, request, **kwargs):
-        token = request.headers.get('Authorization', None)
-
-        if kwargs.get("id") and not kwargs.get("fk"):
-           id_val = kwargs.get("id")
-           new_follower = request.data.get("items")
-    
-           followers =Followers.objects.get(user__id=id_val)
-           followers.items.add(new_follower)
-
-           serializer =  FollowersSerializer(Followers.objects.filter(user__id=id_val),many=True) 
-           
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
-   
-   def delete(self,request,*args, **kwargs ):
-    id_val = kwargs.get("id")
-    fk_val = kwargs.get("fk")
-    serializer =  FollowersSerializer(Followers.objects.filter(user__id=id_val),many=True) 
-    new_list = Followers.objects.get(user__id=id_val)
-    new_list.items.remove(fk_val)
-    
-    
-
-    return Response(serializer.data, status=status.HTTP_200_OK)
-    
-
-
-# proper format
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
 def authors(request, author_id = None):
     if request.method == 'GET':
@@ -236,10 +71,19 @@ def authors(request, author_id = None):
         author.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-def followers(request, author_id = None):
-    # not implemented
-    return JsonResponse("Not implemented", status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
-
+@api_view(['GET', 'POST', 'PUT', 'DELETE'])
+def followers(request, author_id, follower_id = None):
+    if request.method == 'GET':
+        # not implemented
+        if not follower_id:
+            return Response("Not implemented", status=status.HTTP_501_NOT_IMPLEMENTED)
+        # get follower
+        follower = Author.objects.get(id = follower_id)
+        author = Author.objects.get(id = author_id)
+        if follower in author.followers.all():
+            return Response(AuthorSerializer(follower).data, status=status.HTTP_200_OK)
+        return Response("Not found", status=status.HTTP_404_NOT_FOUND)
+        
 def requests(request, author_id):
     # not implemented
     return JsonResponse("Not implemented", status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
