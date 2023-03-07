@@ -50,7 +50,7 @@ class RequestSerializer(serializers.ModelSerializer):
 class CreatePostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = ("title", "description")
+        fields = ("title", "description", "contentType", "content", "categories", "visibility", "unlisted")
 
 class FriendRequestSerializer(serializers.ModelSerializer):
     class Meta:
@@ -61,6 +61,11 @@ class FollowersSerializer(serializers.ModelSerializer):
     class Meta:
         model = Followers
         fields = ("type","items")
+
+class LikeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = ("likes",)
       
 class LoginSerializer(serializers.Serializer):
 
@@ -77,6 +82,7 @@ class LoginSerializer(serializers.Serializer):
                 except Exception as e:
                     raise serializers.ValidationError("Can't generate token", e)
                 return {
+                    'id': user.id,
                     "token": jwt_token,
                 }
             else:

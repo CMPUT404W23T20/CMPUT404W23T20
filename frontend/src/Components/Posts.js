@@ -7,7 +7,7 @@ import axios from 'axios';
 
 function Posts() {
     const getposts = async () => {
-        let path = "http://localhost:8000/api/posts/";
+        let path = "http://localhost:8000/service/authors/" + localStorage.getItem("id") + "/posts";
         let response = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json",
@@ -28,7 +28,7 @@ function Posts() {
     const CreatePost = async (title, description) => {
         console.log(visibility ? "PUBLIC" : "FRIENDS")
         console.log(unlisted)
-        let path = "http://localhost:8000/api/posts/";
+        let path = "http://localhost:8000/service/authors/" + localStorage.getItem("id") + "/posts";
         let data = {
             title: title,
             description: description,
@@ -52,7 +52,7 @@ function Posts() {
     }
 
     const HandleDelete = async () => {
-        let path = "http://localhost:8000/api/posts/" + post.id + "/";
+        let path = "http://localhost:8000/service/authors/" + localStorage.getItem("id") + "/posts/" + post.id;
         let response = await axios.delete(path, {
             headers: {
                 "Content-Type": "application/json",
@@ -67,7 +67,7 @@ function Posts() {
     }
 
     const handleEditPost = async () => {
-        let path = "http://localhost:8000/api/posts/" + post.id + "/";
+        let path = "http://localhost:8000/service/authors/" + localStorage.getItem("id") + "/posts/" + post.id;
         let data = {
             title: post.title,
             description: post.description,

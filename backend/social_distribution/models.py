@@ -3,12 +3,14 @@ import uuid
 # Create your models here.
 
 class Author(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    type = models.CharField(max_length=200, default="author")
     host = models.CharField(max_length=200)
     displayName = models.CharField(max_length=200)
     username = models.CharField(max_length=200)
     url = models.CharField(max_length=200)
-    github = models.CharField(max_length=200)
-    profileImage = models.CharField(max_length=200)
+    github = models.CharField(max_length=200, default="No github")
+    profileImage = models.CharField(max_length=200, default="No profileImage")
     password = models.CharField(max_length=200)
 
     def __str__(self):
@@ -16,6 +18,8 @@ class Author(models.Model):
     
     
 class Comment(models.Model):
+    type = models.CharField(max_length=200, default="comment")
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
     comment = models.CharField(max_length=200)
     contentType = models.CharField(max_length=200)
@@ -26,6 +30,8 @@ class Comment(models.Model):
         return self.comment
 
 class Post(models.Model):
+    type = models.CharField(max_length=200, default="post")
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=200, default="No title")
     source = models.CharField(max_length=200, default="No source")
     origin = models.CharField(max_length=200, default="No origin")
@@ -45,6 +51,8 @@ class Post(models.Model):
         return self.title
     
 class Request(models.Model):
+    type = models.CharField(max_length=200, default="request")
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     type = models.CharField(max_length=200)
     summary = models.CharField(max_length=200)
     actor = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='actor')
@@ -55,15 +63,17 @@ class Followers(models.Model):
     friend = author follows them back (true friend)
     follower = author does not follow them back
     '''
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     RELATION_TYPE = [('friend','Friend'),('follower','Follower')]
     type = models.CharField(max_length=200, default="Follower")
     #user = account owner
     user = models.OneToOneField(Author, on_delete=models.CASCADE, null= True,related_name = 'Author')
     #friends/followers that account owner has
-    items = models.ManyToManyField(Author, symmetrical = False, blank = True, null = True)
+    items = models.ManyToManyField(Author, symmetrical = False, blank = True)
 
 
 class FriendRequest(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     REQUEST_TYPE= [('none','None'),('friend',"Friend"),('follow','Follow'),('accept','Accept')]
 
     #summmary is message sent to inbox
@@ -79,13 +89,20 @@ class FriendRequest(models.Model):
         self.requestCategory = "Accept"
         self.save()
 
-    
+class like(models.Model):
+    type = models.CharField(max_length=200, default="like")
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
 
     
 class InboxItem(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     requests = models.ManyToManyField(Request, blank=True)
     posts = models.ManyToManyField(Post, blank=True)
 
 class Inbox(models.Model):
+    type = models.CharField(max_length=200, default="inbox")
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
     items = models.ForeignKey(InboxItem, on_delete=models.CASCADE)
