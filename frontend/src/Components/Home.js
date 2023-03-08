@@ -5,7 +5,7 @@ import axios from 'axios';
 
 function Posts() {
     const get_home_posts = async () => {
-        let path = "http://localhost:8000/api/home/";
+        let path = "http://localhost:8000/service/posts";
         let response = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json"
@@ -39,7 +39,7 @@ function Posts() {
                                     <Card style = {{ width: "100%", backgroundColor: "#66aeec"}}>
                                         <Box style = {{ paddingLeft: 2}}>
                                             <Typography variant="h5">{post.title}</Typography>
-                                            <Typography variant="body2">{post.authorName}</Typography>
+                                            <Typography variant="body2">{post.author.displayName}</Typography>
                                             <Typography variant="body1" style={{maxHeight: "200px", overflowY: "auto"}}>{post.description}</Typography>
                                         </Box>
                                     </Card>

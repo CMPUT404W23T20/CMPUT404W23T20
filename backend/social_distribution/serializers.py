@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Post, Author, Comment, Request, Inbox, InboxItem, FriendRequest, Followers
+from .models import Post, Author, Comment, Request, Inbox, InboxItem, Like, Follow
 from rest_framework_jwt.settings import api_settings
 from django.conf import settings
 import jwt
@@ -10,7 +10,7 @@ class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Author
         #exclude password
-        fields = ("id","host","displayName","username","url","github","profileImage")
+        fields = ("id","host","displayName","username","url","github","profileImage","type")
     
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -50,18 +50,18 @@ class RequestSerializer(serializers.ModelSerializer):
 class CreatePostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = ("title", "description")
+        fields = ("title", "description", "contentType", "content", "categories", "visibility", "unlisted")
 
-class FriendRequestSerializer(serializers.ModelSerializer):
+class LikeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = FriendRequest
+        model = Like
+        fields = '__all__'
+      
+class FollowSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Follow
         fields = '__all__'
 
-class FollowersSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Followers
-        fields = ("type","items")
-      
 class LoginSerializer(serializers.Serializer):
 
     def validate(data):
@@ -77,6 +77,7 @@ class LoginSerializer(serializers.Serializer):
                 except Exception as e:
                     raise serializers.ValidationError("Can't generate token", e)
                 return {
+                    'id': user.id,
                     "token": jwt_token,
                 }
             else:

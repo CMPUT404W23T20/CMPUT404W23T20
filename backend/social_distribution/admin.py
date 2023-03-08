@@ -1,13 +1,37 @@
 from django.contrib import admin
-from .models import Author, Post, Comment, Request, Inbox, InboxItem,FriendRequest,Followers
+from .models import Author, Post, Comment, Request, Inbox, InboxItem, Like, Follow
 
 # Register your models here.
 
-admin.site.register(Author)
-admin.site.register(Post)
-admin.site.register(Comment)
-admin.site.register(Request)
-admin.site.register(Inbox)
-admin.site.register(InboxItem)
-admin.site.register(FriendRequest)
-admin.site.register(Followers)
+class AuthorAdmin(admin.ModelAdmin):
+    list_display = ('id', 'displayName')
+
+admin.site.register(Author, AuthorAdmin)
+
+class PostAdmin(admin.ModelAdmin):
+    list_display = ('id', 'title')
+admin.site.register(Post, PostAdmin)
+
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ('id', 'comment')
+admin.site.register(Comment, CommentAdmin)
+
+class RequestAdmin(admin.ModelAdmin):
+    list_display = ('id',)
+admin.site.register(Request, RequestAdmin)
+
+class InboxAdmin(admin.ModelAdmin):
+    list_display = ('id',)
+admin.site.register(Inbox, InboxAdmin)
+
+class InboxItemAdmin(admin.ModelAdmin):
+    list_display = ('id',)
+admin.site.register(InboxItem, InboxItemAdmin)
+
+class LikesAdmin(admin.ModelAdmin):
+    list_display = ('id',)
+admin.site.register(Like, LikesAdmin)
+
+class FollowAdmin(admin.ModelAdmin):
+    list_display = ('id', 'follower', 'author')
+admin.site.register(Follow, FollowAdmin)
