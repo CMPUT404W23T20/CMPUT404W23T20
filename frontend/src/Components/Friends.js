@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Nav from './Nav';
 import axios from 'axios';
 import jwt_decode from "jwt-decode";
+import { getListSubheaderUtilityClass } from '@mui/material';
 
 
 
@@ -14,87 +15,114 @@ is user in that list
  - Yes => don't add to list of authors */
 
 function Friends() {
-   
-    const getusers= async () => {
-        let path = "http://localhost:8000/api/authors";
-        let response = await axios.get(path, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": localStorage.getItem("token")
-            }
-        });
-        return response.data;
-    }
-    const getFollowing= async (other) => { //sees if user is following the other
+
+    
+
+    const [following, setFollowing] = React.useState([]); //people you follow/following
+    const [friends, setFriends] =  React.useState([]); //people you follow/following
+    const [notFollowing, setNotFollowing] = React.useState([]); //people you don't follow
+    
+    const getLists = async () => {
         let userId= userInfo().user_id;
-        let path = `http://localhost:8000/api/authors/${other.id}/followers/${userId}`
-        let response = await axios.get(path, {
+        let path = `http://localhost:8000/service/authors/${userId}/friends`;
+        let friendsResponse = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": localStorage.getItem("token")
             }
         });
-        return response.data;
+        console.log("friends", friendsResponse.data)
+        setFriends(friendsResponse.data);
+
+        
+        path = `http://localhost:8000/service/authors/${userId}/following`;
+        let followingResponse = await axios.get(path, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem("token")
+            }
+        });
+        console.log("following", followingResponse.data)
+
+        userId= userInfo().user_id;
+        let allAuthors = await axios.get("http://localhost:8000/service/authors", {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem("token")
+            }
+        });
+        let allAuthorsList = allAuthors.data;
+        let notFollowingList = []
+        for (let i = 0; i < allAuthorsList.length; i++) {
+            let author = allAuthorsList[i];
+            let j = 0;
+            let found = false;
+            for (j = 0; j < followingResponse.data.length; j++) {
+                if (author.id === followingResponse.data[j].id) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found && author.id !== userId) {
+                notFollowingList.push(author);
+            }
+        }
+
+        console.log("not following", notFollowingList)
+        setNotFollowing(notFollowingList);
+
+        // remove friends from following
+        let followingList = followingResponse.data;
+        for (let i = 0; i < friendsResponse.data.length; i++) {
+            let friend = friendsResponse.data[i];
+            let j = 0;
+            let found = false;
+            for (j = 0; j < followingList.length; j++) {
+                if (friend.id === followingList[j].id) {
+                    found = true;
+                    break;
+                }
+            }
+            if (found) {
+                followingList.splice(j, 1);
+            }
+        }
+        console.log("following", followingList)
+        setFollowing(followingList);
     }
 
-    const getFollowers = async() =>{
-        let userId= userInfo().user_id;
-        let path = `http://localhost:8000/api/authors/${userId}/followers/`
-        let response = await axios.get(path, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": localStorage.getItem("token")
-            }
-        });
-        return response.data;
-    }
-
-    const [followers, setFollowers] = React.useState([]); // people who follow you/followers
-    const [notFollowing,setNotFollow] = React.useState([]); //list of authors who are not friends w/ users
-    const [friend, setFriend] =  React.useState([]); //people you follow/following
-    
-    
-    //Gets the list of authors that are not friends with users
     React.useEffect(() => {
-        getusers()
-            .then((data) => {
-                for (let item of data){  
-                    getFollowing(item)
-                    .then((data => {
-                        let userId= userInfo().user_id;
-                        if ((data ==="Not a follower") && (item.id !== userId)){ 
-                            setNotFollow(currentState => [...currentState,item])
-                         
-                        }
-                        else if (item.id !== userId){
-                            setFriend(thisState => [...thisState,item])
-                        }
-                      
-                    }));
-
-             }});
+        getLists()
     }, []);
 
-    //The call to ".then()" returns duplicates, so we need to filter them out
-    const followerCopy = notFollowing.filter((v,i) => {return notFollowing.map((data)=> data.id).indexOf(v.id)==i})
-    const friendsCopy = friend.filter((v,i) => {return friend.map((data)=> data.id).indexOf(v.id)==i})
-    
-
-    React.useEffect(() => {
-        getFollowers().then((data) => {
-            console.log(Object.values(data))
-            setFollowers(data);
+    const followAuthor = async (other) => {
+        let userId= userInfo().user_id;
+        let path = `http://localhost:8000/service/authors/${other.id}/followers/${userId}`;
+        let response = await axios.put(path, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem("token")
+            }
         });
-    }, []);
-
-    const readFollowers = followers.map((value) => value.items)
+        getLists()
+        return response.data;
+    }
     
+    const unfollowAuthor = async (other) => {
+        let userId= userInfo().user_id;
+        let path = `http://localhost:8000/service/authors/${other.id}/followers/${userId}`;
+        let response = await axios.delete(path, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem("token")
+            }
+        });
+        getLists()
+        return response.data;
+    }
     
-
-
     //Ensures that we are logged in 
     let token =localStorage.getItem("token");
-    console.log(token)
     const navigate = useNavigate();
     const userInfo = () =>{
         if (token === null ){
@@ -105,158 +133,28 @@ function Friends() {
         return decode_info;
         
     };
-    const friendReqExists = async(author) =>{
-        let userId= userInfo().user_id;
-        let path = `http://localhost:8000/api/${userId}/friendrequest/${author.id}`;
-        let response = await axios.get(path, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": localStorage.getItem("token"),
-
-            }
-        });
-        return response.data;
-    }
-   
-    
-   //Sends a request
-    const sendRequest = async(author) =>{
-        
-
-        const requestSent = await(friendReqExists(author))
-        
-        if (requestSent.length > 0){ //ensures there is no duplicate
-            alert("Friend Request is Pending")
-            return
-        }
-        else{
-            alert("A request has been sent")
-        }
-    
-        let userId= userInfo().user_id;
-        let userName =  userInfo().username;
-
-
-        let summary  =`${userName} wants to follow ${author.displayName}`
-
-        //POST request to the inbox..
-        let path = "http://127.0.0.1:8000/api/friendrequest" //CHANGE THIS TO INBOX ADDRESS
-        
-        let data = {
-            "summary":summary,
-            "requestCategory":"follow",
-            "actor":userId, 
-            "object": author.id
-        }
-        await axios.post(path, data, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": localStorage.getItem("token")
-            }
-        });
-        window.location.reload()  
-    }
-
-    //delete friend
-    /*go to the the friend's followers page, and take out the user's id.
-     Store their list of followers in an array. 
-    */
-    const deleteFriend = async(formerFriend)=> {
-        let userId= userInfo().user_id;
-        let path = `http://localhost:8000/api/authors/${formerFriend.id}/followers/${userId}`;
-        let response = await axios.delete(path, {
-            headers: {
-                "Authorization": localStorage.getItem("token")
-            }
-        });
-        window.location.reload();
-    }
-
-    //get all friend requests
-    //paste this into inbox page
-    const getFriendReq = async() =>{
-            let userId= userInfo().user_id;
-            let path = `http://localhost:8000/api/friendrequest/${userId}`;
-            let response = await axios.get(path, {
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": localStorage.getItem("token")
-                }
-            });
-            return response.data;
-        }
-
-    const [friendRequest, setRequest] =  React.useState([]);
-    React.useEffect(() => {
-        getFriendReq().then((data) => {
-            setRequest(data);
-        });
-    }, []);
-
-
-    const declineReq = async(actor) =>{
-        //destroy the friend request object
-        //remove + reload
-        let userId= userInfo().user_id;
-        let path = `http://localhost:8000/api/${actor.actor}/friendrequest/${userId}`;
-        let response = await axios.delete(path, {
-            headers: {
-                "Authorization": localStorage.getItem("token"),
-            }
-        });
-        window.location.reload()  
-
-    }
-    
-
-    const acceptReq = async(actor) =>{
-        /*
-        1. destroy the request (ie. call decline request)
-        2. add actor to list of object's followers (object = user),(actor = sender)
-        3. PUT  http://localhost:8000/api/authors/${userId}/followers/${actor.id}
-        */
-
-        declineReq(actor)
-        let userId= userInfo().user_id;
-        let path = `http://localhost:8000/api/authors/${userId}/followers/`;
-        let data = {
-            items: actor.actor
-        }
-        await axios.put(path, data, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": localStorage.getItem("token")
-            }
-        });
-        window.location.reload()
-    }
-
-
 
     return (
         <Box>
-
-            <h1>Friends</h1>
-             <Nav/>
+            <Nav/>
             <div style = {{float:"right",paddingRight:150,width: 400,}}>
                 <Card style={{ width: 450,height:450, backgroundColor:"#66aeec",overflowY:"scroll"}}>
                     
                         <h2 style ={{color:"whitesmoke"}}>Local Authors</h2>
-                        <div class = "localauthors"> 
-                            {followerCopy.map((Authors) => (
+                        <div className = "localauthors"> 
+                            {notFollowing.map((author) => (
                              
                                 <CardContent >
                                     <div style = {{display:'flex',alignItems:'center',width:400,wordWrap:"break-word"}}>
-                                        <img src= {Authors.profileImage} alt = "Profile" style = {{borderRadius:"50%",marginRight:20}} width={55} height = {55}/>
+                                        <img src= {author.profileImage} alt = "Profile" style = {{borderRadius:"50%",marginRight:20}} width={55} height = {55}/>
                                         <span>
-                                            <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}> {Authors.displayName}</h4></a>
+                                            <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}> {author.displayName}</h4></a>
     
                                         </span>
                                         <Button 
-                                            id = {Authors.id}
+                                            id = {author.id}
                                             style={{backgroundColor:"white",float:"right",
-                                            marginLeft:25, fontSize:15,minWidth:90}}onClick = {() => sendRequest(Authors)}
-                                           >
+                                            marginLeft:25, fontSize:15,minWidth:90}}onClick = {() => followAuthor(author)}>
                                             Follow
                                         </Button>
                                        
@@ -274,55 +172,54 @@ function Friends() {
                 </Card>
             </div>
             <div class = "friendslist" >
-                <h2>People you follow</h2>
-                <div class = "friendCard">
-                    {friendsCopy.map((Authors) => (
-                                <CardContent >
-                                    <div style = {{display:'flex',alignItems:'center',width:550,wordWrap:"break-word",
-                                                     paddingLeft: 150}}>
-                                        <img src= {Authors.profileImage} alt = "Profile" style = {{borderRadius:"50%",marginLeft:150}} width={55} height = {55}/>
-                                        <span>
-                                            <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}>{Authors.displayName}</h4></a>
-                                        </span>
-                                        <Button 
-                                            style={{backgroundColor:"pink",float:"right",
-                                            marginLeft:25, fontSize:15,minWidth:90}}
-                                            onClick={() => deleteFriend(Authors) } >
-                                            Unfollow
-                                        </Button>
+                <h2>Friends</h2>
+                <div className = "friendCard">
+                    {friends.map((author) => (
+                        <CardContent >
+                            <div style = {{display:'flex',alignItems:'center',width:550,wordWrap:"break-word",
+                                            paddingLeft: 150}}>
+                                <img src= {author.profileImage} alt = "Profile" style = {{borderRadius:"50%",marginLeft:150}} width={55} height = {55}/>
+                                <span>
+                                    <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}>{author.displayName}</h4></a>
+                                </span>
+                                <Button
+                                    style={{backgroundColor:"pink",float:"right",
+                                    marginLeft:25, fontSize:15,minWidth:90}}
+                                    onClick={() => unfollowAuthor(author) } >
+                                    Unfriend
+                                </Button>
 
-                                    </div>
-                            
+                            </div>
 
-                                </CardContent>    
-                            
-                            ))}
+                        </CardContent>
+                    ))}
                 </div>
+                <h2>Following</h2>
+                <div className = "followCard">
+                    {following.map((author) => (
+                        <CardContent >
+                            <div style = {{display:'flex',alignItems:'center',width:550,wordWrap:"break-word",
+                                                paddingLeft: 150}}>
+                                <img src= {author.profileImage} alt = "Profile" style = {{borderRadius:"50%",marginLeft:150}} width={55} height = {55}/>
+                                <span>
+                                    <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}>{author.displayName}</h4></a>
+                                </span>
+                                <Button 
+                                    style={{backgroundColor:"pink",float:"right",
+                                    marginLeft:25, fontSize:15,minWidth:90}}
+                                    onClick={() => unfollowAuthor(author) } >
+                                    Unfollow
+                                </Button>
 
+                            </div>
+                    
+
+                        </CardContent>    
+                    
+                    ))}
+                </div>
             </div>
-            
-             <h2>Friend Requests</h2>
-              <div class = "friendRequests">
-                    
-                     {friendRequest.map((request) =>(
-                        <div>
-                            <h5>{request.summary}</h5>
-                            <Button onClick = {() => acceptReq(request)}>
-                                Accept
-                            </Button>
-                            <Button onClick={() => declineReq(request) }>
-                                Decline
-                            </Button>
-                        </div>
-                     ))}
-                    
-
-                </div>
-
-           
         </Box>
- 
-      
     )
 }
 

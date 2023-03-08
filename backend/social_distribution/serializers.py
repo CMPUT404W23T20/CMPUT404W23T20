@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Post, Author, Comment, Request, Inbox, InboxItem, Like
+from .models import Post, Author, Comment, Request, Inbox, InboxItem, Like, Follow
 from rest_framework_jwt.settings import api_settings
 from django.conf import settings
 import jwt
@@ -57,6 +57,11 @@ class LikeSerializer(serializers.ModelSerializer):
         model = Like
         fields = '__all__'
       
+class FollowSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Follow
+        fields = '__all__'
+
 class LoginSerializer(serializers.Serializer):
 
     def validate(data):

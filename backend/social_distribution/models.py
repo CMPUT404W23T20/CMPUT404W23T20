@@ -12,11 +12,15 @@ class Author(models.Model):
     github = models.CharField(max_length=200, default="No github")
     profileImage = models.CharField(max_length=200, default="No profileImage")
     password = models.CharField(max_length=200)
-    followers = models.ManyToManyField('self', blank=True)
 
     def __str__(self):
         return self.displayName
     
+class Follow(models.Model):
+    type = models.CharField(max_length=200, default="follow")
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    follower = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='follower')
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='author')
     
 class Comment(models.Model):
     type = models.CharField(max_length=200, default="comment")

@@ -3,8 +3,8 @@ import statistics
 from django.shortcuts import render
 from django.template import Context
 from rest_framework import viewsets, status
-from .serializers import PostSerializer, LoginSerializer, CommentSerializer, AuthorSerializer, InboxSerializer, InboxItemSerializer, RequestSerializer, LikeSerializer
-from .models import Post, Author, Comment, Request, Inbox, InboxItem, Like
+from .serializers import PostSerializer, LoginSerializer, CommentSerializer, AuthorSerializer, InboxSerializer, InboxItemSerializer, RequestSerializer, LikeSerializer, FollowSerializer
+from .models import Post, Author, Comment, Request, Inbox, InboxItem, Like, Follow
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.core import serializers
@@ -74,24 +74,65 @@ def authors(request, author_id = None):
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
 def followers(request, author_id, follower_id = None):
     if request.method == 'GET':
-        # not implemented
         if not follower_id:
-            return Response("Not implemented", status=status.HTTP_501_NOT_IMPLEMENTED)
-        # get follower
-        follower = Author.objects.get(id = follower_id)
+            # get all followers of author_id
+            follows = Follow.objects.filter(author = author_id)
+            follows = FollowSerializer(follows, many=True).data
+            followers = []
+            for follow in follows:
+                followers.append(AuthorSerializer(Author.objects.get(id = follow['follower'])).data)
+            return Response(followers, status=status.HTTP_200_OK)
+        # return whether follower_id follows author_id
+        follower = Follow.objects.filter(follower = follower_id, author = author_id)
+        if follower:
+            return Response(True, status=status.HTTP_200_OK)
+        return Response(False, status=status.HTTP_200_OK)
+            
+    elif request.method == 'PUT':
+        # add follower_id to author_id's followers
         author = Author.objects.get(id = author_id)
-        if follower in author.followers.all():
-            return Response(AuthorSerializer(follower).data, status=status.HTTP_200_OK)
-        return Response("Not found", status=status.HTTP_404_NOT_FOUND)
-        
+        follower = Author.objects.get(id = follower_id)
+        follower = Follow.objects.create(author = author, follower = follower)
+        follower.save()
+        return Response(status=status.HTTP_200_OK)
+
+    elif request.method == 'DELETE':
+        # remove follower_id from author_id's followers
+        follower = Follow.objects.filter(author = author_id, follower = follower_id)
+        follower.delete()
+        return Response(status=status.HTTP_200_OK)
+
+@api_view(['GET'])
 def requests(request, author_id):
     # not implemented
     return JsonResponse("Not implemented", status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
 
+@api_view(['GET'])
+def following(request, author_id):
+    if request.method == 'GET':
+        # get all authors that author_id follows
+        follows = Follow.objects.filter(follower = author_id)
+        follows = FollowSerializer(follows, many=True).data
+        following = []
+        for follow in follows:
+            following.append(AuthorSerializer(Author.objects.get(id = follow['author'])).data)
+        return Response(following, status=status.HTTP_200_OK)
+        
+@api_view(['GET'])
 def friends(request, author_id):
-    # not implemented
-    return JsonResponse("Not implemented", status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
-
+    if request.method == 'GET':
+        # return users who follow author_id and author_id follows
+        followIn = Follow.objects.filter(follower = author_id)
+        followIn = FollowSerializer(followIn, many=True).data
+        followOut = Follow.objects.filter(author = author_id)
+        followOut = FollowSerializer(followOut, many=True).data
+        friends = []
+        for follow in followIn:
+            for follow2 in followOut:
+                if follow['author'] == follow2['follower']:
+                    friends.append(AuthorSerializer(Author.objects.get(id = follow['author'])).data)
+        return Response(friends, status=status.HTTP_200_OK)
+    
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
 def posts(request, author_id = None, post_id = None):
     if request.method == 'GET':

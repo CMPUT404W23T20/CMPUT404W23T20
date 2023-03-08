@@ -28,6 +28,7 @@ urlpatterns = [
     path('service/posts', views.posts, name='posts'),
     path('service/authors', views.authors, name='authors'),
     path('service/authors/<str:author_id>', views.authors, name='author'),
+    path('service/authors/<str:author_id>/following', views.following, name='following'),
     path('service/authors/<str:author_id>/followers', views.followers, name='followers'),
     path('service/authors/<str:author_id>/followers/<str:follower_id>', views.followers, name='followers'),
     path('service/authors/<str:author_id>/friends', views.friends, name='friends'),
