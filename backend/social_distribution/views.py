@@ -28,6 +28,7 @@ class LoginView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(data, status=status.HTTP_200_OK)
 
+# URL: ://service/authors/{AUTHOR_ID}/
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
 def authors(request, author_id = None):
     if request.method == 'GET':
@@ -71,6 +72,7 @@ def authors(request, author_id = None):
         author.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+# URL: ://service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
 def followers(request, author_id, follower_id = None):
     if request.method == 'GET':
@@ -242,7 +244,7 @@ def authorFollowersPosts(request, author_id):
     # not implemented
     return JsonResponse("Not implemented", status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
 
-@api_view(['GET', 'POST'])
+@api_view(['GET', 'POST', 'DELETE'])
 def inbox(request, author_id):
     if request.method == 'GET':
         # get all inbox items for author
@@ -276,8 +278,26 @@ def inbox(request, author_id):
         return Response(serializer.data[0])
         
     elif request.method == 'POST':
-        # not implemented
-        return JsonResponse("Not implemented", status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)    
+        # add object of type post/follow/like/comment to inbox of author_id
+        author = Author.objects.get(id = author_id)
+        inbox = Inbox.objects.get(author = author)
+
+        if request.data['type'] == 'post':
+            post = Post.objects.get(id = request.data['id'])
+            inbox.items.posts.add(post)
+        elif request.data['type'] == 'request':
+            follow = Request.objects.get(id = request.data['id'])
+            inbox.items.requests.add(follow)
+        elif request.data['type'] == 'like':
+            like = Like.objects.get(id = request.data['id'])
+            inbox.items.likes.add(like)
+        elif request.data['type'] == 'comment':
+            comment = Comment.objects.get(id = request.data['id'])
+            inbox.items.comments.add(comment)
+
+        inbox.save()
+        return JsonResponse("Added item to inbox", status=status.HTTP_200_OK, safe=False)
+        
     
     elif request.method == 'DELETE':
         # clear the items field of the inbox with author_id = author_id
