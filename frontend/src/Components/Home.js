@@ -33,10 +33,11 @@ function Posts() {
         let friendsResponse = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": localStorage.getItem("token")
+
             }
         });
 
+        
         
         let friendsPostHomePage=[]
         for (let fpost = 0; fpost < friendsResponse.data.length; fpost++){ //for loop to get friend's post
@@ -45,13 +46,14 @@ function Posts() {
             let friendsPost= await axios.get(path, {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": localStorage.getItem("token")
+                
                 }
             });
+            console.log("length ",friendsPost.data,friend.username)
             
             let friendsPostList = friendsPost.data
             for (let friends = 0; friends< friendsPostList.length; friends++){ //get all the friend's post that are visible for other friends
-                if (friendsPostList[friends].visibility === "FRIENDS"){
+                if((friendsPostList[friends].visibility === "FRIENDS") && (friendsPostList[friends].unlisted === false)){
                     friendsPostHomePage.push(friendsPostList[friends])
                 }
             }
