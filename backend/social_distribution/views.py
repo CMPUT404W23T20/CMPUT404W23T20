@@ -177,72 +177,118 @@ def posts(request, author_id = None, post_id = None):
         payload = LoginSerializer.validateToken(token)
         author = Author.objects.get(id = payload.get('user_id', None))
         if author_id != str(author.id):
-            return JsonResponse("Not authorized", status=status.HTTP_401_UNAUTHORIZED, safe=False)
+            return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
         data = request.data
         data['author'] = author.id
         data['authorName'] = author.displayName
         serializer = PostSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
-            return JsonResponse(serializer.data, status=status.HTTP_201_CREATED, safe=False)
-        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST, safe=False)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     elif request.method == 'PUT':
         token = request.headers.get('Authorization', None)
         payload = LoginSerializer.validateToken(token)
         author = Author.objects.get(id = payload.get('user_id', None))
         if author_id != str(author.id):
-            return JsonResponse("Not authorized", status=status.HTTP_401_UNAUTHORIZED, safe=False)
+            return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
         post = Post.objects.get(id = post_id)
         if post.author == author:
             serializer = PostSerializer(post, data=request.data)
             if serializer.is_valid():
                 serializer.save()
-                return JsonResponse(serializer.data, status=status.HTTP_200_OK, safe=False)
-            return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST, safe=False)
-        return JsonResponse("Not authorized", status=status.HTTP_401_UNAUTHORIZED, safe=False)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
     
     elif request.method == 'DELETE':
         token = request.headers.get('Authorization', None)
         payload = LoginSerializer.validateToken(token)
         author = Author.objects.get(id = payload.get('user_id', None))
         if author_id != str(author.id):
-            return JsonResponse("Not authorized", status=status.HTTP_401_UNAUTHORIZED, safe=False)
+            return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
         post = Post.objects.get(id = post_id)
         if post.author == author:
             post.delete()
-            return JsonResponse("Deleted", status=status.HTTP_204_NO_CONTENT, safe=False)
-        return JsonResponse("Not authorized", status=status.HTTP_401_UNAUTHORIZED, safe=False)
+            return Response(status=status.HTTP_200_OK)
+        return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['GET', 'POST'])
 def comments(request, author_id, post_id):
     if request.method == 'GET':
         comments = Comment.objects.filter(post = post_id)
-        comments = comments.filter(author = author_id)
-        data = serializers.serialize('json', comments)
-        return JsonResponse(data, safe=False)
+        serializer = CommentSerializer(comments, many=True)
+        for comment in serializer.data:
+            comment['author'] = AuthorSerializer(Author.objects.get(id = comment['author'])).data
+            comment['post'] = PostSerializer(Post.objects.get(id = comment['post'])).data
+            comment['post']['author'] = AuthorSerializer(Author.objects.get(id = comment['post']['author'])).data
+        return Response(serializer.data, status=status.HTTP_200_OK)
     elif request.method == 'POST':
-        author = Author.objects.get(id = author_id)
+        token = request.headers.get('Authorization', None)
+        payload = LoginSerializer.validateToken(token)
+        author = Author.objects.get(id = payload.get('user_id', None))
         data = request.data
         data['author'] = author.id
         data['authorName'] = author.displayName
+        data['post'] = post_id
         serializer = CommentSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
-            return JsonResponse(serializer.data, status=status.HTTP_201_CREATED, safe=False)
-        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST, safe=False)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['GET', 'POST', 'DELETE'])
 def commentLikes(request, comment_id):
-    # not implemented
-    return JsonResponse("Not implemented", status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
-
+    if request.method == 'GET':
+        likes = Like.objects.filter(comment = comment_id)
+        serializer = LikeSerializer(likes, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    elif request.method == 'POST':
+        token = request.headers.get('Authorization', None)
+        payload = LoginSerializer.validateToken(token)
+        author = Author.objects.get(id = payload.get('user_id', None))
+        data = request.data
+        data['author'] = author.id
+        data['authorName'] = author.displayName
+        data['comment'] = comment_id
+        serializer = LikeSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    elif request.method == 'DELETE':
+        token = request.headers.get('Authorization', None)
+        payload = LoginSerializer.validateToken(token)
+        author = Author.objects.get(id = payload.get('user_id', None))
+        like = Like.objects.get(comment = comment_id, author = author)
+        like.delete()
+        return Response(status=status.HTTP_200_OK)
+    
+@api_view(['GET'])
 def likedPosts(request, author_id):
-    # not implemented
-    return JsonResponse("Not implemented", status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
+    if request.method == 'GET':
+        likes = Like.objects.filter(author = author_id)
+        posts = []
+        for like in likes:
+            posts.append(like.post)
+        serializer = PostSerializer(posts, many=True)
+        for post in serializer.data:
+            post['author'] = AuthorSerializer(Author.objects.get(id = post['author'])).data
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
+@api_view(['GET'])
 def authorFollowersPosts(request, author_id):
-    # not implemented
-    return JsonResponse("Not implemented", status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
+    if request.method == 'GET':
+        author = Author.objects.get(id = author_id)
+        followers = Follow.objects.filter(author = author)
+        posts = []
+        for follower in followers:
+            posts.append(Post.objects.filter(author = follower.follower))
+        serializer = PostSerializer(posts, many=True)
+        for post in serializer.data:
+            post['author'] = AuthorSerializer(Author.objects.get(id = post['author'])).data
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['GET', 'POST', 'DELETE'])
 def inbox(request, author_id):
@@ -279,6 +325,11 @@ def inbox(request, author_id):
         
     elif request.method == 'POST':
         # add object of type post/follow/like/comment to inbox of author_id
+        token = request.headers.get('Authorization', None)
+        payload = LoginSerializer.validateToken(token) 
+        tokenAuthor = Author.objects.get(id = payload.get('user_id', None))
+        if str(tokenAuthor.id) != author_id:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
         author = Author.objects.get(id = author_id)
         inbox = Inbox.objects.get(author = author)
 
@@ -296,7 +347,7 @@ def inbox(request, author_id):
             inbox.items.comments.add(comment)
 
         inbox.save()
-        return JsonResponse("Added item to inbox", status=status.HTTP_200_OK, safe=False)
+        return Response(status=status.HTTP_200_OK)
         
     
     elif request.method == 'DELETE':
@@ -306,4 +357,4 @@ def inbox(request, author_id):
         inbox.items.posts.clear()
         inbox.items.requests.clear()
         inbox.save()
-        return JsonResponse("Inbox cleared", status=status.HTTP_200_OK, safe=False)
+        return Response(status=status.HTTP_200_OK)
