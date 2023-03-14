@@ -97,7 +97,7 @@ def followers(request, author_id, follower_id = None):
         summary = AuthorSerializer(follower).data['displayName'] + ' is now following ' + AuthorSerializer(author).data['displayName']
         follower = Follow.objects.create(author = author, follower = follower, summary = summary)
         follower.save()
-        return Response(status=status.HTTP_200_OK)
+        return Response(FollowSerializer(follower).data, status=status.HTTP_200_OK)
 
     elif request.method == 'DELETE':
         # remove follower_id from author_id's followers
@@ -312,8 +312,8 @@ def inbox(request, author_id):
             serializer.data[0]['items']['posts'][i]['author'] = AuthorSerializer(Author.objects.get(id = serializer.data[0]['items']['posts'][i]['author'])).data
         for i in range(len(serializer.data[0]['items']['follows'])):
             serializer.data[0]['items']['follows'][i] = FollowSerializer(Follow.objects.get(id = serializer.data[0]['items']['follows'][i])).data
-            serializer.data[0]['items']['follows'][i]['actor'] = AuthorSerializer(Author.objects.get(id = serializer.data[0]['items']['follows'][i]['actor'])).data
-            serializer.data[0]['items']['follows'][i]['object'] = AuthorSerializer(Author.objects.get(id = serializer.data[0]['items']['follows'][i]['object'])).data
+            serializer.data[0]['items']['follows'][i]['follower'] = AuthorSerializer(Author.objects.get(id = serializer.data[0]['items']['follows'][i]['follower'])).data
+            serializer.data[0]['items']['follows'][i]['author'] = AuthorSerializer(Author.objects.get(id = serializer.data[0]['items']['follows'][i]['author'])).data
         for i in range(len(serializer.data[0]['items']['comments'])):
             serializer.data[0]['items']['comments'][i] = CommentSerializer(Comment.objects.get(id = serializer.data[0]['items']['comments'][i])).data
             serializer.data[0]['items']['comments'][i]['post'] = PostSerializer(Post.objects.get(id = serializer.data[0]['items']['comments'][i]['post'])).data
@@ -345,7 +345,7 @@ def inbox(request, author_id):
             inbox.items.posts.add(post)
         elif request.data['type'] == 'follow':
             follow = Follow.objects.get(id = request.data['id'])
-            inbox.items.requests.add(follow)
+            inbox.items.follows.add(follow)
         elif request.data['type'] == 'like':
             like = Like.objects.get(id = request.data['id'])
             inbox.items.likes.add(like)
@@ -362,6 +362,6 @@ def inbox(request, author_id):
         author = Author.objects.get(id = author_id)
         inbox = Inbox.objects.get(author = author)
         inbox.items.posts.clear()
-        inbox.items.requests.clear()
+        inbox.items.follows.clear()
         inbox.save()
         return Response(status=status.HTTP_200_OK)
