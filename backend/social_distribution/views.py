@@ -3,8 +3,8 @@ import statistics
 from django.shortcuts import render
 from django.template import Context
 from rest_framework import viewsets, status
-from .serializers import PostSerializer, LoginSerializer, CommentSerializer, AuthorSerializer, InboxSerializer, InboxItemSerializer, RequestSerializer, LikeSerializer, FollowSerializer
-from .models import Post, Author, Comment, Request, Inbox, InboxItem, Like, Follow
+from .serializers import PostSerializer, LoginSerializer, CommentSerializer, AuthorSerializer, InboxSerializer, InboxItemSerializer, LikeSerializer, FollowSerializer
+from .models import Post, Author, Comment, Inbox, InboxItem, Like, Follow
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.core import serializers
@@ -94,7 +94,8 @@ def followers(request, author_id, follower_id = None):
         # add follower_id to author_id's followers
         author = Author.objects.get(id = author_id)
         follower = Author.objects.get(id = follower_id)
-        follower = Follow.objects.create(author = author, follower = follower)
+        summary = AuthorSerializer(follower).data['displayName'] + ' is now following ' + AuthorSerializer(author).data['displayName']
+        follower = Follow.objects.create(author = author, follower = follower, summary = summary)
         follower.save()
         return Response(status=status.HTTP_200_OK)
 
@@ -104,10 +105,15 @@ def followers(request, author_id, follower_id = None):
         follower.delete()
         return Response(status=status.HTTP_200_OK)
 
-@api_view(['GET'])
+""" @api_view(['PUT'])
 def requests(request, author_id):
-    # not implemented
-    return JsonResponse("Not implemented", status=status.HTTP_501_NOT_IMPLEMENTED, safe=False)
+    if request.method == 'PUT':
+        # add follower_id to author_id's followers
+        author = Author.objects.get(id = author_id)
+        follower = Author.objects.get(id = follower_id)
+        follower = Follow.objects.create(author = author, follower = follower)
+        follower.save()
+        return Response(status=status.HTTP_200_OK) """
 
 @api_view(['GET'])
 def following(request, author_id):
@@ -304,10 +310,10 @@ def inbox(request, author_id):
         for i in range(len(serializer.data[0]['items']['posts'])):
             serializer.data[0]['items']['posts'][i] = PostSerializer(Post.objects.get(id = serializer.data[0]['items']['posts'][i])).data
             serializer.data[0]['items']['posts'][i]['author'] = AuthorSerializer(Author.objects.get(id = serializer.data[0]['items']['posts'][i]['author'])).data
-        for i in range(len(serializer.data[0]['items']['requests'])):
-            serializer.data[0]['items']['requests'][i] = RequestSerializer(Request.objects.get(id = serializer.data[0]['items']['requests'][i])).data
-            serializer.data[0]['items']['requests'][i]['actor'] = AuthorSerializer(Author.objects.get(id = serializer.data[0]['items']['requests'][i]['actor'])).data
-            serializer.data[0]['items']['requests'][i]['object'] = AuthorSerializer(Author.objects.get(id = serializer.data[0]['items']['requests'][i]['object'])).data
+        for i in range(len(serializer.data[0]['items']['follows'])):
+            serializer.data[0]['items']['follows'][i] = FollowSerializer(Follow.objects.get(id = serializer.data[0]['items']['follows'][i])).data
+            serializer.data[0]['items']['follows'][i]['actor'] = AuthorSerializer(Author.objects.get(id = serializer.data[0]['items']['follows'][i]['actor'])).data
+            serializer.data[0]['items']['follows'][i]['object'] = AuthorSerializer(Author.objects.get(id = serializer.data[0]['items']['follows'][i]['object'])).data
         for i in range(len(serializer.data[0]['items']['comments'])):
             serializer.data[0]['items']['comments'][i] = CommentSerializer(Comment.objects.get(id = serializer.data[0]['items']['comments'][i])).data
             serializer.data[0]['items']['comments'][i]['post'] = PostSerializer(Post.objects.get(id = serializer.data[0]['items']['comments'][i]['post'])).data
@@ -319,25 +325,26 @@ def inbox(request, author_id):
             serializer.data[0]['items']['likes'][i]['post']['author'] = AuthorSerializer(Author.objects.get(id = serializer.data[0]['items']['likes'][i]['post']['author'])).data
 
         # items becomes a list with all posts and requests
-        serializer.data[0]['items'] = serializer.data[0]['items']['posts'] + serializer.data[0]['items']['requests'] + serializer.data[0]['items']['comments'] + serializer.data[0]['items']['likes']
+        serializer.data[0]['items'] = serializer.data[0]['items']['posts'] + serializer.data[0]['items']['follows'] + serializer.data[0]['items']['comments'] + serializer.data[0]['items']['likes']
         
         return Response(serializer.data[0])
         
     elif request.method == 'POST':
         # add object of type post/follow/like/comment to inbox of author_id
-        token = request.headers.get('Authorization', None)
+        # don't authorize becausing we are sending objects to another user
+        """ token = request.headers.get('Authorization', None)
         payload = LoginSerializer.validateToken(token) 
         tokenAuthor = Author.objects.get(id = payload.get('user_id', None))
         if str(tokenAuthor.id) != author_id:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
+            return Response(status=status.HTTP_401_UNAUTHORIZED) """
         author = Author.objects.get(id = author_id)
         inbox = Inbox.objects.get(author = author)
 
         if request.data['type'] == 'post':
             post = Post.objects.get(id = request.data['id'])
             inbox.items.posts.add(post)
-        elif request.data['type'] == 'request':
-            follow = Request.objects.get(id = request.data['id'])
+        elif request.data['type'] == 'follow':
+            follow = Follow.objects.get(id = request.data['id'])
             inbox.items.requests.add(follow)
         elif request.data['type'] == 'like':
             like = Like.objects.get(id = request.data['id'])
