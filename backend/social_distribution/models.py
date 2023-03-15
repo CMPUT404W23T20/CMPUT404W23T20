@@ -5,10 +5,10 @@ import uuid
 class Author(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     type = models.CharField(max_length=200, default="author")
-    host = models.CharField(max_length=200)
+    host = models.CharField(max_length=200, default="http://loaclhost:8000")
     displayName = models.CharField(max_length=200)
     username = models.CharField(max_length=200)
-    url = models.CharField(max_length=200)
+    url = models.CharField(max_length=200, default="http://loaclhost:8000/service/authors/" + str(id))
     github = models.CharField(max_length=200, default="No github")
     profileImage = models.CharField(max_length=200, default="https://i.imgur.com/k7XVwpB.jpeg")
     password = models.CharField(max_length=200)
@@ -47,9 +47,10 @@ class Post(models.Model):
     categories = models.CharField(max_length=200, default="No categories")
     count = models.IntegerField(default=0)
     comments = models.CharField(max_length=200,default="No comments")
-    #commentSrc = models.ForeignKey(Comment, on_delete=models.CASCADE, default=1)
+    commentSrc = models.ManyToManyField(Comment, blank=True, related_name='commentSrc')
     published = models.DateTimeField(auto_now_add=True)
     visibility = models.CharField(max_length=200, default="PUBLIC")
+    friend = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='friend', null=True)
     unlisted = models.BooleanField(default=False)
 
     def __str__(self):

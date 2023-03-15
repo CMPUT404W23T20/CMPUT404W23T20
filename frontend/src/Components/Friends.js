@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Button, Card,CardContent } from '@material-ui/core';
+import { Box, Button, Card,CardContent, TextField } from '@material-ui/core';
 import { useNavigate } from "react-router-dom";
 import Nav from './Nav';
 import axios from 'axios';
@@ -21,6 +21,7 @@ function Friends() {
     const [following, setFollowing] = React.useState([]); //people you follow/following
     const [friends, setFriends] =  React.useState([]); //people you follow/following
     const [notFollowing, setNotFollowing] = React.useState([]); //people you don't follow
+    const [otherUsers, setOtherUsers] = React.useState([]); //all other users
     
     const getLists = async () => {
         let userId= userInfo().user_id;
@@ -89,11 +90,63 @@ function Friends() {
         }
         console.log("following", followingList)
         setFollowing(followingList);
+        getOtherUsers()
     }
+
+    const getOtherUsers = async () => {
+        // gets users form other servers
+        // server http://localhost:8001
+        let usersResponse = await axios.get("http://localhost:8001/service/authors", {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem("token")
+            }
+        });
+        // remove friends and following from other users
+        let otherUsersList = usersResponse.data;
+        for (let i = 0; i < friends.length; i++) {
+            let friend = friends[i];
+            let j = 0;
+            let found = false;
+            for (j = 0; j < otherUsersList.length; j++) {
+                if (friend.id === otherUsersList[j].id) {
+                    found = true;
+                    break;
+                }
+            }
+            if (found) {
+                otherUsersList.splice(j, 1);
+            }
+        }
+        for (let i = 0; i < following.length; i++) {
+            let follow = following[i];
+            let j = 0;
+            let found = false;
+            for (j = 0; j < otherUsersList.length; j++) {
+                if (follow.id === otherUsersList[j].id) {
+                    found = true;
+                    break;
+                }
+            }
+            if (found) {
+                otherUsersList.splice(j, 1);
+            }
+        }
+        console.log("other users", otherUsersList)
+        setOtherUsers(otherUsersList);
+    }
+
 
     React.useEffect(() => {
         getLists()
     }, []);
+
+    const search = async () => {
+        let userId= userInfo().user_id;
+        let filteredList = []
+        let search = document.getElementById("search").value;
+
+    }
 
     const followAuthor = async (other) => {
         let userId= userInfo().user_id;
@@ -139,7 +192,6 @@ function Friends() {
             <Nav/>
             <div style = {{float:"right",paddingRight:150,width: 400,}}>
                 <Card style={{ width: 450,height:450, backgroundColor:"#66aeec",overflowY:"scroll"}}>
-                    
                         <h2 style ={{color:"whitesmoke"}}>Local Authors</h2>
                         <div className = "localauthors"> 
                             {notFollowing.map((author) => (
@@ -157,11 +209,7 @@ function Friends() {
                                             marginLeft:25, fontSize:15,minWidth:90}}onClick = {() => followAuthor(author)}>
                                             Follow
                                         </Button>
-                                       
-                                    
-
                                     </div>
-                            
 
                                 </CardContent>    
 
@@ -169,6 +217,26 @@ function Friends() {
                             
                                 ))}
                          </div>
+                </Card>
+                <Card style={{ width: 450,height:450, backgroundColor:"#66aeec",overflowY:"scroll", marginTop:20}}>
+                    <TextField id="search" label="Search" style = {{width: 400,marginLeft:20,marginTop:20}}/>
+                    <Button style = {{backgroundColor:"white",marginLeft:20,marginTop:20}} onClick={search}>Search Other Servers</Button>
+                    {otherUsers.map((author) => (
+                        <CardContent >
+                            <div style = {{display:'flex',alignItems:'center',width:400,wordWrap:"break-word"}}>
+                                <img src= {author.profileImage} alt = "Profile" style = {{borderRadius:"50%",marginRight:20}} width={55} height = {55}/>
+                                <span>
+                                    <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}> {author.displayName}</h4></a>
+                                </span>
+                                <Button 
+                                    id = {author.id}
+                                    style={{backgroundColor:"white",float:"right",
+                                    marginLeft:25, fontSize:15,minWidth:90}}onClick = {() => followAuthor(author)}>
+                                    Follow
+                                </Button>
+                            </div>
+                        </CardContent>    
+                    ))}
                 </Card>
             </div>
             <div class = "friendslist" >
