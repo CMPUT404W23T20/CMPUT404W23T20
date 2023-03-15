@@ -19,8 +19,16 @@ class Author(models.Model):
 class Follow(models.Model):
     type = models.CharField(max_length=200, default="follow")
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    summary = models.CharField(max_length=200, default="No summary")
     follower = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='follower')
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='author')
+
+""" class Request(models.Model):
+    type = models.CharField(max_length=200, default="request")
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    summary = models.CharField(max_length=200)
+    actor = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='actor')
+    object = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='object') """
     
 class Comment(models.Model):
     type = models.CharField(max_length=200, default="comment")
@@ -55,13 +63,6 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title
-    
-class Request(models.Model):
-    type = models.CharField(max_length=200, default="request")
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    summary = models.CharField(max_length=200)
-    actor = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='actor')
-    object = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='object')
 
 class Like(models.Model):
     type = models.CharField(max_length=200, default="like")
@@ -73,7 +74,7 @@ class Like(models.Model):
     
 class InboxItem(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    requests = models.ManyToManyField(Request, blank=True)
+    follows = models.ManyToManyField(Follow, blank=True)
     posts = models.ManyToManyField(Post, blank=True)
     comments = models.ManyToManyField(Comment, blank=True)
     likes = models.ManyToManyField(Like, blank=True)

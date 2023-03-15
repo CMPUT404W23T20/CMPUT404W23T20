@@ -157,6 +157,15 @@ function Friends() {
                 "Authorization": localStorage.getItem("token")
             }
         });
+
+        path = "http://localhost:8000/service/authors/" + other.id + "/inbox";
+        await axios.post(path, response.data, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": token
+            }
+        });
+
         getLists()
         return response.data;
     }
