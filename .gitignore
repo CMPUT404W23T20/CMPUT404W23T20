@@ -3,3 +3,4 @@ node_modules/
 # ignore venv
 venv/
 *.pyc
+backendSecond/
