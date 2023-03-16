@@ -32,7 +32,8 @@ class LoginView(APIView):
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
 def authors(request, author_id = None):
     if request.method == 'GET':
-        authors = Author.objects.all()
+        # get all authors where hidden is false
+        authors = Author.objects.filter(hidden = False)
         if author_id:
             author = AuthorSerializer(authors.get(id = author_id)).data
             author['url'] = author['url'] + str(author['id'])
@@ -77,7 +78,7 @@ def authors(request, author_id = None):
 
 # URL: ://service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
-def followers(request, author_id, follower_id = None):
+def followers(request, author_id = None, follower_id = None):
     if request.method == 'GET':
         if not follower_id:
             # get all followers of author_id
@@ -98,10 +99,24 @@ def followers(request, author_id, follower_id = None):
     elif request.method == 'PUT':
         # add follower_id to author_id's followers
         # check if follower_id is already following author_id
-        follower = Follow.objects.filter(follower = follower_id, author = author_id)
-        if follower:
+
+        author = Author.objects.filter(id = author_id)
+        if not author:
+            # if author does not exist
+            data = request.data
+            if data:
+                # create author
+                serializer = AuthorSerializer(data=data)
+                if serializer.is_valid():
+                    serializer.save()
+                    author = Author.objects.get(id = author_id)
+                else:
+                    return Response("Author does not exist", status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response("Author does not exist", status=status.HTTP_400_BAD_REQUEST)
+                
+        if Follow.objects.filter(follower = follower_id, author = author_id):
             return Response("Already following", status=status.HTTP_200_OK)
-        author = Author.objects.get(id = author_id)
         follower = Author.objects.get(id = follower_id)
         summary = AuthorSerializer(follower).data['displayName'] + ' is now following ' + AuthorSerializer(author).data['displayName']
         follower = Follow.objects.create(author = author, follower = follower, summary = summary)
@@ -132,7 +147,7 @@ def following(request, author_id):
         follows = FollowSerializer(follows, many=True).data
         following = []
         for follow in follows:
-                author = Author.objects.get(id = follow['follower'])
+                author = Author.objects.get(id = follow['author'])
                 author.url = author.url + str(author.id)
                 following.append(AuthorSerializer(author).data)
         return Response(following, status=status.HTTP_200_OK)
@@ -300,6 +315,8 @@ def inbox(request, author_id):
         # get all inbox items for author
         author = Author.objects.get(id = author_id)
         inbox = Inbox.objects.filter(author = author)
+        if not inbox:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = InboxSerializer(inbox, many=True)
         # get InboxItem from data['items']
         serializer.data[0]['items'] = InboxItemSerializer(InboxItem.objects.get(id = serializer.data[0]['items'])).data
@@ -337,6 +354,8 @@ def inbox(request, author_id):
             return Response(status=status.HTTP_401_UNAUTHORIZED) """
         author = Author.objects.get(id = author_id)
         inbox = Inbox.objects.get(author = author)
+        if not inbox:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
         if request.data['type'] == 'post':
             post = Post.objects.get(id = request.data['id'])

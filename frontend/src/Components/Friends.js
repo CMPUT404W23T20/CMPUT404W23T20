@@ -64,6 +64,12 @@ function Friends() {
                     break;
                 }
             }
+            for (j = 0; j < friendsResponse.data.length; j++) {
+                if (author.id === friendsResponse.data[j].id) {
+                    found = true;
+                    break;
+                }
+            }
             if (!found && author.id !== userId) {
                 notFollowingList.push(author);
             }
@@ -151,12 +157,26 @@ function Friends() {
     const followAuthor = async (other) => {
         let userId= userInfo().user_id;
         let path = `http://localhost:8000/service/authors/${other.id}/followers/${userId}`;
-        let response = await axios.put(path, {
+        let data = {
+            "type": "author",
+            "id": other.id,
+            "host": other.host,
+            "displayName": other.displayName,
+            "url": other.url,
+            "github": other.github,
+            "username": other.username,
+            "profileImage": other.profileImage,
+            "hidden": 1
+        }
+        console.log(data)
+        let response = await axios.put(path, data,{
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": localStorage.getItem("token")
-            }
-        });
+            },
+            }).catch((error) => {
+                console.log(error);
+            });
 
         path = "http://localhost:8000/service/authors/" + other.id + "/inbox";
         await axios.post(path, response.data, {

@@ -3,7 +3,7 @@ import uuid
 # Create your models here.
 hostAddress = "http://localhost:8000"
 class Author(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     type = models.CharField(max_length=200, default="author")
     host = models.CharField(max_length=200, default=hostAddress)
     displayName = models.CharField(max_length=200)
@@ -11,7 +11,8 @@ class Author(models.Model):
     url = models.CharField(max_length=200, default=hostAddress + "/service/authors/")
     github = models.CharField(max_length=200, default="No github")
     profileImage = models.CharField(max_length=200, default="https://i.imgur.com/k7XVwpB.jpeg")
-    password = models.CharField(max_length=200)
+    password = models.CharField(max_length=200, default="No password")
+    hidden = models.BooleanField(default=False)
 
     def __str__(self):
         return self.displayName

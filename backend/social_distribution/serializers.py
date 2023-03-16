@@ -10,7 +10,7 @@ class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Author
         #exclude password
-        fields = ("id","host","displayName","username","url","github","profileImage","type")
+        fields = ("id","host","displayName","username","url","github","profileImage","type","hidden")
     
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
