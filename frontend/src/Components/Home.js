@@ -24,42 +24,34 @@ function Posts() {
 
 
 
-    const [friendsPost,setFriendsPost] = React.useState([]);
+    const [followingPosts,setFollowingPosts] = React.useState([]);
  
     const get_friends_post_list =  async() =>{
         /* 1.get all our friends put into a list
            2.enter the id of friend's posts then put all visibilty = friends in another list */
-        let path = "http://localhost:8000/service/authors/"+localStorage.getItem("id")+"/friends";
-        let friendsResponse = await axios.get(path, {
+        
+        let following = await axios.get("http://localhost:8000/service/authors/"+localStorage.getItem("id")+"/following", {
             headers: {
                 "Content-Type": "application/json",
-
+                "Authorization": localStorage.getItem("token")
             }
         });
-
-        
-        
-        let friendsPostHomePage=[]
-        for (let fpost = 0; fpost < friendsResponse.data.length; fpost++){ //for loop to get friend's post
-            let friend = friendsResponse.data[fpost]
-            let path = "http://localhost:8000/service/authors/"+friend.id+"/posts";
-            let friendsPost= await axios.get(path, {
+        let followingList = following.data
+        let allFollowingPosts = []
+        for (let fpost = 0; fpost < followingList.length; fpost++){ //for loop to get Following's posts
+            let followee = followingList[fpost]
+            let path = followee.host+"/service/authors/"+followee.id+"/posts";
+            let followingPosts = await axios.get(path, {
                 headers: {
                     "Content-Type": "application/json",
-                
+                    "Authorization": localStorage.getItem("token")
                 }
             });
-            console.log("length ",friendsPost.data,friend.username)
-            
-            let friendsPostList = friendsPost.data
-            for (let friends = 0; friends< friendsPostList.length; friends++){ //get all the friend's post that are visible for other friends
-                if((friendsPostList[friends].visibility === "FRIENDS") && (friendsPostList[friends].unlisted === false)){
-                    friendsPostHomePage.push(friendsPostList[friends])
-                }
-            }
-        
+            // add followingposts to the list
+            allFollowingPosts = allFollowingPosts.concat(followingPosts.data)
         }
-        setFriendsPost(friendsPostHomePage)
+        console.log("followingPosts",allFollowingPosts)
+        setFollowingPosts(allFollowingPosts)
     }
 
     React.useEffect(() => {
@@ -90,7 +82,7 @@ function Posts() {
                                     </Card>
                                 </ListItem>
                             ))}
-                             {friendsPost.map((post) => (
+                             {followingPosts.map((post) => (
                                 <ListItem key={post.id} onClick = {() => {setopenPost(true); setPost(post)}}>
                                     <Card style = {{ width: "100%", backgroundColor: "#66aeec"}}>
                                         <Box style = {{ paddingLeft: 2}}>

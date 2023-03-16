@@ -185,7 +185,7 @@ function Posts() {
                                 <TextField id="title" label="Title" variant="outlined" style={{ width: "95%", margin: "25px" }} />
                                 <TextField id="description" label="Description" variant="outlined" style={{ width: "95%", margin: "25px" }} multiline minRows={20} />
                                 <FormControlLabel control={<Checkbox id="unlisted" name="unlisted" />} onChange={() => setUnlisted(!unlisted)} label="Unlisted" />
-                                <FormControlLabel control={<Checkbox id="visibility" name="visibility" onChange={() => setVisibility(!visibility)} />} label="Visibility" />
+                                <FormControlLabel control={<Checkbox id="visibility" name="visibility" onChange={() => setVisibility(!visibility)} />} label="Friends Only" />
                             </Box>
                             <Box style={{ alignSelf: "flex-end" }}>
                                 <Button variant="contained" color="primary" onClick={() => CreatePost(document.getElementById("title").value, document.getElementById("description").value)} style={{ margin: 10, alignSelf: "flex-end" }}>
