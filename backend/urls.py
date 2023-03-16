@@ -32,7 +32,7 @@ urlpatterns = [
         extra_context={'schema_url':'api_schema'}
         ), name='swagger-ui'),
     path('admin/', admin.site.urls),
-    path('login-api', views.LoginView.as_view(), name='login'),
+    path('login', views.LoginView.as_view(), name='login'),
     path('service/posts', views.posts, name='posts'),
     path('service/authors', views.authors, name='authors'),
     path('service/authors/<str:author_id>', views.authors, name='author'),

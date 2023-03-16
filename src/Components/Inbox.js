@@ -1,3 +1,5 @@
+
+
 import React from 'react';
 import { Box, Button, Card, List, ListItem, TextField, Typography } from '@material-ui/core';
 import Nav from './Nav';
@@ -5,7 +7,7 @@ import axios from 'axios';
 
 function Inbox() {
     const get_inbox_items = async () => {
-        let path = "https://t20-social-distribution.herokuapp.com/service/authors/" + localStorage.getItem("id") + "/inbox";
+        let path = "http://localhost:8000/service/authors/" + localStorage.getItem("id") + "/inbox";
         let response = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json",
@@ -17,7 +19,7 @@ function Inbox() {
     }
 
     const handleClear = async () => {
-        let path = "https://t20-social-distribution.herokuapp.com/service/authors/" + localStorage.getItem("id") + "/inbox";
+        let path = "http://localhost:8000/service/authors/" + localStorage.getItem("id") + "/inbox";
         let response = await axios.delete(path, {
             headers: {
                 "Content-Type": "application/json",
@@ -32,7 +34,7 @@ function Inbox() {
 
     const followBack = async (follower) => {
         let userId = localStorage.getItem("id");
-        let path = `https://t20-social-distribution.herokuapp.com/service/authors/${follower.id}/followers/${userId}`;
+        let path = `http://localhost:8000/service/authors/${follower.id}/followers/${userId}`;
         let response = await axios.put(path, {
             headers: {
                 "Content-Type": "application/json",
@@ -40,7 +42,7 @@ function Inbox() {
             }
         });
 
-        path = "https://t20-social-distribution.herokuapp.com/service/authors/" + follower.id + "/inbox";
+        path = "http://localhost:8000/service/authors/" + follower.id + "/inbox";
         await axios.post(path, response.data, {
             headers: {
                 "Content-Type": "application/json",

@@ -5,7 +5,7 @@ import axios from 'axios';
 
 function Posts() {
     const get_home_posts = async () => {
-        let path = "https://t20-social-distribution.herokuapp.com/service/posts";
+        let path = "http://localhost:8000/service/posts";
         let response = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json"

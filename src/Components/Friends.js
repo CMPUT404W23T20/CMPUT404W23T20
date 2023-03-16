@@ -26,7 +26,7 @@ function Friends() {
     const getLists = async () => {
         // getting local friends
         let userId= userInfo().user_id;
-        let path = `https://t20-social-distribution.herokuapp.com/service/authors/${userId}/friends`;
+        let path = `http://localhost:8000/service/authors/${userId}/friends`;
         let friendsResponse = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json",
@@ -46,7 +46,7 @@ function Friends() {
 
         // get all other users
         userId= userInfo().user_id;
-        let allAuthors = await axios.get("https://t20-social-distribution.herokuapp.com/service/authors", {
+        let allAuthors = await axios.get("http://localhost:8000/service/authors", {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": localStorage.getItem("token")
@@ -225,7 +225,7 @@ function Friends() {
     const unfollowAuthor = async (other) => {
         // handles unfollow button
         let userId= userInfo().user_id;
-        let path = `https://t20-social-distribution.herokuapp.com/service/authors/${other.id}/followers/${userId}`;
+        let path = `http://localhost:8000/service/authors/${other.id}/followers/${userId}`;
         let response = await axios.delete(path, {
             headers: {
                 "Content-Type": "application/json",
@@ -241,10 +241,12 @@ function Friends() {
     const navigate = useNavigate();
     const userInfo = () =>{
         if (token === null ){
-            navigate("/login");
+            navigate("/Login");
         }
         var decoded = JSON.stringify(jwt_decode(token));
+       
         var decode_info= JSON.parse(decoded)
+        console.log(decode_info)
         return decode_info;
         
     };
@@ -301,7 +303,7 @@ function Friends() {
                 </Card>
             </div>
             <div class = "friendslist" >
-                <h2>Friends</h2>
+                <h2>Friends :</h2>
                 <div className = "friendCard">
                     {friends.map((author) => (
                         <CardContent >

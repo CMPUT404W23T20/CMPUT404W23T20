@@ -13,7 +13,7 @@ function Login() {
     const handleLogin = () => {
         let username = document.getElementById("username").value;
         let password = document.getElementById("password").value;
-        axios.post("https://t20-social-distribution.herokuapp.com/login-api", {
+        axios.post("http://localhost:8000/login", {
             username: username,
             password: password
         }   

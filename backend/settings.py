@@ -27,7 +27,8 @@ SECRET_KEY = 'django-insecure-hw=1yrhm5yi61$z6!oo*jwb8$m@vv8ryfmnq=aoa+#-4(z7v$#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['https://t20-social-distribution.herokuapp.com/','http://127.0.0.1:8000']
+ALLOWED_HOSTS = ['https://t20-social-distribution.herokuapp.com/','http://127.0.0.1:8000','http://localhost:8000','http://localhost:8001'
+                 ,'http://localhost:3000']
 
 
 # Application definition
@@ -62,14 +63,14 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ORIGIN_ALLOW_ALL = False
+CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = [
     'http://localhost:3000','http://127.0.0.1:8000','http://localhost:8000',
-    'https://t20-social-distribution.herokuapp.com'
+    'https://t20-social-distribution.herokuapp.com','http://localhost:8001'
 ]
 
 CSRF_TRUSTED_ORIGINS = ['https://*.t20-social-distribution.herokuapp.com',
-                        'http://*.127.0.0.1:8000']
+                        'http://*.127.0.0.1:8000','http://*.localhost:8000','http://*.localhost:8001','http://*.localhost:3000']
 
 ROOT_URLCONF = 'backend.urls'
 
