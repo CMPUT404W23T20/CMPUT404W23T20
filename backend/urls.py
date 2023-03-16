@@ -14,11 +14,12 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path,re_path
 from social_distribution import views        
+from social_distribution.views import index
 from rest_framework.schemas import get_schema_view 
 from django.views.generic import TemplateView 
-
+from django.views.decorators.csrf import csrf_exempt
 
 
 urlpatterns = [
@@ -31,7 +32,7 @@ urlpatterns = [
         extra_context={'schema_url':'api_schema'}
         ), name='swagger-ui'),
     path('admin/', admin.site.urls),
-    path('login', views.LoginView.as_view(), name='login'),
+    path('login-api', views.LoginView.as_view(), name='login'),
     path('service/posts', views.posts, name='posts'),
     path('service/authors', views.authors, name='authors'),
     path('service/authors/<str:author_id>', views.authors, name='author'),
@@ -43,6 +44,8 @@ urlpatterns = [
     path('service/authors/<str:author_id>/posts/<str:post_id>', views.posts, name='posts'),
     path('service/authors/<str:author_id>/posts/<str:post_id>/comments', views.comments, name='comments'),
     path('service/authors/<str:author_id>/inbox', views.inbox, name='inbox'),
-    path('service/authors/<str:author_id>/liked', views.likedPosts, name='liked')
+    path('service/authors/<str:author_id>/liked', views.likedPosts, name='liked'),
+   
+    re_path(r'^.*',csrf_exempt(TemplateView.as_view(template_name='index.html')))
 ]
 

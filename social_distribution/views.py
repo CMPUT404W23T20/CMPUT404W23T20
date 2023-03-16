@@ -19,6 +19,9 @@ from rest_framework.decorators import api_view
 
 # need to be changed to proper format
 # proper format
+def index(request):
+    return render(request, "public/build/index.html")
+
 class LoginView(APIView):
 
     def post(self, request):

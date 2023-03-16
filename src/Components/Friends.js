@@ -135,7 +135,7 @@ function Friends() {
     const navigate = useNavigate();
     const userInfo = () =>{
         if (token === null ){
-            navigate("/Login");
+            navigate("/login");
         }
         var decoded = JSON.stringify(jwt_decode(token));
         var decode_info= JSON.parse(decoded)

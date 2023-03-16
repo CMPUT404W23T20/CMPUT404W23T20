@@ -13,7 +13,7 @@ function Login() {
     const handleLogin = () => {
         let username = document.getElementById("username").value;
         let password = document.getElementById("password").value;
-        axios.post("http://localhost:8000/login", {
+        axios.post("http://localhost:8000/login-api", {
             username: username,
             password: password
         }   
