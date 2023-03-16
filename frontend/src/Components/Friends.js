@@ -33,7 +33,7 @@ function Friends() {
             }
         });
         console.log("friends", friendsResponse.data)
-        setFriends(friendsResponse.data);
+        let friendsList = friendsResponse.data;
 
         
         path = `http://localhost:8000/service/authors/${userId}/following`;
@@ -64,8 +64,8 @@ function Friends() {
                     break;
                 }
             }
-            for (j = 0; j < friendsResponse.data.length; j++) {
-                if (author.id === friendsResponse.data[j].id) {
+            for (j = 0; j < friendsList.length; j++) {
+                if (author.id === friendsList[j].id) {
                     found = true;
                     break;
                 }
@@ -80,8 +80,8 @@ function Friends() {
 
         // remove friends from following and self
         let followingList = followingResponse.data;
-        for (let i = 0; i < friendsResponse.data.length; i++) {
-            let friend = friendsResponse.data[i];
+        for (let i = 0; i < friendsList.length; i++) {
+            let friend = friendsList[i];
             let j = 0;
             let found = false;
             for (j = 0; j < followingList.length; j++) {
@@ -94,6 +94,23 @@ function Friends() {
                 followingList.splice(j, 1);
             }
         }
+        for (let i = 0; i < followingList.length; i++) {
+            if (followingList[i].host === "http://localhost:8001") {
+                let path = `http://localhost:8001/service/authors/${userId}/followers/${followingList[i].id}`;
+                let headers = {
+                    "Content-Type": "application/json",
+                    "Authorization": localStorage.getItem("token")
+                }
+                if ((await axios.get(path, headers).data)) {
+                    let friend = followingList[i];
+                    // add to friends
+                    friendsList.push(friend);
+                    // remove from following
+                    followingList.splice(i, 1);
+                }
+            }
+        }
+        setFriends(friendsList);
         console.log("following", followingList)
         setFollowing(followingList);
         getOtherUsers()
@@ -160,7 +177,6 @@ function Friends() {
         let userId= userInfo().user_id;
         let filteredList = []
         let search = document.getElementById("search").value;
-
     }
 
     const followAuthor = async (other) => {
