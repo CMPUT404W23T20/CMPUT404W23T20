@@ -72,14 +72,14 @@ function Friends() {
         console.log("not following", notFollowingList)
         setNotFollowing(notFollowingList);
 
-        // remove friends from following
+        // remove friends from following and self
         let followingList = followingResponse.data;
         for (let i = 0; i < friendsResponse.data.length; i++) {
             let friend = friendsResponse.data[i];
             let j = 0;
             let found = false;
             for (j = 0; j < followingList.length; j++) {
-                if (friend.id === followingList[j].id) {
+                if (friend.id === followingList[j].id || followingList[j].id === userId) {
                     found = true;
                     break;
                 }

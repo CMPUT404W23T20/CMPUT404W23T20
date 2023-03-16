@@ -1,14 +1,14 @@
 from django.db import models
 import uuid
 # Create your models here.
-
+hostAddress = "http://localhost:8000"
 class Author(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     type = models.CharField(max_length=200, default="author")
-    host = models.CharField(max_length=200, default="http://loaclhost:8000")
+    host = models.CharField(max_length=200, default=hostAddress)
     displayName = models.CharField(max_length=200)
     username = models.CharField(max_length=200)
-    url = models.CharField(max_length=200, default="http://loaclhost:8000/service/authors/" + str(id))
+    url = models.CharField(max_length=200, default=hostAddress + "/service/authors/")
     github = models.CharField(max_length=200, default="No github")
     profileImage = models.CharField(max_length=200, default="https://i.imgur.com/k7XVwpB.jpeg")
     password = models.CharField(max_length=200)
@@ -35,7 +35,7 @@ class Comment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
     comment = models.CharField(max_length=200)
-    contentType = models.CharField(max_length=200)
+    contentType = models.CharField(max_length=200, default="text/plain")
     published = models.DateTimeField()
     post = models.ForeignKey('Post', on_delete=models.CASCADE)
 
@@ -47,7 +47,7 @@ class Post(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=200, default="No title")
     source = models.CharField(max_length=200, default="No source")
-    origin = models.CharField(max_length=200, default="No origin")
+    origin = models.CharField(max_length=200, default= hostAddress + "/service/posts/")
     description = models.CharField(max_length=2000, default="No description")
     contentType = models.CharField(max_length=200, default="text/plain")
     author = models.ForeignKey(Author, on_delete=models.CASCADE, default=1)
@@ -58,7 +58,7 @@ class Post(models.Model):
     commentSrc = models.ManyToManyField(Comment, blank=True, related_name='commentSrc')
     published = models.DateTimeField(auto_now_add=True)
     visibility = models.CharField(max_length=200, default="PUBLIC")
-    friend = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='friend', null=True)
+    friend = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='friend', null=True, blank=True)
     unlisted = models.BooleanField(default=False)
 
     def __str__(self):
@@ -68,8 +68,8 @@ class Like(models.Model):
     type = models.CharField(max_length=200, default="like")
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True)
-    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, null=True)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True, blank=True)
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, null=True, blank=True)
 
     
 class InboxItem(models.Model):

@@ -34,8 +34,11 @@ def authors(request, author_id = None):
     if request.method == 'GET':
         authors = Author.objects.all()
         if author_id:
-            author = Author.objects.get(id = author_id)
-            return Response(AuthorSerializer(author).data, status=status.HTTP_200_OK)
+            author = AuthorSerializer(authors.get(id = author_id)).data
+            author['url'] = author['url'] + str(author['id'])
+            return Response(author, status=status.HTTP_200_OK)
+        for author in authors:
+            author.url = author.url + str(author.id)
         return Response(AuthorSerializer(authors, many=True).data, status=status.HTTP_200_OK)
     elif request.method == 'POST':
         data = json.parse(request)
@@ -82,7 +85,9 @@ def followers(request, author_id, follower_id = None):
             follows = FollowSerializer(follows, many=True).data
             followers = []
             for follow in follows:
-                followers.append(AuthorSerializer(Author.objects.get(id = follow['follower'])).data)
+                author = Author.objects.get(id = follow['follower'])
+                author.url = author.url + str(author.id)
+                followers.append(AuthorSerializer(author).data)
             return Response(followers, status=status.HTTP_200_OK)
         # return whether follower_id follows author_id
         follower = Follow.objects.filter(follower = follower_id, author = author_id)
@@ -92,6 +97,10 @@ def followers(request, author_id, follower_id = None):
             
     elif request.method == 'PUT':
         # add follower_id to author_id's followers
+        # check if follower_id is already following author_id
+        follower = Follow.objects.filter(follower = follower_id, author = author_id)
+        if follower:
+            return Response("Already following", status=status.HTTP_200_OK)
         author = Author.objects.get(id = author_id)
         follower = Author.objects.get(id = follower_id)
         summary = AuthorSerializer(follower).data['displayName'] + ' is now following ' + AuthorSerializer(author).data['displayName']
@@ -123,7 +132,9 @@ def following(request, author_id):
         follows = FollowSerializer(follows, many=True).data
         following = []
         for follow in follows:
-            following.append(AuthorSerializer(Author.objects.get(id = follow['author'])).data)
+                author = Author.objects.get(id = follow['follower'])
+                author.url = author.url + str(author.id)
+                following.append(AuthorSerializer(author).data)
         return Response(following, status=status.HTTP_200_OK)
         
 @api_view(['GET'])
@@ -138,7 +149,9 @@ def friends(request, author_id):
         for follow in followIn:
             for follow2 in followOut:
                 if follow['author'] == follow2['follower']:
-                    friends.append(AuthorSerializer(Author.objects.get(id = follow['author'])).data)
+                    author = Author.objects.get(id = follow['author'])
+                    author.url = author.url + str(author.id)
+                    friends.append(AuthorSerializer(author).data)
         return Response(friends, status=status.HTTP_200_OK)
     
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
@@ -151,6 +164,7 @@ def posts(request, author_id = None, post_id = None):
             serializer = PostSerializer(posts, many=True)
             for post in serializer.data:
                 post['author'] = AuthorSerializer(Author.objects.get(id = post['author'])).data
+                post['author']['url'] = post['author']['url'] + str(post['author']['id'])
             return Response(serializer.data, status=status.HTTP_200_OK)
         
         author = Author.objects.get(id = author_id)
@@ -169,11 +183,13 @@ def posts(request, author_id = None, post_id = None):
             posts = posts.filter(id = post_id)
             posts = PostSerializer(posts, many=True).data
             posts[0]['author'] = AuthorSerializer(Author.objects.get(id = posts[0]['author'])).data
+            posts[0]['author']['url'] = posts[0]['author']['url'] + str(posts[0]['author']['id'])
             return Response(posts[0], status=status.HTTP_200_OK)
         
         serializer = PostSerializer(posts, many=True)
         for post in serializer.data:
             post['author'] = AuthorSerializer(Author.objects.get(id = post['author'])).data
+            post['author']['url'] = post['author']['url'] + str(post['author']['id'])
 
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -227,8 +243,11 @@ def comments(request, author_id, post_id):
         serializer = CommentSerializer(comments, many=True)
         for comment in serializer.data:
             comment['author'] = AuthorSerializer(Author.objects.get(id = comment['author'])).data
+            comment['author']['url'] = comment['author']['url'] + str(comment['author']['id'])
             comment['post'] = PostSerializer(Post.objects.get(id = comment['post'])).data
+            comment['post']['origin'] = comment['post']['origin'] + str(comment['post']['id'])
             comment['post']['author'] = AuthorSerializer(Author.objects.get(id = comment['post']['author'])).data
+            comment['post']['author']['url'] = comment['post']['author']['url'] + str(comment['post']['author']['id'])
         return Response(serializer.data, status=status.HTTP_200_OK)
     elif request.method == 'POST':
         token = request.headers.get('Authorization', None)
@@ -247,54 +266,33 @@ def comments(request, author_id, post_id):
 @api_view(['GET', 'POST', 'DELETE'])
 def commentLikes(request, comment_id):
     if request.method == 'GET':
-        likes = Like.objects.filter(comment = comment_id)
-        serializer = LikeSerializer(likes, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response("Not implemented", status=status.HTTP_501_NOT_IMPLEMENTED)
     elif request.method == 'POST':
-        token = request.headers.get('Authorization', None)
-        payload = LoginSerializer.validateToken(token)
-        author = Author.objects.get(id = payload.get('user_id', None))
-        data = request.data
-        data['author'] = author.id
-        data['authorName'] = author.displayName
-        data['comment'] = comment_id
-        serializer = LikeSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response("Not implemented", status=status.HTTP_501_NOT_IMPLEMENTED)
     elif request.method == 'DELETE':
-        token = request.headers.get('Authorization', None)
-        payload = LoginSerializer.validateToken(token)
-        author = Author.objects.get(id = payload.get('user_id', None))
-        like = Like.objects.get(comment = comment_id, author = author)
-        like.delete()
-        return Response(status=status.HTTP_200_OK)
+        return Response("Not implemented", status=status.HTTP_501_NOT_IMPLEMENTED)
     
 @api_view(['GET'])
 def likedPosts(request, author_id):
     if request.method == 'GET':
         likes = Like.objects.filter(author = author_id)
-        posts = []
+        items = []
         for like in likes:
-            posts.append(like.post)
-        serializer = PostSerializer(posts, many=True)
-        for post in serializer.data:
-            post['author'] = AuthorSerializer(Author.objects.get(id = post['author'])).data
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-@api_view(['GET'])
-def authorFollowersPosts(request, author_id):
-    if request.method == 'GET':
-        author = Author.objects.get(id = author_id)
-        followers = Follow.objects.filter(author = author)
-        posts = []
-        for follower in followers:
-            posts.append(Post.objects.filter(author = follower.follower))
-        serializer = PostSerializer(posts, many=True)
-        for post in serializer.data:
-            post['author'] = AuthorSerializer(Author.objects.get(id = post['author'])).data
-        return Response(serializer.data, status=status.HTTP_200_OK)
+            if like.post != None:
+                post = PostSerializer(Post.objects.get(id = like.post.id)).data
+                post['author'] = AuthorSerializer(Author.objects.get(id = post['author'])).data
+                post['author']['url'] = post['author']['url'] + str(post['author']['id'])
+                items.append(post)
+            elif like.comment != None:
+                comment = CommentSerializer(Comment.objects.get(id = like.comment.id)).data
+                comment['author'] = AuthorSerializer(Author.objects.get(id = comment['author'])).data
+                comment['author']['url'] = comment['author']['url'] + str(comment['author']['id'])
+                comment['post'] = PostSerializer(Post.objects.get(id = comment['post'])).data
+                comment['post']['origin'] = comment['post']['origin'] + str(comment['post']['id'])
+                comment['post']['author'] = AuthorSerializer(Author.objects.get(id = comment['post']['author'])).data
+                comment['post']['author']['url'] = comment['post']['author']['url'] + str(comment['post']['author']['id'])
+                items.append(comment)
+        return Response(items, status=status.HTTP_200_OK)
 
 @api_view(['GET', 'POST', 'DELETE'])
 def inbox(request, author_id):
