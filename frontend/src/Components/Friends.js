@@ -24,6 +24,7 @@ function Friends() {
     const [otherUsers, setOtherUsers] = React.useState([]); //all other users
     
     const getLists = async () => {
+        // getting local friends
         let userId= userInfo().user_id;
         let path = `http://localhost:8000/service/authors/${userId}/friends`;
         let friendsResponse = await axios.get(path, {
@@ -32,10 +33,9 @@ function Friends() {
                 "Authorization": localStorage.getItem("token")
             }
         });
-        console.log("friends", friendsResponse.data)
         let friendsList = friendsResponse.data;
 
-        
+        // getting following
         path = `http://localhost:8000/service/authors/${userId}/following`;
         let followingResponse = await axios.get(path, {
             headers: {
@@ -43,8 +43,8 @@ function Friends() {
                 "Authorization": localStorage.getItem("token")
             }
         });
-        console.log("following", followingResponse.data)
 
+        // get all other users
         userId= userInfo().user_id;
         let allAuthors = await axios.get("http://localhost:8000/service/authors", {
             headers: {
@@ -54,30 +54,32 @@ function Friends() {
         });
         let allAuthorsList = allAuthors.data;
         let notFollowingList = []
+        // get all other users that are not friends or following
         for (let i = 0; i < allAuthorsList.length; i++) {
             let author = allAuthorsList[i];
             let j = 0;
             let found = false;
+            // check if author is in friends list
             for (j = 0; j < followingResponse.data.length; j++) {
                 if (author.id === followingResponse.data[j].id) {
                     found = true;
                     break;
                 }
             }
+            // check if author is in following list
             for (j = 0; j < friendsList.length; j++) {
                 if (author.id === friendsList[j].id) {
                     found = true;
                     break;
                 }
             }
+            // add to not following list if not in friends or following
             if (!found && author.id !== userId) {
                 notFollowingList.push(author);
             }
         }
-
-        console.log("not following", notFollowingList)
         setNotFollowing(notFollowingList);
-
+        
         // remove friends from following and self
         let followingList = followingResponse.data;
         for (let i = 0; i < friendsList.length; i++) {
@@ -94,6 +96,8 @@ function Friends() {
                 followingList.splice(j, 1);
             }
         }
+
+        // add other server users to friends list and remove them from following list
         for (let i = 0; i < followingList.length; i++) {
             if (followingList[i].host === "http://localhost:8001") {
                 let path = `http://localhost:8001/service/authors/${userId}/followers/${followingList[i].id}`;
@@ -111,7 +115,6 @@ function Friends() {
             }
         }
         setFriends(friendsList);
-        console.log("following", followingList)
         setFollowing(followingList);
         getOtherUsers()
     }
@@ -125,7 +128,7 @@ function Friends() {
                 "Authorization": localStorage.getItem("token")
             }
         });
-        // remove friends and following from other users
+        // remove friends from other users
         let otherUsersList = usersResponse.data;
         for (let i = 0; i < friends.length; i++) {
             let friend = friends[i];
@@ -141,6 +144,7 @@ function Friends() {
                 otherUsersList.splice(j, 1);
             }
         }
+        // get following
         let userId= userInfo().user_id;
         let path = `http://localhost:8000/service/authors/${userId}/following`;
         let followingResponse = await axios.get(path, {
@@ -149,6 +153,7 @@ function Friends() {
                 "Authorization": localStorage.getItem("token")
             }
         });
+        // remove following from other users
         let followingList = followingResponse.data;
         for (let i = 0; i < followingList.length; i++) {
             let j = 0;
@@ -163,7 +168,6 @@ function Friends() {
                 otherUsersList.splice(j, 1);
             }
         }
-        console.log("other users", otherUsersList)
         setOtherUsers(otherUsersList);
     }
 
@@ -180,6 +184,7 @@ function Friends() {
     }
 
     const followAuthor = async (other) => {
+        // handles follow button
         let userId= userInfo().user_id;
         let path = `http://localhost:8000/service/authors/${other.id}/followers/${userId}`;
         let data = {
@@ -193,7 +198,7 @@ function Friends() {
             "profileImage": other.profileImage,
             "hidden": 1
         }
-        console.log(data)
+        // send follow request to server
         let response = await axios.put(path, data,{
             headers: {
                 "Content-Type": "application/json",
@@ -202,7 +207,7 @@ function Friends() {
             }).catch((error) => {
                 console.log(error);
             });
-
+        // add item to inbox of other user if they are on our server
         if (other.host === "http://localhost:8000") {
             path = "http://localhost:8000/service/authors/" + other.id + "/inbox";
             await axios.post(path, response.data, {
@@ -218,6 +223,7 @@ function Friends() {
     }
     
     const unfollowAuthor = async (other) => {
+        // handles unfollow button
         let userId= userInfo().user_id;
         let path = `http://localhost:8000/service/authors/${other.id}/followers/${userId}`;
         let response = await axios.delete(path, {
@@ -275,8 +281,7 @@ function Friends() {
                          </div>
                 </Card>
                 <Card style={{ width: 450,height:450, backgroundColor:"#66aeec",overflowY:"scroll", marginTop:20}}>
-                    <TextField id="search" label="Search" style = {{width: 400,marginLeft:20,marginTop:20}}/>
-                    <Button style = {{backgroundColor:"white",marginLeft:20,marginTop:20}} onClick={search}>Search Other Servers</Button>
+                    <TextField id="search" label="Search" style = {{width: 400,marginLeft:20,marginTop:20}} onChange={search}/>
                     {otherUsers.map((author) => (
                         <CardContent >
                             <div style = {{display:'flex',alignItems:'center',width:400,wordWrap:"break-word"}}>
