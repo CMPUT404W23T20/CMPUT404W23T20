@@ -30,10 +30,6 @@ function Nav(){
             text: "Posts",
             location: "/posts",
         },
-        {
-            text: "Comments",
-            location: "/comments",
-        },
     ]
 
     return (

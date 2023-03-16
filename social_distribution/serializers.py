@@ -10,7 +10,7 @@ class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Author
         #exclude password
-        fields = ("id","host","displayName","username","url","github","profileImage","type")
+        fields = ("id","host","displayName","username","url","github","profileImage","type","hidden")
     
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -50,7 +50,7 @@ class PostSerializer(serializers.ModelSerializer):
 class CreatePostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = ("title", "description", "contentType", "content", "categories", "visibility", "unlisted")
+        fields = ("title", "description", "contentType", "content", "categories", "visibility", "unlisted", "url")
 
 class LikeSerializer(serializers.ModelSerializer):
     class Meta:
