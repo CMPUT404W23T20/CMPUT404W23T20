@@ -24,7 +24,7 @@ function Friends() {
     
     const getLists = async () => {
         let userId= userInfo().user_id;
-        let path = `http://localhost:8000/service/authors/${userId}/friends`;
+        let path = `https://t20-social-distribution.herokuapp.com/service/authors/${userId}/friends`;
         let friendsResponse = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json",
@@ -35,7 +35,7 @@ function Friends() {
         setFriends(friendsResponse.data);
 
         
-        path = `http://localhost:8000/service/authors/${userId}/following`;
+        path = `https://t20-social-distribution.herokuapp.com/service/authors/${userId}/following`;
         let followingResponse = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json",
@@ -45,7 +45,7 @@ function Friends() {
         console.log("following", followingResponse.data)
 
         userId= userInfo().user_id;
-        let allAuthors = await axios.get("http://localhost:8000/service/authors", {
+        let allAuthors = await axios.get("https://t20-social-distribution.herokuapp.com/service/authors", {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": localStorage.getItem("token")
@@ -97,7 +97,7 @@ function Friends() {
 
     const followAuthor = async (other) => {
         let userId= userInfo().user_id;
-        let path = `http://localhost:8000/service/authors/${other.id}/followers/${userId}`;
+        let path = `https://t20-social-distribution.herokuapp.com/service/authors/${other.id}/followers/${userId}`;
         let response = await axios.put(path, {
             headers: {
                 "Content-Type": "application/json",
@@ -105,7 +105,7 @@ function Friends() {
             }
         });
 
-        path = "http://localhost:8000/service/authors/" + other.id + "/inbox";
+        path = "https://t20-social-distribution.herokuapp.com/service/authors/" + other.id + "/inbox";
         await axios.post(path, response.data, {
             headers: {
                 "Content-Type": "application/json",
@@ -119,7 +119,7 @@ function Friends() {
     
     const unfollowAuthor = async (other) => {
         let userId= userInfo().user_id;
-        let path = `http://localhost:8000/service/authors/${other.id}/followers/${userId}`;
+        let path = `https://t20-social-distribution.herokuapp.com/service/authors/${other.id}/followers/${userId}`;
         let response = await axios.delete(path, {
             headers: {
                 "Content-Type": "application/json",

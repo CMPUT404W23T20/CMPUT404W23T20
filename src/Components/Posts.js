@@ -7,7 +7,7 @@ import axios from 'axios';
 
 function Posts() {
     const getposts = async () => {
-        let path = "http://localhost:8000/service/authors/" + localStorage.getItem("id") + "/posts";
+        let path = "https://t20-social-distribution.herokuapp.com/service/authors/" + localStorage.getItem("id") + "/posts";
         let response = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json",
@@ -28,7 +28,7 @@ function Posts() {
     const CreatePost = async (title, description) => {
         console.log(visibility ? "PUBLIC" : "FRIENDS")
         console.log(unlisted)
-        let path = "http://localhost:8000/service/authors/" + localStorage.getItem("id") + "/posts";
+        let path = "https://t20-social-distribution.herokuapp.com/service/authors/" + localStorage.getItem("id") + "/posts";
         let data = {
             title: title,
             description: description,
@@ -46,7 +46,7 @@ function Posts() {
         console.log(postResponse.data);
 
         // get followers
-        path = "http://localhost:8000/service/authors/" + localStorage.getItem("id") + "/followers";
+        path = "https://t20-social-distribution.herokuapp.com/service/authors/" + localStorage.getItem("id") + "/followers";
         let followersResponse = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json",
@@ -57,7 +57,7 @@ function Posts() {
 
         // send post to inbox of followers
         for (let follower of followersResponse.data) {
-            path = "http://localhost:8000/service/authors/" + follower.id + "/inbox";
+            path = "https://t20-social-distribution.herokuapp.com/service/authors/" + follower.id + "/inbox";
             await axios.post(path, postResponse.data, {
                 headers: {
                     "Content-Type": "application/json",
@@ -74,7 +74,7 @@ function Posts() {
     }
 
     const HandleDelete = async () => {
-        let path = "http://localhost:8000/service/authors/" + localStorage.getItem("id") + "/posts/" + post.id;
+        let path = "https://t20-social-distribution.herokuapp.com/service/authors/" + localStorage.getItem("id") + "/posts/" + post.id;
         let response = await axios.delete(path, {
             headers: {
                 "Content-Type": "application/json",
@@ -89,7 +89,7 @@ function Posts() {
     }
 
     const handleEditPost = async () => {
-        let path = "http://localhost:8000/service/authors/" + localStorage.getItem("id") + "/posts/" + post.id;
+        let path = "https://t20-social-distribution.herokuapp.com/service/authors/" + localStorage.getItem("id") + "/posts/" + post.id;
         let data = {
             title: post.title,
             description: post.description,
