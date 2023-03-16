@@ -1,7 +1,7 @@
 from django.db import models
 import uuid
 # Create your models here.
-hostAddress = "http://localhost:8000"
+hostAddress = "http://127.0.0.1:8000"
 class Author(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     type = models.CharField(max_length=200, default="author")

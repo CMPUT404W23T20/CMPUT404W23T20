@@ -100,8 +100,7 @@ def followers(request, author_id = None, follower_id = None):
         # add follower_id to author_id's followers
         # check if follower_id is already following author_id
 
-        author = Author.objects.filter(id = author_id)
-        if not author:
+        if not Author.objects.filter(id = author_id):
             # if author does not exist
             data = request.data
             if data:
@@ -109,7 +108,6 @@ def followers(request, author_id = None, follower_id = None):
                 serializer = AuthorSerializer(data=data)
                 if serializer.is_valid():
                     serializer.save()
-                    author = Author.objects.get(id = author_id)
                 else:
                     return Response("Author does not exist", status=status.HTTP_400_BAD_REQUEST)
             else:
@@ -117,6 +115,7 @@ def followers(request, author_id = None, follower_id = None):
                 
         if Follow.objects.filter(follower = follower_id, author = author_id):
             return Response("Already following", status=status.HTTP_200_OK)
+        author = Author.objects.get(id = author_id)
         follower = Author.objects.get(id = follower_id)
         summary = AuthorSerializer(follower).data['displayName'] + ' is now following ' + AuthorSerializer(author).data['displayName']
         follower = Follow.objects.create(author = author, follower = follower, summary = summary)
@@ -148,7 +147,8 @@ def following(request, author_id):
         following = []
         for follow in follows:
                 author = Author.objects.get(id = follow['author'])
-                author.url = author.url + str(author.id)
+                if author.host == request.get_host() or author.host == 'http://localhost:8000':
+                    author.url = author.url + str(author.id)
                 following.append(AuthorSerializer(author).data)
         return Response(following, status=status.HTTP_200_OK)
         

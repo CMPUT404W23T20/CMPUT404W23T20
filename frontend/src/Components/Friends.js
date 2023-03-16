@@ -124,12 +124,20 @@ function Friends() {
                 otherUsersList.splice(j, 1);
             }
         }
-        for (let i = 0; i < following.length; i++) {
-            let follow = following[i];
+        let userId= userInfo().user_id;
+        let path = `http://localhost:8000/service/authors/${userId}/following`;
+        let followingResponse = await axios.get(path, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem("token")
+            }
+        });
+        let followingList = followingResponse.data;
+        for (let i = 0; i < followingList.length; i++) {
             let j = 0;
             let found = false;
             for (j = 0; j < otherUsersList.length; j++) {
-                if (follow.id === otherUsersList[j].id) {
+                if (followingList[i].id === otherUsersList[j].id) {
                     found = true;
                     break;
                 }
@@ -145,6 +153,7 @@ function Friends() {
 
     React.useEffect(() => {
         getLists()
+        getOtherUsers()
     }, []);
 
     const search = async () => {
@@ -178,13 +187,15 @@ function Friends() {
                 console.log(error);
             });
 
-        path = "http://localhost:8000/service/authors/" + other.id + "/inbox";
-        await axios.post(path, response.data, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": token
-            }
-        });
+        if (other.host === "http://localhost:8000") {
+            path = "http://localhost:8000/service/authors/" + other.id + "/inbox";
+            await axios.post(path, response.data, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": token
+                }
+            });
+        }   
 
         getLists()
         return response.data;
