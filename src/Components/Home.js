@@ -5,7 +5,7 @@ import axios from 'axios';
 
 function Posts() {
     const get_home_posts = async () => {
-        let path = "http://localhost:8000/service/posts";
+        let path = "https://t20-social-distribution.herokuapp.com/service/posts";
         let response = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json"
@@ -29,7 +29,7 @@ function Posts() {
     const get_friends_post_list =  async() =>{
         /* 1.get all our friends put into a list
            2.enter the id of friend's posts then put all visibilty = friends in another list */
-        let path = "http://localhost:8000/service/authors/"+localStorage.getItem("id")+"/friends";
+        let path = "https://t20-social-distribution.herokuapp.com/service/authors/"+localStorage.getItem("id")+"/friends";
         let friendsResponse = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json",
@@ -42,7 +42,7 @@ function Posts() {
         let friendsPostHomePage=[]
         for (let fpost = 0; fpost < friendsResponse.data.length; fpost++){ //for loop to get friend's post
             let friend = friendsResponse.data[fpost]
-            let path = "http://localhost:8000/service/authors/"+friend.id+"/posts";
+            let path = "https://t20-social-distribution.herokuapp.com/service/authors/"+friend.id+"/posts";
             let friendsPost= await axios.get(path, {
                 headers: {
                     "Content-Type": "application/json",
