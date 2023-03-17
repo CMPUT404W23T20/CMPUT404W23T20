@@ -60,7 +60,7 @@ function Nav(){
           })}
         </List>
         <Button
-          onClick={() => { navigate("/login"); localStorage.clear(); }}
+          onClick={() => { navigate("/Login"); localStorage.clear(); }}
           variant="outlined"
           sx={{
             color: "#ffffff",
