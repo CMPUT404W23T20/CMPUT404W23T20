@@ -123,7 +123,7 @@ def followers(request, author_id = None, follower_id = None):
                 if serializer.is_valid():
                     serializer.save()
                 else:
-                    return Response("Author does not exist", status=status.HTTP_400_BAD_REQUEST)
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             else:
                 return Response("Author does not exist", status=status.HTTP_400_BAD_REQUEST)
                 

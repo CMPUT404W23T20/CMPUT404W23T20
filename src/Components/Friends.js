@@ -146,7 +146,6 @@ function Friends() {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": auth,
-                "access-control-allow-origin": "*"
             }
         });
         // add userResponse.data to group20List
@@ -222,16 +221,18 @@ function Friends() {
     const followAuthor = async (other) => {
         // handles follow button
         let userId= userInfo().user_id;
-        let path =  PATH +`/service/authors/${other.id}/followers/${userId}`;
+        // remove host from id
+        let id = other.id.split("/").pop();
+        let path =  PATH +`/service/authors/${id}/followers/${userId}`;
         let data = {
             "type": "author",
-            "id": other.id,
+            "id": id,
             "host": other.host,
             "displayName": other.displayName,
             "url": other.url,
-            "github": other.github,
-            "username": other.username,
-            "profileImage": other.profileImage,
+            "github": other.github ? other.github : "no github",
+            "username": other.username ? other.username : "no username",
+            "profileImage": other.profileImage ? other.profileImage : "no profileImage",
             "hidden": 1
         }
         // send follow request to server
@@ -244,18 +245,19 @@ function Friends() {
                 console.log(error);
             });
         // add item to inbox of other user if they are on our server
-        if (other.host ===  path ) {
-            path =  PATH +"/service/authors/" + other.id + "/inbox";
+        if (other.host === path ) {
+            path = PATH +"/service/authors/" + other.id + "/inbox";
             await axios.post(path, response.data, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": token
                 }
+            }).catch((error) => {
+                console.log(error);
             });
         }   
 
         getLists()
-        return response.data;
     }
     
     const unfollowAuthor = async (other) => {
@@ -291,14 +293,14 @@ function Friends() {
         <Box>
             <Nav/>
             <div style = {{float:"right",paddingRight:150,width: 400,}}>
-                <Card style={{ width: 450,height:450, backgroundColor:"#66aeec",overflowY:"scroll"}}>
+                <Card style={{ width: 450,height:450, backgroundColor:"#8fd1f2",overflowY:"scroll"}}>
                         <h2 style ={{color:"whitesmoke"}}>Local Authors</h2>
                         <div className = "localauthors"> 
                             {notFollowing.map((author) => (
                              
                                 <CardContent >
                                     <div style = {{display:'flex',alignItems:'center',width:400,wordWrap:"break-word"}}>
-                                        <img src= {author.profileImage} alt = "Profile" style = {{borderRadius:"50%",marginRight:20}} width={55} height = {55}/>
+                                        <img src= {author.profileImage} alt = "" style = {{borderRadius:"50%",marginRight:20}} width={55} height = {55}/>
                                         <span>
                                             <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}> {author.displayName}</h4></a>
     
@@ -318,12 +320,12 @@ function Friends() {
                                 ))}
                          </div>
                 </Card>
-                <Card style={{ width: 450,height:450, backgroundColor:"#66aeec",overflowY:"scroll", marginTop:20}}>
+                <Card style={{ width: 450,height:450, backgroundColor:"#8fd1f2",overflowY:"scroll", marginTop:20}}>
                     <TextField id="search" label="Search" style = {{width: 400,marginLeft:20,marginTop:20}} onChange={search}/>
                     {otherUsers.map((author) => (
                         <CardContent >
                             <div style = {{display:'flex',alignItems:'center',width:400,wordWrap:"break-word"}}>
-                                <img src= {author.profileImage} alt = "Profile" style = {{borderRadius:"50%",marginRight:20}} width={55} height = {55}/>
+                                <img src= {author.profileImage} alt = "" style = {{borderRadius:"50%",marginRight:20}} width={55} height = {55}/>
                                 <span>
                                     <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}> {author.displayName}</h4></a>
                                 </span>
@@ -345,7 +347,7 @@ function Friends() {
                         <CardContent >
                             <div style = {{display:'flex',alignItems:'center',width:550,wordWrap:"break-word",
                                             paddingLeft: 150}}>
-                                <img src= {author.profileImage} alt = "Profile" style = {{borderRadius:"50%",marginLeft:150}} width={55} height = {55}/>
+                                <img src= {author.profileImage} alt = "" style = {{borderRadius:"50%",marginLeft:150}} width={55} height = {55}/>
                                 <span>
                                     <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}>{author.displayName}</h4></a>
                                 </span>
@@ -367,7 +369,7 @@ function Friends() {
                         <CardContent >
                             <div style = {{display:'flex',alignItems:'center',width:550,wordWrap:"break-word",
                                                 paddingLeft: 150}}>
-                                <img src= {author.profileImage} alt = "Profile" style = {{borderRadius:"50%",marginLeft:150}} width={55} height = {55}/>
+                                <img src= {author.profileImage} alt = "" style = {{borderRadius:"50%",marginLeft:150}} width={55} height = {55}/>
                                 <span>
                                     <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}>{author.displayName}</h4></a>
                                 </span>

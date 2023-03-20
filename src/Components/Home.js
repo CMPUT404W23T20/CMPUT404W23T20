@@ -27,12 +27,16 @@ function Posts() {
         let auth = "Basic " + btoa(username + ":" + password);
         for (let fpost = 0; fpost < followingList.length; fpost++){ //for loop to get Following's posts
             let followee = followingList[fpost]
-            let path = followee.host+"/service/authors/"+followee.id+"/posts";
+            let id = followee.id.split("/").pop();
+            let path = followee.host+"/service/authors/"+id+"/posts";
+            if (followee.host == "https://social-distribution-media.herokuapp.com"){
+                path = followee.host+"/api/authors/"+id+"/posts";
+            }
+            console.log("path",path)
             let followingPosts = await axios.get(path, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": (followee.host == PATH) ? localStorage.getItem("token") : (followee.host == "https://social-distribution-media.herokuapp.com") ? auth : "",
-                    "access-control-allow-origin": "*"
                 }
             });
             // add followingposts to the list
@@ -85,7 +89,7 @@ function Posts() {
                             <Typography variant="h5">Following's Posts</Typography>
                             {followingPosts.map((post) => (
                                 <ListItem key={post.id} onClick = {() => {setopenPost(true); setPost(post)}}>
-                                    <Card style = {{ width: "100%", backgroundColor: "#66aeec"}}>
+                                    <Card style = {{ width: "100%", backgroundColor: "#8fd1f2"}}>
                                         <Box style = {{ paddingLeft: 2}}>
                                             <Typography variant="h5">{post.title}</Typography>
                                             <Typography variant="body2">{post.author.displayName}</Typography>
@@ -97,7 +101,7 @@ function Posts() {
                             <Typography variant="h4">Public Posts</Typography>
                             {Posts.map((post) => (
                                 <ListItem key={post.id} onClick = {() => {setopenPost(true); setPost(post)}}>
-                                    <Card style = {{ width: "100%", backgroundColor: "#66aeec"}}>
+                                    <Card style = {{ width: "100%", backgroundColor: "#8fd1f2"}}>
                                         <Box style = {{ paddingLeft: 2}}>
                                             <Typography variant="h5">{post.title}</Typography>
                                             <Typography variant="body2">{post.author.displayName}</Typography>
