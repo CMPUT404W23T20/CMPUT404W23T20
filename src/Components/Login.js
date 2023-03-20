@@ -3,7 +3,7 @@ import axios from 'axios';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-
+let PATH = "https://t20-social-distribution.herokuapp.com"
 
 function Login() {
     const navigate = useNavigate();
@@ -13,7 +13,7 @@ function Login() {
     const handleLogin = () => {
         let username = document.getElementById("username").value;
         let password = document.getElementById("password").value;
-        axios.post("http://localhost:8000/login", {
+        axios.post(PATH+"/login", {
             username: username,
             password: password
         }   

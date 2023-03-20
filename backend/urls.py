@@ -31,8 +31,12 @@ urlpatterns = [
         template_name='docs.html',
         extra_context={'schema_url':'api_schema'}
         ), name='swagger-ui'),
+    path('docs', TemplateView.as_view(
+        template_name='docs.html',
+        extra_context={'schema_url':'api_schema'}
+        ), name='swagger-ui'),
     path('admin/', admin.site.urls),
-    path('login', views.LoginView.as_view(), name='login'),
+    path('login', views.login, name='login'),
     path('service/posts', views.posts, name='posts'),
     path('service/authors', views.authors, name='authors'),
     path('service/authors/<str:author_id>', views.authors, name='author'),

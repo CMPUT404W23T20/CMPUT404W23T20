@@ -22,15 +22,26 @@ from rest_framework.decorators import api_view
 def index(request):
     return render(request, "public/build/index.html")
 
-class LoginView(APIView):
+@api_view(['POST'])
+def login(request):
+    if request.method == 'POST':
+        try:
+            jwt = LoginSerializer.validate(request.data)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(jwt, status=status.HTTP_200_OK)
+    
 
+'''
+class LoginView(APIView):
     def post(self, request):
         try:
             data = LoginSerializer.validate(request.data)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(data, status=status.HTTP_200_OK)
-
+'''
+        
 # URL: ://service/authors/{AUTHOR_ID}/
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
 def authors(request, author_id = None):

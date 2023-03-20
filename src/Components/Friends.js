@@ -14,6 +14,8 @@ is user in that list
  - False? => add to list to nonFollow
  - Yes => don't add to list of authors */
 
+let PATH = "https://t20-social-distribution.herokuapp.com"
+
 function Friends() {
 
     
@@ -26,7 +28,7 @@ function Friends() {
     const getLists = async () => {
         // getting local friends
         let userId= userInfo().user_id;
-        let path = `http://localhost:8000/service/authors/${userId}/friends`;
+        let path = PATH + `/service/authors/${userId}/friends`;
         let friendsResponse = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json",
@@ -36,7 +38,7 @@ function Friends() {
         let friendsList = friendsResponse.data;
 
         // getting following
-        path = `http://localhost:8000/service/authors/${userId}/following`;
+        path =  PATH + `/service/authors/${userId}/following`;
         let followingResponse = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json",
@@ -46,7 +48,7 @@ function Friends() {
 
         // get all other users
         userId= userInfo().user_id;
-        let allAuthors = await axios.get("http://localhost:8000/service/authors", {
+        let allAuthors = await axios.get( PATH + "/service/authors", {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": localStorage.getItem("token")
@@ -117,19 +119,52 @@ function Friends() {
         setFriends(friendsList);
         setFollowing(followingList);
         getOtherUsers()
+        console.log("friends", friendsList)
+        console.log("following", followingList)
+        console.log("not following", notFollowingList)
     }
 
-    const getOtherUsers = async () => {
-        // gets users form other servers
-        // server http://localhost:8001
+    const getDuplicateUsers = async () => {
+        // get users from duplicate server
         let usersResponse = await axios.get("http://localhost:8001/service/authors", {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": localStorage.getItem("token")
             }
         });
+        // add userResponse.data to group20List
+        console.log("duplicate", usersResponse)
+        return usersResponse.data;
+    }
+
+    const getGroup20Users = async () => {
+        // get users from group20
+        let username = "Group20"
+        let password = "jn8VWYcZDrLrkQDcVsRi"
+        let auth = "Basic " + btoa(username + ":" + password);
+        let response = await axios.get("https://social-distribution-media.herokuapp.com/api/authors", {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": auth,
+                "access-control-allow-origin": "*"
+            }
+        });
+        // add userResponse.data to group20List
+        console.log("Group20 Users", response.data)
+        return response.data;
+    }
+
+
+    const getOtherUsers = async () => {
+        let otherUsersList = [];
+
+        let group20Users = await getGroup20Users();
+        otherUsersList = otherUsersList.concat(group20Users);
+        //let duplicateUsers = await getDuplicateUsers();
+        //otherUsersList = otherUsersList.concat(duplicateUsers);
+        
+
         // remove friends from other users
-        let otherUsersList = usersResponse.data;
         for (let i = 0; i < friends.length; i++) {
             let friend = friends[i];
             let j = 0;
@@ -146,7 +181,7 @@ function Friends() {
         }
         // get following
         let userId= userInfo().user_id;
-        let path = `http://localhost:8000/service/authors/${userId}/following`;
+        let path =  PATH +`/service/authors/${userId}/following`;
         let followingResponse = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json",
@@ -168,6 +203,7 @@ function Friends() {
                 otherUsersList.splice(j, 1);
             }
         }
+        console.log("other users", otherUsersList)
         setOtherUsers(otherUsersList);
     }
 
@@ -186,7 +222,7 @@ function Friends() {
     const followAuthor = async (other) => {
         // handles follow button
         let userId= userInfo().user_id;
-        let path = `http://localhost:8000/service/authors/${other.id}/followers/${userId}`;
+        let path =  PATH +`/service/authors/${other.id}/followers/${userId}`;
         let data = {
             "type": "author",
             "id": other.id,
@@ -208,8 +244,8 @@ function Friends() {
                 console.log(error);
             });
         // add item to inbox of other user if they are on our server
-        if (other.host === "http://localhost:8000") {
-            path = "http://localhost:8000/service/authors/" + other.id + "/inbox";
+        if (other.host ===  path ) {
+            path =  PATH +"/service/authors/" + other.id + "/inbox";
             await axios.post(path, response.data, {
                 headers: {
                     "Content-Type": "application/json",
@@ -225,7 +261,7 @@ function Friends() {
     const unfollowAuthor = async (other) => {
         // handles unfollow button
         let userId= userInfo().user_id;
-        let path = `http://localhost:8000/service/authors/${other.id}/followers/${userId}`;
+        let path =  PATH +`/service/authors/${other.id}/followers/${userId}`;
         let response = await axios.delete(path, {
             headers: {
                 "Content-Type": "application/json",

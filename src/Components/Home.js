@@ -2,35 +2,19 @@ import React from 'react';
 import { Box, Button, Card,List, ListItem, TextField, Typography } from '@material-ui/core';
 import Nav from './Nav';
 import axios from 'axios';
+import { getTextFieldUtilityClass } from '@mui/material';
+
+let PATH = "https://t20-social-distribution.herokuapp.com"
 
 function Posts() {
-    const get_home_posts = async () => {
-        let path = "http://localhost:8000/service/posts";
-        let response = await axios.get(path, {
-            headers: {
-                "Content-Type": "application/json"
-            }
-        });
-
-        console.log(response.data);
-        return response.data;
-    }
     const [Posts, setPosts] = React.useState([]);
-    React.useEffect(() => {
-        get_home_posts().then((data) => {
-            setPosts(data);
-        });
-    }, []);
-
-
-
     const [followingPosts,setFollowingPosts] = React.useState([]);
  
-    const get_friends_post_list =  async() =>{
+    const getFeed =  async() =>{
         /* 1.get all our friends put into a list
            2.enter the id of friend's posts then put all visibilty = friends in another list */
         
-        let following = await axios.get("http://localhost:8000/service/authors/"+localStorage.getItem("id")+"/following", {
+        let following = await axios.get(PATH + "/service/authors/"+localStorage.getItem("id")+"/following", {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": localStorage.getItem("token")
@@ -38,13 +22,17 @@ function Posts() {
         });
         let followingList = following.data
         let allFollowingPosts = []
+        let username = "Group20"
+        let password = "jn8VWYcZDrLrkQDcVsRi"
+        let auth = "Basic " + btoa(username + ":" + password);
         for (let fpost = 0; fpost < followingList.length; fpost++){ //for loop to get Following's posts
             let followee = followingList[fpost]
             let path = followee.host+"/service/authors/"+followee.id+"/posts";
             let followingPosts = await axios.get(path, {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": localStorage.getItem("token")
+                    "Authorization": (followee.host == PATH) ? localStorage.getItem("token") : (followee.host == "https://social-distribution-media.herokuapp.com") ? auth : "",
+                    "access-control-allow-origin": "*"
                 }
             });
             // add followingposts to the list
@@ -52,10 +40,33 @@ function Posts() {
         }
         console.log("followingPosts",allFollowingPosts)
         setFollowingPosts(allFollowingPosts)
+
+        let path = PATH + "/service/posts";
+        let response = await axios.get(path, {
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+
+        let posts = response.data;
+        // remove posts that are in allFollowingPosts by id
+        posts = posts.filter((post) => {
+            for (let i = 0; i < allFollowingPosts.length; i++){
+                if (post.id == allFollowingPosts[i].id){
+                    return false
+                }
+            }
+            return true
+        })
+        
+        console.log("posts",posts)
+        setPosts(posts);
     }
 
+
     React.useEffect(() => {
-        get_friends_post_list()
+        getFeed()
+        
     }, []);
     
 
@@ -71,6 +82,19 @@ function Posts() {
                     <Box style={{display: "flex", flexDirection: "column",flex: 1, margin: "10px", borderColor: "grey", borderStyle: "solid", borderRadius: "5px"}}>
                         <Typography variant="h4">Home</Typography>
                         <List style = {{ flex: 1, overflowY: "scroll"}}>
+                            <Typography variant="h5">Following's Posts</Typography>
+                            {followingPosts.map((post) => (
+                                <ListItem key={post.id} onClick = {() => {setopenPost(true); setPost(post)}}>
+                                    <Card style = {{ width: "100%", backgroundColor: "#66aeec"}}>
+                                        <Box style = {{ paddingLeft: 2}}>
+                                            <Typography variant="h5">{post.title}</Typography>
+                                            <Typography variant="body2">{post.author.displayName}</Typography>
+                                            <Typography variant="body1" style={{maxHeight: "200px", overflowY: "auto"}}>{post.description}</Typography>
+                                        </Box>
+                                    </Card>
+                                </ListItem>
+                            ))}
+                            <Typography variant="h4">Public Posts</Typography>
                             {Posts.map((post) => (
                                 <ListItem key={post.id} onClick = {() => {setopenPost(true); setPost(post)}}>
                                     <Card style = {{ width: "100%", backgroundColor: "#66aeec"}}>
@@ -82,17 +106,7 @@ function Posts() {
                                     </Card>
                                 </ListItem>
                             ))}
-                             {followingPosts.map((post) => (
-                                <ListItem key={post.id} onClick = {() => {setopenPost(true); setPost(post)}}>
-                                    <Card style = {{ width: "100%", backgroundColor: "#66aeec"}}>
-                                        <Box style = {{ paddingLeft: 2}}>
-                                            <Typography variant="h5">{post.title}</Typography>
-                                            <Typography variant="body2">{post.author.displayName}</Typography>
-                                            <Typography variant="body1" style={{maxHeight: "200px", overflowY: "auto"}}>{post.description}</Typography>
-                                        </Box>
-                                    </Card>
-                                </ListItem>
-                            ))}
+                             
                         </List>
                     </Box>
                     {openPost && (
