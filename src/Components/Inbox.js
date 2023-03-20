@@ -76,7 +76,7 @@ function Inbox() {
                         <List style={{ flex: 1, overflowY: "scroll" }}>
                             {Items.map((item) => (
                                 <ListItem key={item.id} onClick={() => { if (item.type === "post") { setItem(item); setopenItem(true); } }}>
-                                    <Card style={{ width: "100%", backgroundColor: "#66aeec" }}>
+                                    <Card style={{ width: "100%", backgroundColor: "#8fd1f2" }}>
                                         <Box style={{ paddingLeft: 2 }}>
                                             {item.type === "post" && (
                                                 <Box style={{ margin: 10 }}>
