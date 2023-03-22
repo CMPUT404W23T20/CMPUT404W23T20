@@ -73,15 +73,18 @@ class Like(models.Model):
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE, null=True, blank=True)
 
     
-class InboxItem(models.Model):
+""" class InboxItem(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     follows = models.ManyToManyField(Follow, blank=True)
     posts = models.ManyToManyField(Post, blank=True)
     comments = models.ManyToManyField(Comment, blank=True)
-    likes = models.ManyToManyField(Like, blank=True)
+    likes = models.ManyToManyField(Like, blank=True) """
 
 class Inbox(models.Model):
     type = models.CharField(max_length=200, default="inbox")
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
-    items = models.ForeignKey(InboxItem, on_delete=models.CASCADE)
+    follows = models.ManyToManyField(Follow, blank=True)
+    posts = models.ManyToManyField(Post, blank=True)
+    comments = models.ManyToManyField(Comment, blank=True)
+    likes = models.ManyToManyField(Like, blank=True)

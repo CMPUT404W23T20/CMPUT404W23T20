@@ -2,12 +2,12 @@ import React from 'react';
 import { Box, Button, Card, List, ListItem, TextField, Typography, FormControlLabel, Checkbox } from '@material-ui/core';
 import Nav from './Nav';
 import axios from 'axios';
+import { getApiUrls } from '../utils/utils';
 
-let PATH = "https://t20-social-distribution.herokuapp.com"
 
 function Posts() {
     const getposts = async () => {
-        let path = PATH+"/service/authors/" + localStorage.getItem("id") + "/posts";
+        let path = `${getApiUrls()}/service/authors/${localStorage.getItem("id")}/posts`;
         let response = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json",
@@ -28,7 +28,7 @@ function Posts() {
     const CreatePost = async (title, description) => {
         console.log(visibility ? "PUBLIC" : "FRIENDS")
         console.log(unlisted)
-        let path = PATH+"/service/authors/" + localStorage.getItem("id") + "/posts";
+        let path = `${getApiUrls()}/service/authors/${localStorage.getItem("id")}/posts`        ;
         let data = {
             title: title,
             description: description,
@@ -46,7 +46,7 @@ function Posts() {
         console.log(postResponse.data);
 
         // get followers
-        path = PATH+ "/service/authors/" + localStorage.getItem("id") + "/followers";
+        path = `${getApiUrls()}/service/authors/${localStorage.getItem("id")}/followers`;
         let followersResponse = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json",
@@ -57,7 +57,7 @@ function Posts() {
 
         // send post to inbox of followers
         for (let follower of followersResponse.data) {
-            path =PATH+ "/service/authors/" + follower.id + "/inbox";
+            path =`${getApiUrls()}/service/authors/${follower.id}/inbox`;
             await axios.post(path, postResponse.data, {
                 headers: {
                     "Content-Type": "application/json",
@@ -74,7 +74,7 @@ function Posts() {
     }
 
     const HandleDelete = async () => {
-        let path = PATH+"/service/authors/" + localStorage.getItem("id") + "/posts/" + post.id;
+        let path = `${getApiUrls()}/service/authors/${localStorage.getItem("id")}/posts/${post.id}`;
         let response = await axios.delete(path, {
             headers: {
                 "Content-Type": "application/json",
@@ -89,7 +89,7 @@ function Posts() {
     }
 
     const handleEditPost = async () => {
-        let path = PATH+"/service/authors/" + localStorage.getItem("id") + "/posts/" + post.id;
+        let path = `${getApiUrls()}/service/authors/${localStorage.getItem("id")}/posts/${post.id}`;
         let data = {
             title: post.title,
             description: post.description,
