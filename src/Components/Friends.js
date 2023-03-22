@@ -240,6 +240,8 @@ function Friends() {
                 console.log(error);
             });
         // add item to inbox of other user if they are on our server
+        console.log('other.host: ', other.host);
+        console.log('path: ', path);
         if (other.host === path ) {
             path = `${getApiUrls()}/service/authors/${other.id}/inbox`;
             await axios.post(path, response.data, {

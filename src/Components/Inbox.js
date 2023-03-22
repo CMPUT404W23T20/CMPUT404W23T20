@@ -15,7 +15,7 @@ function Inbox() {
             }
         });
         console.log(response.data);
-        return response.data.items
+        return response.data
     }
 
     const handleClear = async () => {
