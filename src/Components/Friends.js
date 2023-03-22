@@ -5,8 +5,7 @@ import Nav from './Nav';
 import axios from 'axios';
 import jwt_decode from "jwt-decode";
 import { getListSubheaderUtilityClass } from '@mui/material';
-
-
+import { getApiUrls } from '../utils/utils';
 
 /* Load all the ones that are NOT friends
 do a get request to http://127.0.0.1:8000/api/authors/{other}/followers/{user}
@@ -14,11 +13,7 @@ is user in that list
  - False? => add to list to nonFollow
  - Yes => don't add to list of authors */
 
-let PATH = "https://t20-social-distribution.herokuapp.com"
-
 function Friends() {
-
-    
 
     const [following, setFollowing] = React.useState([]); //people you follow/following
     const [friends, setFriends] =  React.useState([]); //people you follow/following
@@ -28,7 +23,7 @@ function Friends() {
     const getLists = async () => {
         // getting local friends
         let userId= userInfo().user_id;
-        let path = PATH + `/service/authors/${userId}/friends`;
+        let path = `${getApiUrls()}/service/authors/${userId}/friends`;
         let friendsResponse = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json",
@@ -38,7 +33,7 @@ function Friends() {
         let friendsList = friendsResponse.data;
 
         // getting following
-        path =  PATH + `/service/authors/${userId}/following`;
+        path =  `${getApiUrls()}/service/authors/${userId}/following`;
         let followingResponse = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json",
@@ -48,7 +43,7 @@ function Friends() {
 
         // get all other users
         userId= userInfo().user_id;
-        let allAuthors = await axios.get( PATH + "/service/authors", {
+        let allAuthors = await axios.get(`${getApiUrls()}/service/authors`, {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": localStorage.getItem("token")
@@ -101,8 +96,8 @@ function Friends() {
 
         // add other server users to friends list and remove them from following list
         for (let i = 0; i < followingList.length; i++) {
-            if (followingList[i].host === "http://localhost:8001") {
-                let path = `http://localhost:8001/service/authors/${userId}/followers/${followingList[i].id}`;
+            if (followingList[i].host === `${getApiUrls()}`) {
+                let path = `${getApiUrls()}/service/authors/${userId}/followers/${followingList[i].id}`;
                 let headers = {
                     "Content-Type": "application/json",
                     "Authorization": localStorage.getItem("token")
@@ -126,7 +121,7 @@ function Friends() {
 
     const getDuplicateUsers = async () => {
         // get users from duplicate server
-        let usersResponse = await axios.get("http://localhost:8001/service/authors", {
+        let usersResponse = await axios.get(`${getApiUrls()}/service/authors`, {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": localStorage.getItem("token")
@@ -180,7 +175,7 @@ function Friends() {
         }
         // get following
         let userId= userInfo().user_id;
-        let path =  PATH +`/service/authors/${userId}/following`;
+        let path =  `${getApiUrls()}/service/authors/${userId}/following`;
         let followingResponse = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json",
@@ -223,7 +218,7 @@ function Friends() {
         let userId= userInfo().user_id;
         // remove host from id
         let id = other.id.split("/").pop();
-        let path =  PATH +`/service/authors/${id}/followers/${userId}`;
+        let path =  `${getApiUrls()}/service/authors/${id}/followers/${userId}`;
         let data = {
             "type": "author",
             "id": id,
@@ -246,7 +241,7 @@ function Friends() {
             });
         // add item to inbox of other user if they are on our server
         if (other.host === path ) {
-            path = PATH +"/service/authors/" + other.id + "/inbox";
+            path = `${getApiUrls()}/service/authors/${other.id}/inbox`;
             await axios.post(path, response.data, {
                 headers: {
                     "Content-Type": "application/json",
@@ -263,7 +258,7 @@ function Friends() {
     const unfollowAuthor = async (other) => {
         // handles unfollow button
         let userId= userInfo().user_id;
-        let path =  PATH +`/service/authors/${other.id}/followers/${userId}`;
+        let path =  `${getApiUrls()}/service/authors/${other.id}/followers/${userId}`;
         let response = await axios.delete(path, {
             headers: {
                 "Content-Type": "application/json",

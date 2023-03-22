@@ -3,8 +3,7 @@ import { Box, Button, Card,List, ListItem, TextField, Typography } from '@materi
 import Nav from './Nav';
 import axios from 'axios';
 import { getTextFieldUtilityClass } from '@mui/material';
-
-let PATH = "https://t20-social-distribution.herokuapp.com"
+import { getApiUrls } from '../utils/utils';
 
 function Posts() {
     const [Posts, setPosts] = React.useState([]);
@@ -14,7 +13,7 @@ function Posts() {
         /* 1.get all our friends put into a list
            2.enter the id of friend's posts then put all visibilty = friends in another list */
         
-        let following = await axios.get(PATH + "/service/authors/"+localStorage.getItem("id")+"/following", {
+        let following = await axios.get(`${getApiUrls()}/service/authors/${localStorage.getItem("id")}/following`, {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": localStorage.getItem("token")
@@ -36,7 +35,7 @@ function Posts() {
             let followingPosts = await axios.get(path, {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": (followee.host == PATH) ? localStorage.getItem("token") : (followee.host == "https://social-distribution-media.herokuapp.com") ? auth : "",
+                    "Authorization": (followee.host == getApiUrls()) ? localStorage.getItem("token") : (followee.host == "https://social-distribution-media.herokuapp.com") ? auth : "",
                 }
             });
             // add followingposts to the list
@@ -45,7 +44,7 @@ function Posts() {
         console.log("followingPosts",allFollowingPosts)
         setFollowingPosts(allFollowingPosts)
 
-        let path = PATH + "/service/posts";
+        let path = `${getApiUrls()}/service/posts`;
         let response = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json"
