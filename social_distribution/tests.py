@@ -9,7 +9,7 @@ from rest_framework import status
 import json
 import uuid
 
-class AuthorTests(TestCase):
+class APTests(APITestCase):
 
     def create_authors(self):
         '''
@@ -164,18 +164,100 @@ class AuthorTests(TestCase):
         content, status_code = self.create_get_request(path)
 
         print("Status code from TEST_GET_POSTS:\n",status_code)
-        #print("CONTENT FOR GET POSTS: ", content)
+        print("CONTENT FOR GET POSTS: ", content)
 
         self.assertEqual(status_code, status.HTTP_200_OK)
         self.assertEqual(len(content), 3)
+    
+
+    # Testing post for an 
+    # Getting 405 error
+    def test_create_posts(self):
+    # Check authentication
+        self.create_authors()
+        allAuthors = list(Author.objects.all().values())
+
+        authorId = str(allAuthors[0]['id'])
+        author = Author.objects.get(id=authorId)
+
+        user = User.objects.create_user('test1', 'test1@example.com', 'password')
+
+        postId = str(uuid.uuid4())
+        # Create test post data
+        data = {
+            "title": "Test",
+            "description": "Test description for post",
+            "contentType": "text/plain",
+            "author": f"http://127.0.0.1:8000/service/author/{authorId}",
+            "id": f"{postId}",
+        }
+
+        # Authentication
+        token, created = Token.objects.get_or_create(user=user)
+        headers = {'Authorization': f'Token {token.key}'}
+
+        # Send the post request to create the post
+        path = f"http://127.0.0.1:8000/service/authors/{authorId}/posts/"
+        response = self.client.post(path, data=data)
+
+        # Check if the post was created successfully
+        #self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Check if the created post exists in the database
+        self.assertTrue(Post.objects.filter(title="Test", author=authorId).exists())
+    
+    # Getting 405 Error
+    # If looking to delete a post, create one and extract the authorId in order to obtain the post
+
+    def test_delete_post(self):
+        # Create an author and a post
+        self.create_authors()
+        allAuthors = list(Author.objects.all().values())
+        authorId = str(allAuthors[0]['id'])
+        self.create_posts(authorId, 1)
+        post = Post.objects.filter(author=authorId).first()
+        postId = post.id
+
+        user = User.objects.create_user('test1', 'test1@example.com', 'password')
+
+        token, created = Token.objects.get_or_create(user=user)
+        headers = {'Authorization': f'Token {token.key}'}
+
+        # Attempt to delete the post
+        path = f"http://127.0.0.1:8000/service/authors/{authorId}/posts/{postId}/"
+        response = self.client.delete(path, headers=headers)
+
+        # Verify the response status code
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        # Verify that the post no longer exists in the database
+        self.assertFalse(Post.objects.filter(id=postId).exists())
+
+
+    def test_get_all_posts(self):
         
-    
-    def test_post_posts(self):
-        #check authentication
+        
+        return None
+
+    def test_get_friends(self):
+        return None
+
+    def test_get_inbox(self):
+        return None
+
+    def test_post_inbox(self):
         return None
     
-    def test_delete_posts(self):
+    def test_delete_inbox(self):
         return None
-    
 
+    def test_get_comments(self):
+        return None
 
+    def test_post_comment(self):
+        return None
+
+    def test_get_likes(self):
+        return None
