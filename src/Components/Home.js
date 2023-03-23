@@ -31,15 +31,20 @@ function Posts() {
             if (followee.host == "https://social-distribution-media.herokuapp.com"){
                 path = followee.host+"/api/authors/"+id+"/posts";
             }
+            if (followee.host == "https://group-13-epic-app.herokuapp.com/"){
+                path = followee.host+"api/authors/"+id+"/posts/";
+            }
             console.log("path",path)
             let followingPosts = await axios.get(path, {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": (followee.host == getApiUrls()) ? localStorage.getItem("token") : (followee.host == "https://social-distribution-media.herokuapp.com") ? auth : "",
+                    "Authorization": (followee.host == path) ? localStorage.getItem("token") : (followee.host == "https://social-distribution-media.herokuapp.com") ? auth : (followee.host == "https://group-13-epic-app.herokuapp.com/") ? "" : "" 
                 }
+            }).catch((error) => {
+                console.log("error",error)
             });
-            // add followingposts to the list
-            allFollowingPosts = allFollowingPosts.concat(followingPosts.data)
+            // add all posts to allFollowingPosts if request was successful
+            if (followingPosts != undefined) allFollowingPosts = allFollowingPosts.concat(followingPosts.data.items ? followingPosts.data.items : followingPosts.data)
         }
         console.log("followingPosts",allFollowingPosts)
         setFollowingPosts(allFollowingPosts)
