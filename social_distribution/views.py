@@ -3,8 +3,8 @@ import statistics
 from django.shortcuts import render
 from django.template import Context
 from rest_framework import viewsets, status
-from .serializers import PostSerializer, LoginSerializer, CommentSerializer, AuthorSerializer, InboxSerializer, InboxItemSerializer, LikeSerializer, FollowSerializer
-from .models import Post, Author, Comment, Inbox, InboxItem, Like, Follow
+from .serializers import PostSerializer, LoginSerializer, CommentSerializer, AuthorSerializer, InboxSerializer, LikeSerializer, FollowSerializer
+from .models import Post, Author, Comment, Inbox, Like, Follow
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.core import serializers
@@ -50,21 +50,20 @@ def authors(request, author_id = None):
         authors = Author.objects.filter(hidden = False)
         if author_id:
             author = AuthorSerializer(authors.get(id = author_id)).data
-            author['url'] = author['url'] + str(author['id'])
+            # author['url'] = author['url'] + str(author['id'])     dont modify in backend
             return Response(author, status=status.HTTP_200_OK)
-        for author in authors:
-            author.url = author.url + str(author.id)
+        """ for author in authors:      get in frontend instead
+            author.url = author.url + str(author.id) """
         return Response(AuthorSerializer(authors, many=True).data, status=status.HTTP_200_OK)
     elif request.method == 'POST':
-        data = json.parse(request)
+        data = request.data
+        data['host'] = request.scheme + "://" + request.get_host()
+        data['url'] = request.scheme + "://" + request.get_host() + request.path
         serializer = AuthorSerializer(data=data)
         if serializer.is_valid():
-            serializer.save()
-            # create inboxItems for new author
-            inboxItem = InboxItem.objects.create(author = serializer.data.get('id'))
-            inboxItem.save()
+            author = serializer.save()
             # create inbox for new author
-            inbox = Inbox.objects.create(author = serializer.data.get('id'))
+            inbox = Inbox.objects.create(author=author)
             inbox.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -101,7 +100,7 @@ def followers(request, author_id = None, follower_id = None):
             followers = []
             for follow in follows:
                 author = Author.objects.get(id = follow['follower'])
-                author.url = author.url + str(author.id)
+                # author.url = author.url + str(author.id)
                 followers.append(AuthorSerializer(author).data)
             return Response(followers, status=status.HTTP_200_OK)
         # return whether follower_id follows author_id
@@ -161,8 +160,8 @@ def following(request, author_id):
         following = []
         for follow in follows:
                 author = Author.objects.get(id = follow['author'])
-                if author.host == request.get_host() or author.host == 'http://localhost:8000':
-                    author.url = author.url + str(author.id)
+                """ if author.host == request.get_host() or author.host == 'http://localhost:8000':
+                    author.url = author.url + str(author.id) """
                 following.append(AuthorSerializer(author).data)
         return Response(following, status=status.HTTP_200_OK)
         
@@ -179,7 +178,7 @@ def friends(request, author_id):
             for follow2 in followOut:
                 if follow['author'] == follow2['follower']:
                     author = Author.objects.get(id = follow['author'])
-                    author.url = author.url + str(author.id)
+                    # author.url = author.url + str(author.id)
                     friends.append(AuthorSerializer(author).data)
         return Response(friends, status=status.HTTP_200_OK)
     
@@ -193,7 +192,7 @@ def posts(request, author_id = None, post_id = None):
             serializer = PostSerializer(posts, many=True)
             for post in serializer.data:
                 post['author'] = AuthorSerializer(Author.objects.get(id = post['author'])).data
-                post['author']['url'] = post['author']['url'] + str(post['author']['id'])
+                # post['author']['url'] = post['author']['url'] + str(post['author']['id'])
             return Response(serializer.data, status=status.HTTP_200_OK)
         
         author = Author.objects.get(id = author_id)
@@ -212,13 +211,13 @@ def posts(request, author_id = None, post_id = None):
             posts = posts.filter(id = post_id)
             posts = PostSerializer(posts, many=True).data
             posts[0]['author'] = AuthorSerializer(Author.objects.get(id = posts[0]['author'])).data
-            posts[0]['author']['url'] = posts[0]['author']['url'] + str(posts[0]['author']['id'])
+            # posts[0]['author']['url'] = posts[0]['author']['url'] + str(posts[0]['author']['id'])
             return Response(posts[0], status=status.HTTP_200_OK)
         
         serializer = PostSerializer(posts, many=True)
         for post in serializer.data:
             post['author'] = AuthorSerializer(Author.objects.get(id = post['author'])).data
-            post['author']['url'] = post['author']['url'] + str(post['author']['id'])
+            # post['author']['url'] = post['author']['url'] + str(post['author']['id'])
 
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -232,6 +231,7 @@ def posts(request, author_id = None, post_id = None):
         data = request.data
         data['author'] = author.id
         data['authorName'] = author.displayName
+        data['origin'] = author.host
         serializer = PostSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
@@ -272,11 +272,11 @@ def comments(request, author_id, post_id):
         serializer = CommentSerializer(comments, many=True)
         for comment in serializer.data:
             comment['author'] = AuthorSerializer(Author.objects.get(id = comment['author'])).data
-            comment['author']['url'] = comment['author']['url'] + str(comment['author']['id'])
+            # comment['author']['url'] = comment['author']['url'] + str(comment['author']['id'])
             comment['post'] = PostSerializer(Post.objects.get(id = comment['post'])).data
             comment['post']['origin'] = comment['post']['origin'] + str(comment['post']['id'])
             comment['post']['author'] = AuthorSerializer(Author.objects.get(id = comment['post']['author'])).data
-            comment['post']['author']['url'] = comment['post']['author']['url'] + str(comment['post']['author']['id'])
+            # comment['post']['author']['url'] = comment['post']['author']['url'] + str(comment['post']['author']['id'])
         return Response(serializer.data, status=status.HTTP_200_OK)
     elif request.method == 'POST':
         token = request.headers.get('Authorization', None)
@@ -310,16 +310,16 @@ def likedPosts(request, author_id):
             if like.post != None:
                 post = PostSerializer(Post.objects.get(id = like.post.id)).data
                 post['author'] = AuthorSerializer(Author.objects.get(id = post['author'])).data
-                post['author']['url'] = post['author']['url'] + str(post['author']['id'])
+                # post['author']['url'] = post['author']['url'] + str(post['author']['id'])
                 items.append(post)
             elif like.comment != None:
                 comment = CommentSerializer(Comment.objects.get(id = like.comment.id)).data
                 comment['author'] = AuthorSerializer(Author.objects.get(id = comment['author'])).data
-                comment['author']['url'] = comment['author']['url'] + str(comment['author']['id'])
+                # comment['author']['url'] = comment['author']['url'] + str(comment['author']['id'])
                 comment['post'] = PostSerializer(Post.objects.get(id = comment['post'])).data
                 comment['post']['origin'] = comment['post']['origin'] + str(comment['post']['id'])
                 comment['post']['author'] = AuthorSerializer(Author.objects.get(id = comment['post']['author'])).data
-                comment['post']['author']['url'] = comment['post']['author']['url'] + str(comment['post']['author']['id'])
+                # comment['post']['author']['url'] = comment['post']['author']['url'] + str(comment['post']['author']['id'])
                 items.append(comment)
         return Response(items, status=status.HTTP_200_OK)
 
@@ -327,37 +327,49 @@ def likedPosts(request, author_id):
 def inbox(request, author_id):
     if request.method == 'GET':
         # get all inbox items for author
-        author = Author.objects.get(id = author_id)
-        inbox = Inbox.objects.filter(author = author)
+        author = Author.objects.get(id=author_id)
+        inbox = Inbox.objects.get(author=author)
         if not inbox:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        serializer = InboxSerializer(inbox, many=True)
-        # get InboxItem from data['items']
-        serializer.data[0]['items'] = InboxItemSerializer(InboxItem.objects.get(id = serializer.data[0]['items'])).data
-        serializer.data[0]['author'] = AuthorSerializer(Author.objects.get(id = serializer.data[0]['author'])).data
-        # get Post from data['items']['post']
-        for i in range(len(serializer.data[0]['items']['posts'])):
-            serializer.data[0]['items']['posts'][i] = PostSerializer(Post.objects.get(id = serializer.data[0]['items']['posts'][i])).data
-            serializer.data[0]['items']['posts'][i]['author'] = AuthorSerializer(Author.objects.get(id = serializer.data[0]['items']['posts'][i]['author'])).data
-        for i in range(len(serializer.data[0]['items']['follows'])):
-            serializer.data[0]['items']['follows'][i] = FollowSerializer(Follow.objects.get(id = serializer.data[0]['items']['follows'][i])).data
-            serializer.data[0]['items']['follows'][i]['follower'] = AuthorSerializer(Author.objects.get(id = serializer.data[0]['items']['follows'][i]['follower'])).data
-            serializer.data[0]['items']['follows'][i]['author'] = AuthorSerializer(Author.objects.get(id = serializer.data[0]['items']['follows'][i]['author'])).data
-        for i in range(len(serializer.data[0]['items']['comments'])):
-            serializer.data[0]['items']['comments'][i] = CommentSerializer(Comment.objects.get(id = serializer.data[0]['items']['comments'][i])).data
-            serializer.data[0]['items']['comments'][i]['post'] = PostSerializer(Post.objects.get(id = serializer.data[0]['items']['comments'][i]['post'])).data
-            serializer.data[0]['items']['comments'][i]['author'] = AuthorSerializer(Author.objects.get(id = serializer.data[0]['items']['comments'][i]['author'])).data
-        for i in range(len(serializer.data[0]['items']['likes'])):
-            serializer.data[0]['items']['likes'][i] = LikeSerializer(Like.objects.get(id = serializer.data[0]['items']['likes'][i])).data
-            serializer.data[0]['items']['likes'][i]['author'] = AuthorSerializer(Author.objects.get(id = serializer.data[0]['items']['likes'][i]['author'])).data
-            serializer.data[0]['items']['likes'][i]['post'] = PostSerializer(Post.objects.get(id = serializer.data[0]['items']['likes'][i]['post'])).data
-            serializer.data[0]['items']['likes'][i]['post']['author'] = AuthorSerializer(Author.objects.get(id = serializer.data[0]['items']['likes'][i]['post']['author'])).data
+        serializer = InboxSerializer(inbox)
 
-        # items becomes a list with all posts and requests
-        serializer.data[0]['items'] = serializer.data[0]['items']['posts'] + serializer.data[0]['items']['follows'] + serializer.data[0]['items']['comments'] + serializer.data[0]['items']['likes']
-        
-        return Response(serializer.data[0])
-        
+        # get author data and add to serializer
+        author_data = AuthorSerializer(Author.objects.get(id=serializer.data['author'])).data
+        serializer.data['author'] = author_data
+
+        # process posts
+        for i in range(len(serializer.data['posts'])):
+            post_data = PostSerializer(Post.objects.get(id=serializer.data['posts'][i])).data
+            post_data['author'] = AuthorSerializer(Author.objects.get(id=post_data['author'])).data
+            serializer.data['posts'][i] = post_data
+
+        # process follows
+        for i in range(len(serializer.data['follows'])):
+            follow_data = FollowSerializer(Follow.objects.get(id=serializer.data['follows'][i])).data
+            follow_data['follower'] = AuthorSerializer(Author.objects.get(id=follow_data['follower'])).data
+            follow_data['author'] = AuthorSerializer(Author.objects.get(id=follow_data['author'])).data
+            serializer.data['follows'][i] = follow_data
+
+        # process comments
+        for i in range(len(serializer.data['comments'])):
+            comment_data = CommentSerializer(Comment.objects.get(id=serializer.data['comments'][i])).data
+            comment_data['post'] = PostSerializer(Post.objects.get(id=comment_data['post'])).data
+            comment_data['author'] = AuthorSerializer(Author.objects.get(id=comment_data['author'])).data
+            serializer.data['comments'][i] = comment_data
+
+        # process likes
+        for i in range(len(serializer.data['likes'])):
+            like_data = LikeSerializer(Like.objects.get(id=serializer.data['likes'][i])).data
+            like_data['author'] = AuthorSerializer(Author.objects.get(id=like_data['author'])).data
+            like_data['post'] = PostSerializer(Post.objects.get(id=like_data['post'])).data
+            like_data['post']['author'] = AuthorSerializer(Author.objects.get(id=like_data['post']['author'])).data
+            serializer.data['likes'][i] = like_data
+
+        # combine all items into a single list
+        items = serializer.data['posts'] + serializer.data['follows'] + serializer.data['comments'] + serializer.data['likes']
+
+        return Response(items)
+
     elif request.method == 'POST':
         # add object of type post/follow/like/comment to inbox of author_id
         # don't authorize becausing we are sending objects to another user

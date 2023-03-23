@@ -2,11 +2,12 @@ import React from 'react';
 import { Box } from '@material-ui/core';
 import Nav from './Nav';
 import axios from 'axios';
+import { getApiUrls } from '../utils/utils';
 
 function Profile() {
 
     const getUserInfo = async () => {
-        let path = "https://t20-social-distribution.herokuapp.com/service/authors/" + localStorage.getItem("id");
+        let path = `${getApiUrls()}/service/authors/${localStorage.getItem("id")}`;
         let response = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json",

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Post, Author, Comment, Inbox, InboxItem, Like, Follow
+from .models import Post, Author, Comment, Inbox, Like, Follow
 from rest_framework_jwt.settings import api_settings
 from django.conf import settings
 import jwt
@@ -22,10 +22,10 @@ class InboxSerializer(serializers.ModelSerializer):
         model = Inbox
         fields = '__all__'
 
-class InboxItemSerializer(serializers.ModelSerializer):
+""" class InboxItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = InboxItem
-        fields = '__all__'
+        fields = '__all__' """
     
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
