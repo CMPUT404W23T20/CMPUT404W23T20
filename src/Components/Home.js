@@ -83,7 +83,7 @@ function Posts() {
             }
         });
         let commentDataList = comments.data
-        console.log("my comments", commentDataList)
+
         for (let i = 0; i < commentDataList.length; i++ ){
             commentList.push(commentDataList[i])  
         }
@@ -116,7 +116,7 @@ function Posts() {
 
 
         //getting all comments in the "Following" header
-        console.log("all comments",commentList)
+      
         setComments(commentList)    
     }
 
@@ -144,12 +144,6 @@ function Posts() {
         document.getElementById("comment").value = ""
         getFeed()
     }
-
-    const loadComments = () =>{
-        return console.log("length",Comments.length)
-    }
-
-
     const [openPost, setopenPost] = React.useState(false);
     const [post, setPost] = React.useState([{}]);
     return (
@@ -164,7 +158,7 @@ function Posts() {
                         <List style = {{ flex: 1, overflowY: "scroll"}}>
                             <Typography variant="h5">Following's Posts</Typography>
                             {followingPosts.map((post) => (
-                                <ListItem key={post.id} onClick = {() => {setopenPost(true); setPost(post); loadComments();}}>
+                                <ListItem key={post.id} onClick = {() => {setopenPost(true); setPost(post);}}>
                                     <Card style = {{ width: "100%", backgroundColor: "#8fd1f2"}}>
                                         <Box style = {{ paddingLeft: 2}}>
                                             <Typography variant="h5">{post.title}</Typography>
@@ -196,11 +190,19 @@ function Posts() {
                             <Box style={{flex: 1, margin: "5px"}}>
                                 <Card style = {{ width: "100%", height: "100%", borderRadius: "4px", boxShadow: "0 0 10px 0 rgba(0,0,0,0.5)"}}>
                                     <TextField id="description" label="Description" variant="outlined" style={{width: "95%", margin: "25px"}} value={post.description} onChange={(e) => setPost({...post, description: e.target.value})} multiline maxRows={15}/>
-                                         
-                                    {Comments.map((comments) => (
-                                       (`${comments.post.id}` === `${post.id.split("/").pop()}`) ? 
-                                        (<h2>{comments.author.displayName}: {comments.comment}</h2>):(<h2></h2>)   
-                                    ))}
+                                    <Typography variant="h6" style = {{textAlign:"left", paddingLeft:30,fontSize:20}}>Comments:</Typography>
+                                        {Comments.map((comments) => (
+                                        (`${comments.post.id}` === `${post.id.split("/").pop()}`) ? 
+
+                                            ( <div style = {{display:'flex',alignItems:'center',wordWrap:"break-word"}}>
+                                                <img src= {post.author.profileImage} alt = "" style = {{borderRadius:"50%",marginLeft:30,marginRight:15,marginBottom:10}} width={55} height = {55}/>
+                                                <Typography variant="h6" style = {{display: "inline-block",textAlign:"left", paddingLeft:15,fontSize:20}}>
+                                                    {comments.author.displayName}: {comments.comment}
+                                                </Typography>
+                                            </div>
+                                            ) 
+                                            :(<h2></h2>)   
+                                        ))}
                                      <TextField id="comment" label="Comment..." variant="outlined" style={{width: "75%", margin: "25px"}}/>
                                      <Button variant="contained" color="primary" onClick ={() => postComment(document.getElementById("comment").value,`${post.id}`,`${post.author.id}`)}   style={{ margin: 10,position:"relative",top:"25px"}}>Comment</Button>
                                 </Card>
