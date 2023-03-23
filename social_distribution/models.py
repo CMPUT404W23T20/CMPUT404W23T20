@@ -37,7 +37,7 @@ class Comment(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
     comment = models.CharField(max_length=200)
     contentType = models.CharField(max_length=200, default="text/plain")
-    published = models.DateTimeField()
+    published = models.DateTimeField(auto_now_add=True)
     post = models.ForeignKey('Post', on_delete=models.CASCADE)
 
     def __str__(self):

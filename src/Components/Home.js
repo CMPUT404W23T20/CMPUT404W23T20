@@ -8,6 +8,7 @@ import { getApiUrls } from '../utils/utils';
 function Posts() {
     const [Posts, setPosts] = React.useState([]);
     const [followingPosts,setFollowingPosts] = React.useState([]);
+    const [Comments, setComments] = React.useState([]);
  
     const getFeed =  async() =>{
         /* 1.get all our friends put into a list
@@ -66,17 +67,88 @@ function Posts() {
             }
             return true
         })
-        
-        console.log("posts",posts)
+  
         setPosts(posts);
-    }
 
+        let commentList = []
+
+        //get all comments in the "Public Posts" header
+        for (let i = 0; i < posts.length; i++){
+
+            let commentListPath = `${getApiUrls()}`+"/service/authors/" + posts[i].author.id+ "/posts/" +posts[i].id+"/comments";
+            let comments = await axios.get(commentListPath, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem("token")
+            }
+        });
+        let commentDataList = comments.data
+        console.log("my comments", commentDataList)
+        for (let i = 0; i < commentDataList.length; i++ ){
+            commentList.push(commentDataList[i])  
+        }
+        }
+
+        for (let i = 0; i < allFollowingPosts.length; i++){
+            //getting comments for LOCAL posts
+            if (allFollowingPosts[i].author.host == "https://t20-social-distribution.herokuapp.com"){
+
+                let commentListPath = `${getApiUrls()}`+"/service/authors/" + allFollowingPosts[i].author.id+ "/posts/" + allFollowingPosts[i].id+"/comments";
+                let comments = await axios.get(commentListPath, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": localStorage.getItem("token")
+                        }
+                    });
+                let commentDataList = comments.data
+                for (let i = 0; i < commentDataList.length; i++ ){
+                    commentList.push(commentDataList[i])  
+                }
+                
+            }
+
+
+        }
+
+        
+
+
+
+
+        //getting all comments in the "Following" header
+        console.log("all comments",commentList)
+        setComments(commentList)    
+    }
 
     React.useEffect(() => {
         getFeed()
         
     }, []);
     
+
+    const postComment = async(comment, postId, authorId) =>{
+        console.log("comment: ",comment,postId,authorId)
+        let path = `${getApiUrls()}`+"/service/authors/"+authorId+ "/posts/"+postId+"/comments";
+        let data = {
+            author: localStorage.getItem("id"),
+            comment: comment,
+            post: postId
+        }
+        let postComment = await axios.post(path, data, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem("token")
+            }
+        });
+        //clear the input box after sending comment*/
+        document.getElementById("comment").value = ""
+        getFeed()
+    }
+
+    const loadComments = () =>{
+        return console.log("length",Comments.length)
+    }
+
 
     const [openPost, setopenPost] = React.useState(false);
     const [post, setPost] = React.useState([{}]);
@@ -92,7 +164,7 @@ function Posts() {
                         <List style = {{ flex: 1, overflowY: "scroll"}}>
                             <Typography variant="h5">Following's Posts</Typography>
                             {followingPosts.map((post) => (
-                                <ListItem key={post.id} onClick = {() => {setopenPost(true); setPost(post)}}>
+                                <ListItem key={post.id} onClick = {() => {setopenPost(true); setPost(post); loadComments();}}>
                                     <Card style = {{ width: "100%", backgroundColor: "#8fd1f2"}}>
                                         <Box style = {{ paddingLeft: 2}}>
                                             <Typography variant="h5">{post.title}</Typography>
@@ -102,6 +174,7 @@ function Posts() {
                                     </Card>
                                 </ListItem>
                             ))}
+                        
                             <Typography variant="h4">Public Posts</Typography>
                             {Posts.map((post) => (
                                 <ListItem key={post.id} onClick = {() => {setopenPost(true); setPost(post)}}>
@@ -110,6 +183,7 @@ function Posts() {
                                             <Typography variant="h5">{post.title}</Typography>
                                             <Typography variant="body2">{post.author.displayName}</Typography>
                                             <Typography variant="body1" style={{maxHeight: "200px", overflowY: "auto"}}>{post.description}</Typography>
+
                                         </Box>
                                     </Card>
                                 </ListItem>
@@ -122,6 +196,13 @@ function Posts() {
                             <Box style={{flex: 1, margin: "5px"}}>
                                 <Card style = {{ width: "100%", height: "100%", borderRadius: "4px", boxShadow: "0 0 10px 0 rgba(0,0,0,0.5)"}}>
                                     <TextField id="description" label="Description" variant="outlined" style={{width: "95%", margin: "25px"}} value={post.description} onChange={(e) => setPost({...post, description: e.target.value})} multiline maxRows={15}/>
+                                         
+                                    {Comments.map((comments) => (
+                                       (`${comments.post.id}` === `${post.id.split("/").pop()}`) ? 
+                                        (<h2>{comments.author.displayName}: {comments.comment}</h2>):(<h2></h2>)   
+                                    ))}
+                                     <TextField id="comment" label="Comment..." variant="outlined" style={{width: "75%", margin: "25px"}}/>
+                                     <Button variant="contained" color="primary" onClick ={() => postComment(document.getElementById("comment").value,`${post.id}`,`${post.author.id}`)}   style={{ margin: 10,position:"relative",top:"25px"}}>Comment</Button>
                                 </Card>
                             </Box>
                         </Box>)
@@ -133,3 +214,5 @@ function Posts() {
 }
 
 export default Posts;
+
+

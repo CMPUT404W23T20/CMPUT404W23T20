@@ -266,10 +266,23 @@ def posts(request, author_id = None, post_id = None):
         return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['GET', 'POST'])
-def comments(request, author_id, post_id):
+def comments(request, author_id, post_id,comment_id=None):
     if request.method == 'GET':
         comments = Comment.objects.filter(post = post_id)
         serializer = CommentSerializer(comments, many=True)
+        if comment_id:
+                #when deployed to heroku, change "request.get_host() +"/" " in authorUrl to "authorPost.post.author.url"
+                authorPost= Comment.objects.get(id = comment_id)
+                authorUrl = request.get_host()+"/"+ str(authorPost.post.author.id)
+                commentUrl = authorUrl + "/posts/" + post_id +"/comments/" + comment_id
+                comment= CommentSerializer(Comment.objects.get(id = comment_id)).data
+
+                comment['author'] = AuthorSerializer(Author.objects.get(id = comment['author'])).data
+                comment['id'] = commentUrl
+                comment['author']['url'] = comment['author']['url'] + str(comment['author']['id'])
+
+                return Response(comment, status=status.HTTP_200_OK)
+
         for comment in serializer.data:
             comment['author'] = AuthorSerializer(Author.objects.get(id = comment['author'])).data
             # comment['author']['url'] = comment['author']['url'] + str(comment['author']['id'])
@@ -279,18 +292,23 @@ def comments(request, author_id, post_id):
             # comment['post']['author']['url'] = comment['post']['author']['url'] + str(comment['post']['author']['id'])
         return Response(serializer.data, status=status.HTTP_200_OK)
     elif request.method == 'POST':
+        
         token = request.headers.get('Authorization', None)
         payload = LoginSerializer.validateToken(token)
+        
         author = Author.objects.get(id = payload.get('user_id', None))
         data = request.data
+ 
         data['author'] = author.id
-        data['authorName'] = author.displayName
+        
         data['post'] = post_id
+      
         serializer = CommentSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['GET', 'POST', 'DELETE'])
 def commentLikes(request, comment_id):
