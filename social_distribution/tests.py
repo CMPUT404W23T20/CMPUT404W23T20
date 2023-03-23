@@ -3,7 +3,7 @@ from django.urls import reverse,resolve
 from django.test import TestCase
 from rest_framework.test import APIClient,RequestsClient, APITestCase
 from rest_framework.authtoken.models import Token
-from social_distribution.models import Author, Follow
+from social_distribution.models import Author, Follow, Post
 from django.contrib.auth.models import User
 from rest_framework import status
 import json
@@ -101,7 +101,7 @@ class AuthorTests(TestCase):
         content = request.content.decode("utf-8")
         content = json.loads(content)
         print(content)
-   
+
     def test_get_followers(self):
       
         self.create_authors()
@@ -138,11 +138,37 @@ class AuthorTests(TestCase):
         # Check if follower was deleted
         self.assertFalse(Follow.objects.filter(author=author1, follower=author2).exists())
 
-     
-    
+    # Creates a post for an author
+    def create_posts(self, author_id, post_count):
+        author = Author.objects.get(id=author_id)
+        for i in range(post_count):
+            post = Post.objects.create(
+                title=f'Test Post {i+1} by {author.displayName}',
+                description=f'Test description for Post {i+1} by {author.displayName}',
+                contentType='text/plain',
+                author=author
+            )
+            post.save()
+   
+    # Getting all posts of an author 
     def test_get_posts(self):
-        #to be implemented
-        return None
+        self.create_authors()
+        allAuthors = list(Author.objects.all().values())
+
+        authorId = str(allAuthors[0]['id'])
+        
+        # Create test posts
+        self.create_posts(authorId, 3)
+        
+        path = f"http://127.0.0.1:8000/service/authors/{authorId}/posts"
+        content, status_code = self.create_get_request(path)
+
+        print("Status code from TEST_GET_POSTS:\n",status_code)
+        #print("CONTENT FOR GET POSTS: ", content)
+
+        self.assertEqual(status_code, status.HTTP_200_OK)
+        self.assertEqual(len(content), 3)
+        
     
     def test_post_posts(self):
         #check authentication
@@ -153,33 +179,3 @@ class AuthorTests(TestCase):
     
 
 
-
-
-'''
-class LoginTestCase(APITestCase):
-    def test_login_success(self):
-        # Create a test user
-        username = 'testuser'
-        password = 'testpassword'
-        user = User.objects.create_user(username=username, password=password)
-
-        # Set up the request data
-        data = {
-            'username': username,
-            'password': password
-        }
-
-        # Send the POST request to the login endpoint
-        url = "http://127.0.0.1:8000/login"
-        response = self.client.post(url, data, format='json')
-
-        # Check that the response status code is 200 OK
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        # Check that the response data contains a 'access' token
-        self.assertIn('access', response.data)
-
-        # Check that the 'access' token is a string
-        self.assertIsInstance(response.data['access'], str)
-
-    '''
