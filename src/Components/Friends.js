@@ -385,7 +385,7 @@ function Friends() {
             <Nav/>
             <Box style = {{display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'row', marginLeft:200, marginTop:40}}>
                 <Box style = {{flex:1,display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'column'}}>
-                    <Card style = {{width:500, height:450, backgroundColor:"#a7cdd4"}}>
+                    <Card style = {{width:500, height:450, backgroundColor:"#c3d3eb", borderColor: "grey", borderStyle: "solid", borderRadius: "5px"}}>
                         <Box style = {{display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'row'}}>
                             <Typography variant="h5" style = {{paddingTop:5, alignSelf:'left'}}>Friends</Typography>
                             <TextField id="searchFriends" label="Search by name and host" style = {{width: 370, marginLeft: 20}} onChange={searchFriends}/>
@@ -395,7 +395,7 @@ function Friends() {
                             {!loadingFriends && filteredFriends.map((author) => (
                                 <CardContent >
                                     <div style = {{display:'flex',alignItems:'center',width:500,wordWrap:"break-word"}}>
-                                        {author.profileImage && (<img src= {author.profileImage} alt = "IMG" style = {{borderRadius:"50%",}} width={55} height = {55}/>)}
+                                        <img src= {(author.profileImage != "no profileImage" && author.profileImage != "") ? author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt = "IMG" style = {{borderRadius:"50%"}} width={55} height = {55}/>
                                         <span>
                                             <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}>{author.displayName}</h4></a>
                                         </span>
@@ -410,7 +410,7 @@ function Friends() {
                             ))}
                         </Box>
                     </Card>
-                    <Card style = {{width:500, height:450, backgroundColor:"#a7cdd4", marginTop:20}}>
+                    <Card style = {{width:500, height:450, backgroundColor:"#c3d3eb", marginTop:20, borderColor: "grey", borderStyle: "solid", borderRadius: "5px"}}>
                         <Box style = {{display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'row'}}>
                             <Typography variant="h5" style = {{paddingTop:5, alignSelf:'left'}}>Following</Typography>
                             <TextField id="searchFollowing" label="Search by name and host" style = {{width: 350, marginLeft: 20}} onChange={searchFollowing}/>
@@ -419,8 +419,8 @@ function Friends() {
                             {loadingFollowing && <CircularProgress />}
                             {!loadingFollowing && filteredFollowing.map((author) => (
                                 <CardContent >
-                                    <div style = {{display:'flex',alignItems:'center',width:500,wordWrap:"break-word"}}>
-                                        {author.profileImage && (<img src= {author.profileImage} alt = "IMG" style = {{borderRadius:"50%"}} width={55} height = {55}/>)}
+                                    <div style = {{display:'flex',alignItems:'center',width:400,wordWrap:"break-word"}}>
+                                        <img src= {(author.profileImage != "no profileImage" && author.profileImage != "") ? author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt = "IMG" style = {{borderRadius:"50%"}} width={55} height = {55}/>
                                         <span>
                                             <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}>{author.displayName}</h4></a>
                                         </span>
@@ -437,7 +437,7 @@ function Friends() {
                     </Card>
                 </Box>
                 <Box style = {{flex:1,display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'column'}}>
-                    <Card style = {{width:500, height:450, backgroundColor:"#a7cdd4"}}>
+                    <Card style = {{width:500, height:450, backgroundColor:"#c3d3eb", borderColor: "grey", borderStyle: "solid", borderRadius: "5px"}}>
                         <Box style = {{display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'row'}}>
                             <Typography variant="h5" style = {{paddingTop:5}}>Local Authors</Typography>
                             <TextField id="searchNotFollowing" label="Search by name and host" style = {{width: 300, marginLeft: 20}} onChange={searchNotFollowing}/>
@@ -447,7 +447,7 @@ function Friends() {
                             {!loadingNotFollowing && filteredNotFollowing.map((author) => (
                                 <CardContent >
                                     <div style = {{display:'flex',alignItems:'center',width:400,wordWrap:"break-word"}}>
-                                        <img src= {author.profileImage} alt = "" style = {{borderRadius:"50%",marginRight:20}} width={55} height = {55}/>
+                                        <img src= {(author.profileImage != "no profileImage" && author.profileImage != "") ? author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt = "IMG" style = {{borderRadius:"50%"}} width={55} height = {55}/>
                                         <span>
                                             <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}> {author.displayName}</h4></a>
                                         </span>
@@ -463,7 +463,7 @@ function Friends() {
                             ))}
                         </Box>
                     </Card>
-                    <Card style = {{width:500, height:450, backgroundColor:"#a7cdd4", marginTop:20}}>
+                    <Card style = {{width:500, height:450, backgroundColor:"#c3d3eb", marginTop:20, borderColor: "grey", borderStyle: "solid", borderRadius: "5px"}}>
                         <Box style = {{display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'row'}}>
                             <Typography variant="h5" style = {{paddingTop:5}}>Other Authors</Typography>
                             <TextField id="searchOther" label="Search by name and host" style = {{width: 300,marginLeft:20}} onChange={searchOtherUsers}/>
@@ -473,7 +473,7 @@ function Friends() {
                             {!loadingOtherUsers && filteredOtherUsers.map((author) => (
                                 <CardContent >
                                     <div style = {{display:'flex',alignItems:'center',width:500,wordWrap:"break-word"}}>
-                                        {author.profileImage && (<img src= {author.profileImage} alt = "IMG" style = {{borderRadius:"50%"}} width={55} height = {55}/>)}
+                                        <img src= {(author.profileImage != "no profileImage" && author.profileImage != "") ? author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt = "IMG" style = {{borderRadius:"50%"}} width={55} height = {55}/>
                                         <span>
                                             <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}>{author.displayName}</h4></a>
                                         </span>
