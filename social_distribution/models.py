@@ -7,7 +7,7 @@ class Author(models.Model):
     type = models.CharField(max_length=200, default="author")
     host = models.CharField(max_length=200, default=hostAddress)
     displayName = models.CharField(max_length=200)
-    username = models.CharField(max_length=200)
+    username = models.CharField(max_length=200, unique=True)
     url = models.CharField(max_length=200, default=hostAddress + "/service/authors/")
     github = models.CharField(max_length=200, default="No github")
     profileImage = models.CharField(max_length=200, default="https://i.imgur.com/k7XVwpB.jpeg")

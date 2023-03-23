@@ -3,7 +3,7 @@ import statistics
 from django.shortcuts import render
 from django.template import Context
 from rest_framework import viewsets, status
-from .serializers import PostSerializer, LoginSerializer, CommentSerializer, AuthorSerializer, InboxSerializer, InboxItemSerializer, LikeSerializer, FollowSerializer
+from .serializers import PostSerializer, LoginSerializer, CommentSerializer, AuthorSerializer, InboxSerializer, InboxItemSerializer, LikeSerializer, FollowSerializer, RegisterSerializer
 from .models import Post, Author, Comment, Inbox, InboxItem, Like, Follow
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -22,6 +22,23 @@ from rest_framework.decorators import api_view
 def index(request):
     return render(request, "public/build/index.html")
 
+@api_view(['POST'])
+def Register(request):
+    if request.method == "POST":
+         
+        data = request.data
+        
+        data['hidden']= True  # verify user 
+        data['displayName'] = data['username']
+        serializer = RegisterSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            # Save the new user object
+            serializer.save()
+            return Response( "ok", status=status.HTTP_201_CREATED)
+        else:
+            return Response("Failed",  status=status.HTTP_400_BAD_REQUEST)
+        
 class LoginView(APIView):
 
     def post(self, request):

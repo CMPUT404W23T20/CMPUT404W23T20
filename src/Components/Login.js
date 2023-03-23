@@ -1,6 +1,7 @@
 import { Box, Button, Card, TextField, Typography } from '@mui/material';
 import axios from 'axios';
 import React from 'react';
+import { Link, useHistory } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 
 
@@ -44,12 +45,20 @@ function Login() {
                                 </Typography>
                             </Box>
                             <Box sx={{flex: 2,display: "flex",flexDirection: "column",justifyContent: "center",alignItems: "center",marginBottom: "25%", }}>
-                                <Typography variant="h6" sx={{ fontWeight: "bold", color: "red" }}>
+                                <Typography variant="h6" sx={{ fontWeight: "bold", color: "red"  }}>
                                     {invalid ? "Invalid Username or Password" : ""}
                                 </Typography>
                                 <TextField sx={{width: "300px",}} id="username" label="Username" variant="outlined" onChange={() => setInvalid(false)} onKeyPress={(e) => {if (e.key === 'Enter') {handleLogin()}}}/>
                                 <TextField sx={{width: "300px",}} id="password" label="Password" variant="outlined" onChange={() => setInvalid(false)} type='password' onKeyPress={(e) => {if (e.key === 'Enter') {handleLogin()}}}/>
+                                <Box sx={{marginTop: "20px"}}>
+                                
+                                    <Typography variant="body1" onClick= {() => navigate("/register")} sx={{ fontWeight: "bold", color: "blue" }}>
+                                    Don't have an account? Register here
+                                    </Typography>
+                                    
+                                </Box>
                             </Box>
+                            
                             <Box sx={{flex: 1,display: "flex",flexDirection: "column",justifyContent: "center",alignItems: "center",}}>
                                 <Button sx={{width: "200px", height: "50px"}} variant="contained" color="primary" onClick= {() => handleLogin()}>
                                     Login
@@ -59,8 +68,11 @@ function Login() {
                     </Box>
                 </Box>
             <Box sx={{flex: 1,width: "100%",display: "flex",flexDirection: "column",justifyContent: "center",alignItems: "center",}}>
-            </Box>
+            </Box>√
+        
+ 
         </Box>
+        
     )
 }
 
