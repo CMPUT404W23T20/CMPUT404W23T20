@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Button, Card,CardContent, TextField } from '@material-ui/core';
+import { Box, Button, Card,CardContent, TextField, Typography } from '@material-ui/core';
 import { useNavigate } from "react-router-dom";
 import Nav from './Nav';
 import axios from 'axios';
@@ -76,7 +76,6 @@ function Friends() {
             }
         }
         setNotFollowing(notFollowingList);
-        
         // remove friends from following and self
         let followingList = followingResponse.data;
         for (let i = 0; i < friendsList.length; i++) {
@@ -145,7 +144,36 @@ function Friends() {
         });
         // add userResponse.data to group20List
         console.log("Group20 Users", response.data)
-        return response.data;
+        return response.data.items;
+    }
+
+    const getGroup6Users = async () => {
+        // get users from group6
+        let username = "Group6"
+        let password = ""
+        let auth = "Basic " + btoa(username + ":" + password);
+        let response = await axios.get("https://cmput404-group6-instatonne.herokuapp.com/api/authors", {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": auth,
+            }
+        });
+        console.log("Group6 Users", response.data)
+        return response.data.items;
+    }
+
+    const getGroup13Users = async () => {
+        // get users from group13
+        let username = "Group13"
+        let password = ""
+        let auth = "Basic " + btoa(username + ":" + password);
+        let response = await axios.get("https://group-13-epic-app.herokuapp.com/api/authors", {
+            headers: {
+                "Content-Type": "application/json",
+            }
+        });
+        console.log("Group13 Users", response.data)
+        return response.data.items
     }
 
 
@@ -156,6 +184,10 @@ function Friends() {
         otherUsersList = otherUsersList.concat(group20Users);
         //let duplicateUsers = await getDuplicateUsers();
         //otherUsersList = otherUsersList.concat(duplicateUsers);
+        //let group6Users = await getGroup6Users();
+        //otherUsersList = otherUsersList.concat(group6Users);
+        let group13Users = await getGroup13Users();
+        otherUsersList = otherUsersList.concat(group13Users);
         
 
         // remove friends from other users
@@ -289,102 +321,101 @@ function Friends() {
     return (
         <Box>
             <Nav/>
-            <div style = {{float:"right",paddingRight:150,width: 400,}}>
-                <Card style={{ width: 450,height:450, backgroundColor:"#8fd1f2",overflowY:"scroll"}}>
-                        <h2 style ={{color:"whitesmoke"}}>Local Authors</h2>
-                        <div className = "localauthors"> 
-                            {notFollowing.map((author) => (
-                             
+            <Box style = {{display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'row', marginLeft:200, marginTop:40}}>
+                <Box style = {{flex:1,display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'column'}}>
+                    <Card style = {{width:500, height:450, backgroundColor:"#a7cdd4"}}>
+                        <Typography variant="h5" style = {{paddingTop:5}}>Friends</Typography>
+                        <TextField id="searchFriends" label="Search" style = {{width: 400,marginLeft:20}} onChange={search}/>
+                        <Box style = {{marginLeft:20,marginTop:20, height:350,overflowY:"scroll", overflowX:"hidden"}}>
+                            {friends.map((author) => (
                                 <CardContent >
-                                    <div style = {{display:'flex',alignItems:'center',width:400,wordWrap:"break-word"}}>
-                                        <img src= {author.profileImage} alt = "" style = {{borderRadius:"50%",marginRight:20}} width={55} height = {55}/>
+                                    <div style = {{display:'flex',alignItems:'center',width:500,wordWrap:"break-word"}}>
+                                        {author.profileImage && (<img src= {author.profileImage} alt = "IMG" style = {{borderRadius:"50%",}} width={55} height = {55}/>)}
                                         <span>
-                                            <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}> {author.displayName}</h4></a>
-    
+                                            <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}>{author.displayName}</h4></a>
+                                        </span>
+                                        <Button
+                                            style={{backgroundColor:"pink",float:"right",
+                                            marginLeft:25, fontSize:15,minWidth:90}}
+                                            onClick={() => unfollowAuthor(author) } >
+                                            Unfriend
+                                        </Button>
+                                    </div>
+                                </CardContent>
+                            ))}
+                        </Box>
+                    </Card>
+                    <Card style = {{width:500, height:450, backgroundColor:"#a7cdd4", marginTop:20}}>
+                        <Typography variant="h5" style = {{paddingTop:5}}>Following</Typography>
+                        <TextField id="searchFollowing" label="Search" style = {{width: 400,marginLeft:20}} onChange={search}/>
+                        <Box style = {{marginLeft:20,marginTop:20, height:350,overflowY:"scroll", overflowX:"hidden"}}>
+                            {following.map((author) => (
+                                <CardContent >
+                                    <div style = {{display:'flex',alignItems:'center',width:500,wordWrap:"break-word"}}>
+                                        {author.profileImage && (<img src= {author.profileImage} alt = "IMG" style = {{borderRadius:"50%"}} width={55} height = {55}/>)}
+                                        <span>
+                                            <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}>{author.displayName}</h4></a>
                                         </span>
                                         <Button 
-                                            id = {author.id}
+                                            style={{backgroundColor:"pink",float:"right",
+                                            marginLeft:25, fontSize:15,minWidth:90}}
+                                            onClick={() => unfollowAuthor(author) } >
+                                            Unfollow
+                                        </Button>
+                                    </div>
+                                </CardContent>    
+                            ))}
+                        </Box>
+                    </Card>
+                </Box>
+                <Box style = {{flex:1,display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'column'}}>
+                    <Card style = {{width:500, height:450, backgroundColor:"#a7cdd4"}}>
+                        <Typography variant="h5" style = {{paddingTop:5}}>Local Authors</Typography>
+                        <TextField id="searchLocal" label="Search" style = {{width: 400}} onChange={search}/>
+                        <Box style = {{marginLeft:20,marginTop:20, height:350,overflowY:"scroll", overflowX:"hidden"}}>
+                        {notFollowing.map((author) => (
+                            <CardContent >
+                                <div style = {{display:'flex',alignItems:'center',width:400,wordWrap:"break-word"}}>
+                                    <img src= {author.profileImage} alt = "" style = {{borderRadius:"50%",marginRight:20}} width={55} height = {55}/>
+                                    <span>
+                                        <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}> {author.displayName}</h4></a>
+                                    </span>
+                                    <Button 
+                                        id = {author.id}
+                                        style={{backgroundColor:"white",float:"right",
+                                        marginLeft:25, fontSize:15,minWidth:90}}onClick = {() => followAuthor(author)}>
+                                        Follow
+                                    </Button>
+                                </div>
+
+                            </CardContent>    
+                        ))}
+                        </Box>
+                    </Card>
+                    <Card style = {{width:500, height:450, backgroundColor:"#a7cdd4", marginTop:20}}>
+                    <Typography variant="h5" style = {{paddingTop:5}}>Other Authors</Typography>
+                        <TextField id="searchOther" label="Search" style = {{width: 400,marginLeft:20}} onChange={search}/>
+                        <Box style = {{marginLeft:20,marginTop:20, height:350,overflowY:"scroll", overflowX:"hidden"}}>
+                            {otherUsers.map((author) => (
+                                <CardContent >
+                                    <div style = {{display:'flex',alignItems:'center',width:500,wordWrap:"break-word"}}>
+                                        {author.profileImage && (<img src= {author.profileImage} alt = "IMG" style = {{borderRadius:"50%"}} width={55} height = {55}/>)}
+                                        <span>
+                                            <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}>{author.displayName}</h4></a>
+                                        </span>
+                                        <Button 
                                             style={{backgroundColor:"white",float:"right",
-                                            marginLeft:25, fontSize:15,minWidth:90}}onClick = {() => followAuthor(author)}>
+                                            marginLeft:25, fontSize:15,minWidth:90}}
+                                            onClick={() => followAuthor(author) } >
                                             Follow
                                         </Button>
                                     </div>
-
                                 </CardContent>    
-
-                                
-                            
-                                ))}
-                         </div>
-                </Card>
-                <Card style={{ width: 450,height:450, backgroundColor:"#8fd1f2",overflowY:"scroll", marginTop:20}}>
-                    <TextField id="search" label="Search" style = {{width: 400,marginLeft:20,marginTop:20}} onChange={search}/>
-                    {otherUsers.map((author) => (
-                        <CardContent >
-                            <div style = {{display:'flex',alignItems:'center',width:400,wordWrap:"break-word"}}>
-                                <img src= {author.profileImage} alt = "" style = {{borderRadius:"50%",marginRight:20}} width={55} height = {55}/>
-                                <span>
-                                    <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}> {author.displayName}</h4></a>
-                                </span>
-                                <Button 
-                                    id = {author.id}
-                                    style={{backgroundColor:"white",float:"right",
-                                    marginLeft:25, fontSize:15,minWidth:90}}onClick = {() => followAuthor(author)}>
-                                    Follow
-                                </Button>
-                            </div>
-                        </CardContent>    
-                    ))}
-                </Card>
-            </div>
-            <div class = "friendslist" >
-                <h2>Friends :</h2>
-                <div className = "friendCard">
-                    {friends.map((author) => (
-                        <CardContent >
-                            <div style = {{display:'flex',alignItems:'center',width:550,wordWrap:"break-word",
-                                            paddingLeft: 150}}>
-                                <img src= {author.profileImage} alt = "" style = {{borderRadius:"50%",marginLeft:150}} width={55} height = {55}/>
-                                <span>
-                                    <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}>{author.displayName}</h4></a>
-                                </span>
-                                <Button
-                                    style={{backgroundColor:"pink",float:"right",
-                                    marginLeft:25, fontSize:15,minWidth:90}}
-                                    onClick={() => unfollowAuthor(author) } >
-                                    Unfriend
-                                </Button>
-
-                            </div>
-
-                        </CardContent>
-                    ))}
-                </div>
-                <h2>Following</h2>
-                <div className = "followCard">
-                    {following.map((author) => (
-                        <CardContent >
-                            <div style = {{display:'flex',alignItems:'center',width:550,wordWrap:"break-word",
-                                                paddingLeft: 150}}>
-                                <img src= {author.profileImage} alt = "" style = {{borderRadius:"50%",marginLeft:150}} width={55} height = {55}/>
-                                <span>
-                                    <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}>{author.displayName}</h4></a>
-                                </span>
-                                <Button 
-                                    style={{backgroundColor:"pink",float:"right",
-                                    marginLeft:25, fontSize:15,minWidth:90}}
-                                    onClick={() => unfollowAuthor(author) } >
-                                    Unfollow
-                                </Button>
-
-                            </div>
-                    
-
-                        </CardContent>    
-                    
-                    ))}
-                </div>
-            </div>
+                            ))}
+                        </Box>
+                    </Card>
+                </Box>
+            </Box>
         </Box>
     )
 }
