@@ -13,7 +13,9 @@ function Login() {
     const handleLogin = () => {
         let username = document.getElementById("username").value;
         let password = document.getElementById("password").value;
-        axios.post(`${getApiUrls()}/login`, {
+        let path = getApiUrls()
+        console.log(path)
+        axios.post(path + "/login", {
             username: username,
             password: password
         }   
