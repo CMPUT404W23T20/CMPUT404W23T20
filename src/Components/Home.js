@@ -4,10 +4,14 @@ import Nav from './Nav';
 import axios from 'axios';
 import { getTextFieldUtilityClass } from '@mui/material';
 import { getApiUrls } from '../utils/utils';
+import CircularProgress from '@mui/material/CircularProgress';
 
 function Posts() {
     const [Posts, setPosts] = React.useState([]);
     const [followingPosts,setFollowingPosts] = React.useState([]);
+
+    const [loadingFollowing, setLoadingFollowing] = React.useState(false);
+    const [loadingPosts, setLoadingPosts] = React.useState(false);
  
     const getFeed =  async() =>{
         /* 1.get all our friends put into a list
@@ -48,6 +52,7 @@ function Posts() {
         }
         console.log("followingPosts",allFollowingPosts)
         setFollowingPosts(allFollowingPosts)
+        setLoadingFollowing(true)
 
         let path = `${getApiUrls()}/service/posts`;
         let response = await axios.get(path, {
@@ -69,6 +74,7 @@ function Posts() {
         
         console.log("posts",posts)
         setPosts(posts);
+        setLoadingPosts(true)
     }
 
 
@@ -82,50 +88,81 @@ function Posts() {
     const [post, setPost] = React.useState([{}]);
     return (
         <Box>
-            <Box className="App" style={{ display: "flex", flexDirection: "row", height : "100vh", width: "100vw", alignItems: "left", justifyContent: "left" }}>
+            <Box className="App" style={{ display: "flex", flexDirection: "row", height : "100vh", width: "100vw", alignItems: "left", justifyContent: "left"}}>
                 <Box style={{width: "170px"}}>
                 <Nav />
                 </Box>
                 <Box style={{ display: "flex", flexDirection: "row", backgroundColor: "white", flex: 1, height: "100vh"}}>
-                    <Box style={{display: "flex", flexDirection: "column",flex: 1, margin: "10px", borderColor: "grey", borderStyle: "solid", borderRadius: "5px"}}>
-                        <Typography variant="h4">Home</Typography>
-                        <List style = {{ flex: 1, overflowY: "scroll"}}>
-                            <Typography variant="h5">Following's Posts</Typography>
-                            {followingPosts.map((post) => (
-                                <ListItem key={post.id} onClick = {() => {setopenPost(true); setPost(post)}}>
-                                    <Card style = {{ width: "100%", backgroundColor: "#8fd1f2"}}>
-                                        <Box style = {{ paddingLeft: 2}}>
-                                            <Typography variant="h5">{post.title}</Typography>
-                                            <Typography variant="body2">{post.author.displayName}</Typography>
-                                            <Typography variant="body1" style={{maxHeight: "200px", overflowY: "auto"}}>{post.description}</Typography>
-                                        </Box>
-                                    </Card>
-                                </ListItem>
-                            ))}
+                    <Box style={{display: "flex", flexDirection: "row",flex: 1, margin: "10px", borderColor: "grey", borderStyle: "solid", borderRadius: "5px", backgroundColor: "#c3d3eb"}}>
+                        <Box style = {{ display: "flex", flexDirection: "column", flex: 1, margin: "10px"}}>
+                            <Typography variant="h4">Following's Posts</Typography>
+                            <List style = {{ flex: 1, overflowY: "scroll", maxHeight: "100%"}}>
+                                {!loadingFollowing && <CircularProgress />}
+                                {loadingFollowing && followingPosts.map((post) => (
+                                    <ListItem key={post.id} onClick = {() => {setopenPost(true); setPost(post)}}>
+                                        <Card style = {{ width: "100%"}}>
+                                            <Box style = {{ paddingLeft: 2}}>
+                                                <Box style = {{ display: "flex", flexDirection: "row", marginTop: "10px", marginLeft: "10px"}}>
+                                                    {post.author.profileImage && <img src={post.author.profileImage} style={{width: "100px", height: "100px", borderRadius: "50%"}}/>}
+                                                    <Box style = {{ display: "flex", flexDirection: "column", paddingLeft: "10px"}}>
+                                                        <Typography variant="h5">Title: {post.title}</Typography>
+                                                        <Typography variant="body2">Author: {post.author.displayName}</Typography>
+                                                        <Typography variant="body2">Published: {post.published}</Typography>
+                                                        <Typography variant="body2">Node: {post.author.host}</Typography>
+                                                    </Box>
+                                                </Box>
+                                            </Box>
+                                        </Card>
+                                    </ListItem>
+                                ))}
+                            </List>
+                        </Box>
+                        <Box style = {{ display: "flex", flexDirection: "column", flex: 1, margin: "10px"}}>
                             <Typography variant="h4">Public Posts</Typography>
-                            {Posts.map((post) => (
-                                <ListItem key={post.id} onClick = {() => {setopenPost(true); setPost(post)}}>
-                                    <Card style = {{ width: "100%", backgroundColor: "#8fd1f2"}}>
-                                        <Box style = {{ paddingLeft: 2}}>
-                                            <Typography variant="h5">{post.title}</Typography>
-                                            <Typography variant="body2">{post.author.displayName}</Typography>
-                                            <Typography variant="body1" style={{maxHeight: "200px", overflowY: "auto"}}>{post.description}</Typography>
-                                        </Box>
-                                    </Card>
-                                </ListItem>
-                            ))}
-                             
-                        </List>
+                            <List style = {{ flex: 1, overflowY: "scroll", maxHeight: "100%"}}>
+                                {!loadingPosts && <CircularProgress />}
+                                {loadingPosts && Posts.map((post) => (
+                                    <ListItem key={post.id} onClick = {() => {setopenPost(true); setPost(post)}}>
+                                        <Card style = {{ width: "100%"}}>
+                                            <Box style = {{ paddingLeft: 2}}>
+                                                <Box style = {{ display: "flex", flexDirection: "row", marginTop: "10px", marginLeft: "10px"}}>
+                                                    {post.author.profileImage && <img src={post.author.profileImage} style={{width: "100px", height: "100px", borderRadius: "50%"}}/>}
+                                                    <Box style = {{ display: "flex", flexDirection: "column", paddingLeft: "10px"}}>
+                                                        <Typography variant="h5">Title: {post.title}</Typography>
+                                                        <Typography variant="body2">Author: {post.author.displayName}</Typography>
+                                                        <Typography variant="body2">Published: {post.published}</Typography>
+                                                        <Typography variant="body2">Node: {post.author.host}</Typography>
+                                                    </Box>
+                                                </Box>                                        
+                                            </Box>
+                                        </Card>
+                                    </ListItem>
+                                ))}
+                                
+                            </List>
+                        </Box>
                     </Box>
                     {openPost && (
-                        <Box style={{ flex: 1,display: "flex", flexDirection: "column", margin: "10px", borderColor: "grey", borderStyle: "solid", borderRadius: "5px"}}>
-                            <Box style={{flex: 1, margin: "5px"}}>
-                                <Card style = {{ width: "100%", height: "100%", borderRadius: "4px", boxShadow: "0 0 10px 0 rgba(0,0,0,0.5)"}}>
-                                    <TextField id="description" label="Description" variant="outlined" style={{width: "95%", margin: "25px"}} value={post.description} onChange={(e) => setPost({...post, description: e.target.value})} multiline maxRows={15}/>
-                                </Card>
+                        <Box style={{flex: 1, margin: "10px", borderColor: "grey", borderStyle: "solid", borderRadius: "5px", backgroundColor: "#c3d3eb"}}>
+                            <Box style = {{backgroundColor: 'white', borderRadius: "5px", width: "96%", height: "96%", margin: "2%"}}>
+                                <Typography variant="h2">{post.title}</Typography>
+                                <Box>
+                                    {post.author.profileImage && <img src={post.author.profileImage} style={{width: "100px", height: "100px", borderRadius: "50%"}}/>}
+                                    <Box style = {{ display: "flex", flexDirection: "column", paddingLeft: "10px", alignItems: "cen", justifyContent: "left"}}>
+                                        <Typography variant="body2">Author: {post.author.displayName}</Typography>
+                                        <Typography variant="body2">Published: {post.published.substring(0,10)}</Typography>
+                                        <Typography variant="body2">Node: {post.author.host}</Typography>
+                                    </Box>
+                                </Box>
+                                <Typography variant="h5">Description:</Typography>
+                                <Typography variant="body2">{post.description}</Typography>
+                                <Button variant="contained" color="secondary" onClick={() => setopenPost(false)} style={{ position: "absolute", bottom: "20px", right: "20px"}}>
+                                    Close
+                                </Button>
                             </Box>
-                        </Box>)
-                    }
+                        </Box>
+                        
+                    )}
                 </Box>
             </Box>
         </Box>
