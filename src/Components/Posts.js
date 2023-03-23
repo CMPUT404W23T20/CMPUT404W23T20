@@ -26,14 +26,14 @@ function Posts() {
     }, []);
 
     const CreatePost = async (title, description) => {
-        console.log(visibility ? "PUBLIC" : "FRIENDS")
+        console.log(visibility ? "FRIENDS" : "PUBLIC")
         console.log(unlisted)
         let path = `${getApiUrls()}/service/authors/${localStorage.getItem("id")}/posts`        ;
         let data = {
             title: title,
             description: description,
             unlisted: unlisted,
-            visibility: visibility ? "PUBLIC" : "FRIENDS"
+            visibility: visibility ? "FRIENDS" : "PUBLIC" 
         }
         let token = localStorage.getItem("token");
         console.log(token);

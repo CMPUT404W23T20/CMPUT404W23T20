@@ -27,7 +27,7 @@ function Posts() {
         let allFollowingPosts = []
         let username = "Group20"
         let password = "jn8VWYcZDrLrkQDcVsRi"
-        let auth = "Basic " + btoa(username + ":" + password);
+        let authG6 = "Basic " + btoa(username + ":" + password);
         for (let fpost = 0; fpost < followingList.length; fpost++){ //for loop to get Following's posts
             let followee = followingList[fpost]
             let id = followee.id.split("/").pop();
@@ -42,7 +42,7 @@ function Posts() {
             let followingPosts = await axios.get(path, {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": (followee.host == path) ? localStorage.getItem("token") : (followee.host == "https://social-distribution-media.herokuapp.com") ? auth : (followee.host == "https://group-13-epic-app.herokuapp.com/") ? "" : "" 
+                    "Authorization": (followee.host == path) ? localStorage.getItem("token") : (followee.host == "https://social-distribution-media.herokuapp.com") ? authG6 : (followee.host == "https://group-13-epic-app.herokuapp.com/") ? "Basic R3JvdXAxMzp0ZXN0dGVzdHRlc3Q=" : "" 
                 }
             }).catch((error) => {
                 console.log("error",error)
@@ -102,15 +102,15 @@ function Posts() {
                                     <ListItem key={post.id} onClick = {() => {setopenPost(true); setPost(post)}}>
                                         <Card style = {{ width: "100%"}}>
                                             <Box style = {{ paddingLeft: 2}}>
-                                                <Box style = {{ display: "flex", flexDirection: "row", marginTop: "10px", marginLeft: "10px"}}>
-                                                    {post.author.profileImage && <img src={post.author.profileImage} style={{width: "100px", height: "100px", borderRadius: "50%"}}/>}
+                                                {(post.type === 'post') && (<Box style = {{ display: "flex", flexDirection: "row", marginTop: "10px", marginLeft: "10px"}}>
+                                                    <img src= {(post.author.profileImage != "no profileImage" && post.author.profileImage != "") ? post.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt = "IMG" style = {{borderRadius:"50%"}} width="100px" height = "100px"/>
                                                     <Box style = {{ display: "flex", flexDirection: "column", paddingLeft: "10px"}}>
                                                         <Typography variant="h5">Title: {post.title}</Typography>
                                                         <Typography variant="body2">Author: {post.author.displayName}</Typography>
-                                                        <Typography variant="body2">Published: {post.published}</Typography>
+                                                        <Typography variant="body2">Published: {post.published.substring(0,10)}</Typography>
                                                         <Typography variant="body2">Node: {post.author.host}</Typography>
                                                     </Box>
-                                                </Box>
+                                                </Box>)}
                                             </Box>
                                         </Card>
                                     </ListItem>
@@ -125,15 +125,15 @@ function Posts() {
                                     <ListItem key={post.id} onClick = {() => {setopenPost(true); setPost(post)}}>
                                         <Card style = {{ width: "100%"}}>
                                             <Box style = {{ paddingLeft: 2}}>
-                                                <Box style = {{ display: "flex", flexDirection: "row", marginTop: "10px", marginLeft: "10px"}}>
-                                                    {post.author.profileImage && <img src={post.author.profileImage} style={{width: "100px", height: "100px", borderRadius: "50%"}}/>}
+                                                {(post.type === 'post') && (<Box style = {{ display: "flex", flexDirection: "row", marginTop: "10px", marginLeft: "10px"}}>
+                                                <img src= {(post.author.profileImage != "no profileImage" && post.author.profileImage != "") ? post.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt = "IMG" style = {{borderRadius:"50%"}} width="100px" height = "100px"/>
                                                     <Box style = {{ display: "flex", flexDirection: "column", paddingLeft: "10px"}}>
                                                         <Typography variant="h5">Title: {post.title}</Typography>
                                                         <Typography variant="body2">Author: {post.author.displayName}</Typography>
-                                                        <Typography variant="body2">Published: {post.published}</Typography>
+                                                        <Typography variant="body2">Published: {post.published.substring(0,10)}</Typography>
                                                         <Typography variant="body2">Node: {post.author.host}</Typography>
                                                     </Box>
-                                                </Box>                                        
+                                                </Box>)}                                   
                                             </Box>
                                         </Card>
                                     </ListItem>
@@ -147,7 +147,7 @@ function Posts() {
                             <Box style = {{backgroundColor: 'white', borderRadius: "5px", width: "96%", height: "96%", margin: "2%"}}>
                                 <Typography variant="h2">{post.title}</Typography>
                                 <Box>
-                                    {post.author.profileImage && <img src={post.author.profileImage} style={{width: "100px", height: "100px", borderRadius: "50%"}}/>}
+                                    <img src= {(post.author.profileImage != "no profileImage" && post.author.profileImage != "") ? post.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt = "IMG" style = {{borderRadius:"50%"}} width="100px" height = "100px"/>
                                     <Box style = {{ display: "flex", flexDirection: "column", paddingLeft: "10px", alignItems: "cen", justifyContent: "left"}}>
                                         <Typography variant="body2">Author: {post.author.displayName}</Typography>
                                         <Typography variant="body2">Published: {post.published.substring(0,10)}</Typography>
