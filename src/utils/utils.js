@@ -2,7 +2,7 @@ export function getApiUrls() {
   const herokuHostnames = ["t20-social-distribution.herokuapp.com", "www.t20-social-distribution.herokuapp.com"];
 
   if (herokuHostnames.includes(window.location.hostname)) {
-    const herokuUrl = `https://${window.location.hostname}/`;
+    const herokuUrl = `https://${window.location.hostname}`;
     return `${herokuUrl}`;
   } else {
     const localHost = window.location.hostname;
