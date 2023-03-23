@@ -160,7 +160,10 @@ function Friends() {
             }
         });
         // add userResponse.data to group20List
-        console.log("Group20 Users", response.data)
+        console.log("Group20 Users", response.data.items)
+        if (!response.data) {
+            return [];
+        }
         return response.data.items;
     }
 
@@ -174,9 +177,14 @@ function Friends() {
                 "Content-Type": "application/json",
                 "Authorization": auth,
             }
+        }).catch(() => {
+            return [];
         });
         console.log("Group6 Users", response.data)
-        return response.data.items;
+        if (!response.data) {
+            return [];
+        }
+        return response.data;
     }
 
     const getGroup13Users = async () => {
@@ -190,7 +198,10 @@ function Friends() {
             }
         });
         console.log("Group13 Users", response.data)
-        return response.data.items
+        if (!response.data.items) {
+            return [];
+        }
+        return response.data.items;
     }
 
 
@@ -201,8 +212,8 @@ function Friends() {
         otherUsersList = otherUsersList.concat(group20Users);
         //let duplicateUsers = await getDuplicateUsers();
         //otherUsersList = otherUsersList.concat(duplicateUsers);
-        //let group6Users = await getGroup6Users();
-        //otherUsersList = otherUsersList.concat(group6Users);
+        let group6Users = await getGroup6Users();
+        otherUsersList = otherUsersList.concat(group6Users);
         let group13Users = await getGroup13Users();
         otherUsersList = otherUsersList.concat(group13Users);
         
