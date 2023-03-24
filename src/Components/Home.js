@@ -98,8 +98,9 @@ function Posts() {
 
         for (let i = 0; i < allFollowingPosts.length; i++){
             //getting comments for LOCAL posts
-            if (allFollowingPosts[i].author.host == "https://t20-social-distribution.herokuapp.com"){
-
+            if (typeof  allFollowingPosts[i].author !== 'undefined'){ //running into weird bug at :3000 host w/out this
+                console.log("bye",allFollowingPosts[i].author)
+                if (allFollowingPosts[i].author.host === "https://t20-social-distribution.herokuapp.com"){
                 let commentListPath = `${getApiUrls()}`+"/service/authors/" + allFollowingPosts[i].author.id+ "/posts/" + allFollowingPosts[i].id+"/comments";
                 let comments = await axios.get(commentListPath, {
                 headers: {
@@ -114,6 +115,8 @@ function Posts() {
                 
             }
 
+            }
+            
 
         }
 
@@ -129,7 +132,7 @@ function Posts() {
         
     }, []);
 
-
+    const [commentPosted,setCommentPosted ] = React.useState(false);
     const postComment = async(comment, postId, authorId) =>{
         console.log("comment: ",comment,postId,authorId)
         let path = `${getApiUrls()}`+"/service/authors/"+authorId+ "/posts/"+postId+"/comments";
@@ -144,9 +147,17 @@ function Posts() {
                 "Authorization": localStorage.getItem("token")
             }
         });
+        setCommentPosted(true);
+        getFeed()
         //clear the input box after sending comment*/
         document.getElementById("comment").value = ""
-        getFeed()
+        document.getElementById("postedComment").style.display = "Block"
+
+        setTimeout( 
+            function(){
+                setCommentPosted(false);
+            },5000);
+       
     }
 
     const [openPost, setopenPost] = React.useState(false);
@@ -222,10 +233,14 @@ function Posts() {
                                 <Typography variant="h5">Description:</Typography>
                                 <Typography variant="body2">{post.description}</Typography>
                                  <TextField id="description" label="Description" variant="outlined" style={{width: "95%", margin: "25px"}} value={post.description} onChange={(e) => setPost({...post, description: e.target.value})} multiline maxRows={15}/>
-                                    <Typography variant="h6" style = {{textAlign:"left", paddingLeft:30,fontSize:20}}>Comments:</Typography>
+                                        <div id = "postedComment" style = {{display:"none",borderRadius:"25px",backgroundColor:"#bce3c0",width: "40%", margin: "10px", paddingLeft:"5%",marginLeft:"30%"}}>
+                                            <Typography variant="h6" style = {{ textAlign:"left",fontSize:15}}>
+                                              {commentPosted? "Your comment has been sent!": ""}
+                                            </Typography>
+                                        </div>
+                                        {(`${post.author.id}`=== localStorage.getItem("id")) ? <Typography variant="h6" style = {{textAlign:"left", paddingLeft:30,fontSize:20}}>Comments:</Typography> :<h2></h2> }
                                         {Comments.map((comments) => (
-                                        (`${comments.post.id}` === `${post.id.split("/").pop()}`) ? 
-
+                                         ((`${comments.post.id}` === `${post.id.split("/").pop()}`) && (`${post.author.id}`=== localStorage.getItem("id"))) ? 
                                             ( <div style = {{display:'flex',alignItems:'center',wordWrap:"break-word"}}>
                                                 <img src= {post.author.profileImage} alt = "" style = {{borderRadius:"50%",marginLeft:30,marginRight:15,marginBottom:10}} width={55} height = {55}/>
                                                 <Typography variant="h6" style = {{display: "inline-block",textAlign:"left", paddingLeft:15,fontSize:20}}>
@@ -235,6 +250,7 @@ function Posts() {
                                             ) 
                                             :(<h2></h2>)   
                                         ))}
+
                                 <TextField id="comment" label="Comment..." variant="outlined" style={{width: "75%", margin: "25px"}}/>            
                                 <Button variant="contained" color="primary" onClick ={() => postComment(document.getElementById("comment").value,`${post.id}`,`${post.author.id}`)}   style={{ margin: 10,position:"relative",top:"25px"}}>Comment</Button>
                                 <Button variant="contained" color="secondary" onClick={() => setopenPost(false)} style={{ position: "absolute", bottom: "20px", right: "20px"}}>
