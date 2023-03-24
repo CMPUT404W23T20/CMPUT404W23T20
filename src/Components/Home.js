@@ -9,10 +9,9 @@ import CircularProgress from '@mui/material/CircularProgress';
 function Posts() {
     const [Posts, setPosts] = React.useState([]);
     const [followingPosts,setFollowingPosts] = React.useState([]);
-
+    const [Comments, setComments] = React.useState([]);
     const [loadingFollowing, setLoadingFollowing] = React.useState(false);
     const [loadingPosts, setLoadingPosts] = React.useState(false);
-    const [Comments, setComments] = React.useState([]);
  
     const getFeed =  async() =>{
         /* 1.get all our friends put into a list
@@ -72,8 +71,11 @@ function Posts() {
             }
             return true
         })
-  
+        
+        console.log("posts",posts)
         setPosts(posts);
+        setLoadingPosts(true)
+
 
         let commentList = []
 
@@ -108,29 +110,25 @@ function Posts() {
                 let commentDataList = comments.data
                 for (let i = 0; i < commentDataList.length; i++ ){
                     commentList.push(commentDataList[i])  
-                    setLoadingPosts(true)
-    }
+                }
                 
             }
 
 
         }
 
-        
-
-
-
 
         //getting all comments in the "Following" header
       
-        setComments(commentList)    
+        setComments(commentList)  
     }
+
 
     React.useEffect(() => {
         getFeed()
         
     }, []);
-    
+
 
     const postComment = async(comment, postId, authorId) =>{
         console.log("comment: ",comment,postId,authorId)
@@ -150,6 +148,7 @@ function Posts() {
         document.getElementById("comment").value = ""
         getFeed()
     }
+
     const [openPost, setopenPost] = React.useState(false);
     const [post, setPost] = React.useState([{}]);
     return (
@@ -165,7 +164,7 @@ function Posts() {
                             <List style = {{ flex: 1, overflowY: "scroll", maxHeight: "100%"}}>
                                 {!loadingFollowing && <CircularProgress />}
                                 {loadingFollowing && followingPosts.map((post) => (
-                                    <ListItem key={post.id} onClick = {() => {setopenPost(true); setPost(post);}}>
+                                    <ListItem key={post.id} onClick = {() => {setopenPost(true); setPost(post)}}>
                                         <Card style = {{ width: "100%"}}>
                                             <Box style = {{ paddingLeft: 2}}>
                                                 {(post.type === 'post') && (<Box style = {{ display: "flex", flexDirection: "row", marginTop: "10px", marginLeft: "10px"}}>
@@ -184,7 +183,6 @@ function Posts() {
                             </List>
                         </Box>
                         <Box style = {{ display: "flex", flexDirection: "column", flex: 1, margin: "10px"}}>
-                        
                             <Typography variant="h4">Public Posts</Typography>
                             <List style = {{ flex: 1, overflowY: "scroll", maxHeight: "100%"}}>
                                 {!loadingPosts && <CircularProgress />}
@@ -211,7 +209,7 @@ function Posts() {
                     </Box>
                     {openPost && (
                         <Box style={{flex: 1, margin: "10px", borderColor: "grey", borderStyle: "solid", borderRadius: "5px", backgroundColor: "#c3d3eb"}}>
-                            <Box style = {{backgroundColor: 'white', borderRadius: "5px", width: "96%", height: "96%", margin: "2%"}}>
+                            <Box style = {{backgroundColor: 'white', borderRadius: "5px", width: "96%", height: "96%", overflowY:"scroll",margin: "2%"}}>
                                 <Typography variant="h2">{post.title}</Typography>
                                 <Box>
                                     <img src= {(post.author.profileImage != "no profileImage" && post.author.profileImage != "") ? post.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt = "IMG" style = {{borderRadius:"50%"}} width="100px" height = "100px"/>
@@ -223,7 +221,7 @@ function Posts() {
                                 </Box>
                                 <Typography variant="h5">Description:</Typography>
                                 <Typography variant="body2">{post.description}</Typography>
-                                <Button variant="contained" color="secondary" onClick={() => setopenPost(false)} style={{ position: "absolute", bottom: "20px", right: "20px"}}>
+                                 <TextField id="description" label="Description" variant="outlined" style={{width: "95%", margin: "25px"}} value={post.description} onChange={(e) => setPost({...post, description: e.target.value})} multiline maxRows={15}/>
                                     <Typography variant="h6" style = {{textAlign:"left", paddingLeft:30,fontSize:20}}>Comments:</Typography>
                                         {Comments.map((comments) => (
                                         (`${comments.post.id}` === `${post.id.split("/").pop()}`) ? 
@@ -237,8 +235,9 @@ function Posts() {
                                             ) 
                                             :(<h2></h2>)   
                                         ))}
-                                     <TextField id="comment" label="Comment..." variant="outlined" style={{width: "75%", margin: "25px"}}/>
-                                     <Button variant="contained" color="primary" onClick ={() => postComment(document.getElementById("comment").value,`${post.id}`,`${post.author.id}`)}   style={{ margin: 10,position:"relative",top:"25px"}}>Comment</Button>
+                                <TextField id="comment" label="Comment..." variant="outlined" style={{width: "75%", margin: "25px"}}/>            
+                                <Button variant="contained" color="primary" onClick ={() => postComment(document.getElementById("comment").value,`${post.id}`,`${post.author.id}`)}   style={{ margin: 10,position:"relative",top:"25px"}}>Comment</Button>
+                                <Button variant="contained" color="secondary" onClick={() => setopenPost(false)} style={{ position: "absolute", bottom: "20px", right: "20px"}}>
                                     Close
                                 </Button>
                             </Box>
@@ -252,5 +251,3 @@ function Posts() {
 }
 
 export default Posts;
-
-
