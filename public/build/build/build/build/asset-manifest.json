@@ -1,15 +1,48 @@
+<<<<<<< HEAD
+<<<<<<<< HEAD:public/build/build/build/asset-manifest.json
 {
   "files": {
     "main.css": "/static/css/main.073c9b0a.css",
-    "main.js": "/static/js/main.ae91e4e0.js",
+    "main.js": "/static/js/main.9e5d16f6.js",
     "static/js/787.cda612ba.chunk.js": "/static/js/787.cda612ba.chunk.js",
     "index.html": "/index.html",
     "main.073c9b0a.css.map": "/static/css/main.073c9b0a.css.map",
-    "main.ae91e4e0.js.map": "/static/js/main.ae91e4e0.js.map",
+    "main.9e5d16f6.js.map": "/static/js/main.9e5d16f6.js.map",
+=======
+{
+  "files": {
+    "main.css": "/static/css/main.073c9b0a.css",
+    "main.js": "/static/js/main.93885f50.js",
+    "static/js/787.cda612ba.chunk.js": "/static/js/787.cda612ba.chunk.js",
+    "index.html": "/index.html",
+    "main.073c9b0a.css.map": "/static/css/main.073c9b0a.css.map",
+    "main.93885f50.js.map": "/static/js/main.93885f50.js.map",
+>>>>>>> ef2cf59c91892441a55a305d97c481ead3ac8f08
     "787.cda612ba.chunk.js.map": "/static/js/787.cda612ba.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.073c9b0a.css",
-    "static/js/main.ae91e4e0.js"
+<<<<<<< HEAD
+    "static/js/main.9e5d16f6.js"
   ]
+========
+{
+  "files": {
+    "main.css": "/static/css/main.073c9b0a.css",
+    "main.js": "/static/js/main.b0bd8163.js",
+    "static/js/787.cda612ba.chunk.js": "/static/js/787.cda612ba.chunk.js",
+    "index.html": "/index.html",
+    "main.073c9b0a.css.map": "/static/css/main.073c9b0a.css.map",
+    "main.b0bd8163.js.map": "/static/js/main.b0bd8163.js.map",
+    "787.cda612ba.chunk.js.map": "/static/js/787.cda612ba.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.073c9b0a.css",
+    "static/js/main.b0bd8163.js"
+  ]
+>>>>>>>> ef2cf59c91892441a55a305d97c481ead3ac8f08:public/build/build/build/build/build/build/build/build/build/build/build/build/build/asset-manifest.json
+=======
+    "static/js/main.93885f50.js"
+  ]
+>>>>>>> ef2cf59c91892441a55a305d97c481ead3ac8f08
 }

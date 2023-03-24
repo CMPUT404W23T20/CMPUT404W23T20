@@ -6,6 +6,7 @@ import axios from 'axios';
 import jwt_decode from "jwt-decode";
 import { getListSubheaderUtilityClass } from '@mui/material';
 import { getApiUrls } from '../utils/utils';
+import CircularProgress from '@mui/material/CircularProgress';
 
 /* Load all the ones that are NOT friends
 do a get request to http://127.0.0.1:8000/api/authors/{other}/followers/{user}
@@ -16,9 +17,19 @@ is user in that list
 function Friends() {
 
     const [following, setFollowing] = React.useState([]); //people you follow/following
+    const [filteredFollowing, setFilteredFollowing] = React.useState([])
     const [friends, setFriends] =  React.useState([]); //people you follow/following
+    const [filteredFriends, setFilteredFriends] = React.useState([])
     const [notFollowing, setNotFollowing] = React.useState([]); //people you don't follow
+    const [filteredNotFollowing, setFilteredNotFollowing] = React.useState([])
     const [otherUsers, setOtherUsers] = React.useState([]); //all other users
+    const [filteredOtherUsers, setFilteredOtherUsers] = React.useState([])
+    const [loadingFollowing, setLoadingFollowing] = React.useState(true);
+    const [loadingFriends, setLoadingFriends] = React.useState(true);
+    const [loadingNotFollowing, setLoadingNotFollowing] = React.useState(true);
+    const [loadingOtherUsers, setLoadingOtherUsers] = React.useState(true);
+    
+    
     
     const getLists = async () => {
         // getting local friends
@@ -76,6 +87,8 @@ function Friends() {
             }
         }
         setNotFollowing(notFollowingList);
+        setFilteredNotFollowing(notFollowingList);
+        setLoadingNotFollowing(false);
         // remove friends from following and self
         let followingList = followingResponse.data;
         for (let i = 0; i < friendsList.length; i++) {
@@ -112,6 +125,10 @@ function Friends() {
         }
         setFriends(friendsList);
         setFollowing(followingList);
+        setFilteredFriends(friendsList);
+        setLoadingFriends(false);
+        setFilteredFollowing(followingList);
+        setLoadingFollowing(false);
         getOtherUsers()
         console.log("friends", friendsList)
         console.log("following", followingList)
@@ -143,7 +160,10 @@ function Friends() {
             }
         });
         // add userResponse.data to group20List
-        console.log("Group20 Users", response.data)
+        console.log("Group20 Users", response.data.items)
+        if (!response.data) {
+            return [];
+        }
         return response.data.items;
     }
 
@@ -157,9 +177,14 @@ function Friends() {
                 "Content-Type": "application/json",
                 "Authorization": auth,
             }
+        }).catch(() => {
+            return [];
         });
         console.log("Group6 Users", response.data)
-        return response.data.items;
+        if (!response.data) {
+            return [];
+        }
+        return response.data;
     }
 
     const getGroup13Users = async () => {
@@ -173,7 +198,10 @@ function Friends() {
             }
         });
         console.log("Group13 Users", response.data)
-        return response.data.items
+        if (!response.data.items) {
+            return [];
+        }
+        return response.data.items;
     }
 
 
@@ -184,8 +212,8 @@ function Friends() {
         otherUsersList = otherUsersList.concat(group20Users);
         //let duplicateUsers = await getDuplicateUsers();
         //otherUsersList = otherUsersList.concat(duplicateUsers);
-        //let group6Users = await getGroup6Users();
-        //otherUsersList = otherUsersList.concat(group6Users);
+        let group6Users = await getGroup6Users();
+        otherUsersList = otherUsersList.concat(group6Users);
         let group13Users = await getGroup13Users();
         otherUsersList = otherUsersList.concat(group13Users);
         
@@ -215,12 +243,20 @@ function Friends() {
             }
         });
         // remove following from other users
-        let followingList = followingResponse.data;
-        for (let i = 0; i < followingList.length; i++) {
+        for (let i = 0; i < followingResponse.data.length; i++) {
+            let following = followingResponse.data[i];
             let j = 0;
             let found = false;
+            // remove host from id if it exists
+            if (following.id.includes("/")) {
+                following.id = following.id.split("/").pop();
+            }
             for (j = 0; j < otherUsersList.length; j++) {
-                if (followingList[i].id === otherUsersList[j].id) {
+                // remove host from id if it exists
+                if (otherUsersList[j].id.includes("/")) {
+                    otherUsersList[j].id = otherUsersList[j].id.split("/").pop();
+                }
+                if (following.id === otherUsersList[j].id) {
                     found = true;
                     break;
                 }
@@ -231,6 +267,8 @@ function Friends() {
         }
         console.log("other users", otherUsersList)
         setOtherUsers(otherUsersList);
+        setFilteredOtherUsers(otherUsersList);
+        setLoadingOtherUsers(false);
     }
 
 
@@ -238,12 +276,6 @@ function Friends() {
         getLists()
         getOtherUsers()
     }, []);
-
-    const search = async () => {
-        let userId= userInfo().user_id;
-        let filteredList = []
-        let search = document.getElementById("search").value;
-    }
 
     const followAuthor = async (other) => {
         // handles follow button
@@ -286,6 +318,10 @@ function Friends() {
             });
         }   
 
+        // remove item from other users list and add to following list
+        setFilteredOtherUsers(filteredOtherUsers.filter((item) => item.id !== other.id));
+        setFilteredFollowing(filteredFollowing.concat(other));
+        
         getLists()
     }
     
@@ -317,20 +353,60 @@ function Friends() {
         return decode_info;
         
     };
+    
+
+    const searchOtherUsers = () => {
+        let search = document.getElementById("searchOther").value;
+        // check if search is in display name or host
+        let filtered = otherUsers.filter((author) => {
+            return author.displayName.toLowerCase().includes(search.toLowerCase()) || author.host.toLowerCase().includes(search.toLowerCase());
+        });
+        setFilteredOtherUsers(filtered);
+    }
+
+    const searchFriends = () => {
+        let search = document.getElementById("searchFriends").value;
+        // check if search is in display name or host
+        let filtered = friends.filter((author) => {
+            return author.displayName.toLowerCase().includes(search.toLowerCase()) || author.host.toLowerCase().includes(search.toLowerCase());
+        });
+        setFilteredFriends(filtered);
+    }
+
+    const searchNotFollowing = () => {
+        let search = document.getElementById("searchNotFollowing").value;
+        // check if search is in display name or host
+        let filtered = notFollowing.filter((author) => {
+            return author.displayName.toLowerCase().includes(search.toLowerCase()) || author.host.toLowerCase().includes(search.toLowerCase());
+        });
+        setFilteredNotFollowing(filtered);
+    }
+
+    const searchFollowing = () => {
+        let search = document.getElementById("searchFollowing").value;
+        // check if search is in display name or host
+        let filtered = following.filter((author) => {
+            return author.displayName.toLowerCase().includes(search.toLowerCase()) || author.host.toLowerCase().includes(search.toLowerCase());
+        });
+        setFilteredFollowing(filtered);
+    }
 
     return (
         <Box>
             <Nav/>
             <Box style = {{display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'row', marginLeft:200, marginTop:40}}>
                 <Box style = {{flex:1,display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'column'}}>
-                    <Card style = {{width:500, height:450, backgroundColor:"#a7cdd4"}}>
-                        <Typography variant="h5" style = {{paddingTop:5}}>Friends</Typography>
-                        <TextField id="searchFriends" label="Search" style = {{width: 400,marginLeft:20}} onChange={search}/>
-                        <Box style = {{marginLeft:20,marginTop:20, height:350,overflowY:"scroll", overflowX:"hidden"}}>
-                            {friends.map((author) => (
+                    <Card style = {{width:500, height:450, backgroundColor:"#c3d3eb", borderColor: "grey", borderStyle: "solid", borderRadius: "5px"}}>
+                        <Box style = {{display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'row'}}>
+                            <Typography variant="h5" style = {{paddingTop:5, alignSelf:'left'}}>Friends</Typography>
+                            <TextField id="searchFriends" label="Search by name and host" style = {{width: 370, marginLeft: 20}} onChange={searchFriends}/>
+                        </Box>
+                        <Box style = {{marginLeft:20,marginTop:20, height:385,overflowY:"scroll", overflowX:"hidden"}}>
+                            {loadingFriends && <CircularProgress />}
+                            {!loadingFriends && filteredFriends.map((author) => (
                                 <CardContent >
                                     <div style = {{display:'flex',alignItems:'center',width:500,wordWrap:"break-word"}}>
-                                        {author.profileImage && (<img src= {author.profileImage} alt = "IMG" style = {{borderRadius:"50%",}} width={55} height = {55}/>)}
+                                        <img src= {(author.profileImage != "no profileImage" && author.profileImage != "") ? author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt = "IMG" style = {{borderRadius:"50%"}} width={55} height = {55}/>
                                         <span>
                                             <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}>{author.displayName}</h4></a>
                                         </span>
@@ -345,14 +421,17 @@ function Friends() {
                             ))}
                         </Box>
                     </Card>
-                    <Card style = {{width:500, height:450, backgroundColor:"#a7cdd4", marginTop:20}}>
-                        <Typography variant="h5" style = {{paddingTop:5}}>Following</Typography>
-                        <TextField id="searchFollowing" label="Search" style = {{width: 400,marginLeft:20}} onChange={search}/>
-                        <Box style = {{marginLeft:20,marginTop:20, height:350,overflowY:"scroll", overflowX:"hidden"}}>
-                            {following.map((author) => (
+                    <Card style = {{width:500, height:450, backgroundColor:"#c3d3eb", marginTop:20, borderColor: "grey", borderStyle: "solid", borderRadius: "5px"}}>
+                        <Box style = {{display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'row'}}>
+                            <Typography variant="h5" style = {{paddingTop:5, alignSelf:'left'}}>Following</Typography>
+                            <TextField id="searchFollowing" label="Search by name and host" style = {{width: 350, marginLeft: 20}} onChange={searchFollowing}/>
+                        </Box>
+                        <Box style = {{marginLeft:20,marginTop:20, height:385,overflowY:"scroll", overflowX:"hidden"}}>
+                            {loadingFollowing && <CircularProgress />}
+                            {!loadingFollowing && filteredFollowing.map((author) => (
                                 <CardContent >
-                                    <div style = {{display:'flex',alignItems:'center',width:500,wordWrap:"break-word"}}>
-                                        {author.profileImage && (<img src= {author.profileImage} alt = "IMG" style = {{borderRadius:"50%"}} width={55} height = {55}/>)}
+                                    <div style = {{display:'flex',alignItems:'center',width:400,wordWrap:"break-word"}}>
+                                        <img src= {(author.profileImage != "no profileImage" && author.profileImage != "") ? author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt = "IMG" style = {{borderRadius:"50%"}} width={55} height = {55}/>
                                         <span>
                                             <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}>{author.displayName}</h4></a>
                                         </span>
@@ -369,37 +448,43 @@ function Friends() {
                     </Card>
                 </Box>
                 <Box style = {{flex:1,display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'column'}}>
-                    <Card style = {{width:500, height:450, backgroundColor:"#a7cdd4"}}>
-                        <Typography variant="h5" style = {{paddingTop:5}}>Local Authors</Typography>
-                        <TextField id="searchLocal" label="Search" style = {{width: 400}} onChange={search}/>
-                        <Box style = {{marginLeft:20,marginTop:20, height:350,overflowY:"scroll", overflowX:"hidden"}}>
-                        {notFollowing.map((author) => (
-                            <CardContent >
-                                <div style = {{display:'flex',alignItems:'center',width:400,wordWrap:"break-word"}}>
-                                    <img src= {author.profileImage} alt = "" style = {{borderRadius:"50%",marginRight:20}} width={55} height = {55}/>
-                                    <span>
-                                        <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}> {author.displayName}</h4></a>
-                                    </span>
-                                    <Button 
-                                        id = {author.id}
-                                        style={{backgroundColor:"white",float:"right",
-                                        marginLeft:25, fontSize:15,minWidth:90}}onClick = {() => followAuthor(author)}>
-                                        Follow
-                                    </Button>
-                                </div>
+                    <Card style = {{width:500, height:450, backgroundColor:"#c3d3eb", borderColor: "grey", borderStyle: "solid", borderRadius: "5px"}}>
+                        <Box style = {{display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'row'}}>
+                            <Typography variant="h5" style = {{paddingTop:5}}>Local Authors</Typography>
+                            <TextField id="searchNotFollowing" label="Search by name and host" style = {{width: 300, marginLeft: 20}} onChange={searchNotFollowing}/>
+                        </Box>
+                        <Box style = {{marginLeft:20,marginTop:20, height:385,overflowY:"scroll", overflowX:"hidden"}}>
+                            {loadingNotFollowing && <CircularProgress />}
+                            {!loadingNotFollowing && filteredNotFollowing.map((author) => (
+                                <CardContent >
+                                    <div style = {{display:'flex',alignItems:'center',width:400,wordWrap:"break-word"}}>
+                                        <img src= {(author.profileImage != "no profileImage" && author.profileImage != "") ? author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt = "IMG" style = {{borderRadius:"50%"}} width={55} height = {55}/>
+                                        <span>
+                                            <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}> {author.displayName}</h4></a>
+                                        </span>
+                                        <Button 
+                                            id = {author.id}
+                                            style={{backgroundColor:"white",float:"right",
+                                            marginLeft:25, fontSize:15,minWidth:90}}onClick = {() => followAuthor(author)}>
+                                            Follow
+                                        </Button>
+                                    </div>
 
-                            </CardContent>    
-                        ))}
+                                </CardContent>    
+                            ))}
                         </Box>
                     </Card>
-                    <Card style = {{width:500, height:450, backgroundColor:"#a7cdd4", marginTop:20}}>
-                    <Typography variant="h5" style = {{paddingTop:5}}>Other Authors</Typography>
-                        <TextField id="searchOther" label="Search" style = {{width: 400,marginLeft:20}} onChange={search}/>
-                        <Box style = {{marginLeft:20,marginTop:20, height:350,overflowY:"scroll", overflowX:"hidden"}}>
-                            {otherUsers.map((author) => (
+                    <Card style = {{width:500, height:450, backgroundColor:"#c3d3eb", marginTop:20, borderColor: "grey", borderStyle: "solid", borderRadius: "5px"}}>
+                        <Box style = {{display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'row'}}>
+                            <Typography variant="h5" style = {{paddingTop:5}}>Other Authors</Typography>
+                            <TextField id="searchOther" label="Search by name and host" style = {{width: 300,marginLeft:20}} onChange={searchOtherUsers}/>
+                        </Box>
+                        <Box style = {{marginLeft:20,marginTop:20, height:385,overflowY:"scroll", overflowX:"hidden"}}>
+                            {loadingOtherUsers && <CircularProgress />}
+                            {!loadingOtherUsers && filteredOtherUsers.map((author) => (
                                 <CardContent >
                                     <div style = {{display:'flex',alignItems:'center',width:500,wordWrap:"break-word"}}>
-                                        {author.profileImage && (<img src= {author.profileImage} alt = "IMG" style = {{borderRadius:"50%"}} width={55} height = {55}/>)}
+                                        <img src= {(author.profileImage != "no profileImage" && author.profileImage != "") ? author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt = "IMG" style = {{borderRadius:"50%"}} width={55} height = {55}/>
                                         <span>
                                             <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}>{author.displayName}</h4></a>
                                         </span>

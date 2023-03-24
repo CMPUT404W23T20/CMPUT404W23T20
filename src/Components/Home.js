@@ -4,10 +4,14 @@ import Nav from './Nav';
 import axios from 'axios';
 import { getTextFieldUtilityClass } from '@mui/material';
 import { getApiUrls } from '../utils/utils';
+import CircularProgress from '@mui/material/CircularProgress';
 
 function Posts() {
     const [Posts, setPosts] = React.useState([]);
     const [followingPosts,setFollowingPosts] = React.useState([]);
+
+    const [loadingFollowing, setLoadingFollowing] = React.useState(false);
+    const [loadingPosts, setLoadingPosts] = React.useState(false);
     const [Comments, setComments] = React.useState([]);
  
     const getFeed =  async() =>{
@@ -24,7 +28,7 @@ function Posts() {
         let allFollowingPosts = []
         let username = "Group20"
         let password = "jn8VWYcZDrLrkQDcVsRi"
-        let auth = "Basic " + btoa(username + ":" + password);
+        let authG6 = "Basic " + btoa(username + ":" + password);
         for (let fpost = 0; fpost < followingList.length; fpost++){ //for loop to get Following's posts
             let followee = followingList[fpost]
             let id = followee.id.split("/").pop();
@@ -39,7 +43,7 @@ function Posts() {
             let followingPosts = await axios.get(path, {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": (followee.host == path) ? localStorage.getItem("token") : (followee.host == "https://social-distribution-media.herokuapp.com") ? auth : (followee.host == "https://group-13-epic-app.herokuapp.com/") ? "" : "" 
+                    "Authorization": (followee.host == path) ? localStorage.getItem("token") : (followee.host == "https://social-distribution-media.herokuapp.com") ? authG6 : (followee.host == "https://group-13-epic-app.herokuapp.com/") ? "Basic R3JvdXAxMzp0ZXN0dGVzdHRlc3Q=" : "" 
                 }
             }).catch((error) => {
                 console.log("error",error)
@@ -49,6 +53,7 @@ function Posts() {
         }
         console.log("followingPosts",allFollowingPosts)
         setFollowingPosts(allFollowingPosts)
+        setLoadingFollowing(true)
 
         let path = `${getApiUrls()}/service/posts`;
         let response = await axios.get(path, {
@@ -103,7 +108,8 @@ function Posts() {
                 let commentDataList = comments.data
                 for (let i = 0; i < commentDataList.length; i++ ){
                     commentList.push(commentDataList[i])  
-                }
+                    setLoadingPosts(true)
+    }
                 
             }
 
@@ -148,48 +154,76 @@ function Posts() {
     const [post, setPost] = React.useState([{}]);
     return (
         <Box>
-            <Box className="App" style={{ display: "flex", flexDirection: "row", height : "100vh", width: "100vw", alignItems: "left", justifyContent: "left" }}>
+            <Box className="App" style={{ display: "flex", flexDirection: "row", height : "100vh", width: "100vw", alignItems: "left", justifyContent: "left"}}>
                 <Box style={{width: "170px"}}>
                 <Nav />
                 </Box>
                 <Box style={{ display: "flex", flexDirection: "row", backgroundColor: "white", flex: 1, height: "100vh"}}>
-                    <Box style={{display: "flex", flexDirection: "column",flex: 1, margin: "10px", borderColor: "grey", borderStyle: "solid", borderRadius: "5px"}}>
-                        <Typography variant="h4">Home</Typography>
-                        <List style = {{ flex: 1, overflowY: "scroll"}}>
-                            <Typography variant="h5">Following's Posts</Typography>
-                            {followingPosts.map((post) => (
-                                <ListItem key={post.id} onClick = {() => {setopenPost(true); setPost(post);}}>
-                                    <Card style = {{ width: "100%", backgroundColor: "#8fd1f2"}}>
-                                        <Box style = {{ paddingLeft: 2}}>
-                                            <Typography variant="h5">{post.title}</Typography>
-                                            <Typography variant="body2">{post.author.displayName}</Typography>
-                                            <Typography variant="body1" style={{maxHeight: "200px", overflowY: "auto"}}>{post.description}</Typography>
-                                        </Box>
-                                    </Card>
-                                </ListItem>
-                            ))}
+                    <Box style={{display: "flex", flexDirection: "row",flex: 1, margin: "10px", borderColor: "grey", borderStyle: "solid", borderRadius: "5px", backgroundColor: "#c3d3eb"}}>
+                        <Box style = {{ display: "flex", flexDirection: "column", flex: 1, margin: "10px"}}>
+                            <Typography variant="h4">Following's Posts</Typography>
+                            <List style = {{ flex: 1, overflowY: "scroll", maxHeight: "100%"}}>
+                                {!loadingFollowing && <CircularProgress />}
+                                {loadingFollowing && followingPosts.map((post) => (
+                                    <ListItem key={post.id} onClick = {() => {setopenPost(true); setPost(post);}}>
+                                        <Card style = {{ width: "100%"}}>
+                                            <Box style = {{ paddingLeft: 2}}>
+                                                {(post.type === 'post') && (<Box style = {{ display: "flex", flexDirection: "row", marginTop: "10px", marginLeft: "10px"}}>
+                                                    <img src= {(post.author.profileImage != "no profileImage" && post.author.profileImage != "") ? post.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt = "IMG" style = {{borderRadius:"50%"}} width="100px" height = "100px"/>
+                                                    <Box style = {{ display: "flex", flexDirection: "column", paddingLeft: "10px"}}>
+                                                        <Typography variant="h5">Title: {post.title}</Typography>
+                                                        <Typography variant="body2">Author: {post.author.displayName}</Typography>
+                                                        <Typography variant="body2">Published: {post.published.substring(0,10)}</Typography>
+                                                        <Typography variant="body2">Node: {post.author.host}</Typography>
+                                                    </Box>
+                                                </Box>)}
+                                            </Box>
+                                        </Card>
+                                    </ListItem>
+                                ))}
+                            </List>
+                        </Box>
+                        <Box style = {{ display: "flex", flexDirection: "column", flex: 1, margin: "10px"}}>
                         
                             <Typography variant="h4">Public Posts</Typography>
-                            {Posts.map((post) => (
-                                <ListItem key={post.id} onClick = {() => {setopenPost(true); setPost(post)}}>
-                                    <Card style = {{ width: "100%", backgroundColor: "#8fd1f2"}}>
-                                        <Box style = {{ paddingLeft: 2}}>
-                                            <Typography variant="h5">{post.title}</Typography>
-                                            <Typography variant="body2">{post.author.displayName}</Typography>
-                                            <Typography variant="body1" style={{maxHeight: "200px", overflowY: "auto"}}>{post.description}</Typography>
-
-                                        </Box>
-                                    </Card>
-                                </ListItem>
-                            ))}
-                             
-                        </List>
+                            <List style = {{ flex: 1, overflowY: "scroll", maxHeight: "100%"}}>
+                                {!loadingPosts && <CircularProgress />}
+                                {loadingPosts && Posts.map((post) => (
+                                    <ListItem key={post.id} onClick = {() => {setopenPost(true); setPost(post)}}>
+                                        <Card style = {{ width: "100%"}}>
+                                            <Box style = {{ paddingLeft: 2}}>
+                                                {(post.type === 'post') && (<Box style = {{ display: "flex", flexDirection: "row", marginTop: "10px", marginLeft: "10px"}}>
+                                                <img src= {(post.author.profileImage != "no profileImage" && post.author.profileImage != "") ? post.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt = "IMG" style = {{borderRadius:"50%"}} width="100px" height = "100px"/>
+                                                    <Box style = {{ display: "flex", flexDirection: "column", paddingLeft: "10px"}}>
+                                                        <Typography variant="h5">Title: {post.title}</Typography>
+                                                        <Typography variant="body2">Author: {post.author.displayName}</Typography>
+                                                        <Typography variant="body2">Published: {post.published.substring(0,10)}</Typography>
+                                                        <Typography variant="body2">Node: {post.author.host}</Typography>
+                                                    </Box>
+                                                </Box>)}                                   
+                                            </Box>
+                                        </Card>
+                                    </ListItem>
+                                ))}
+                                
+                            </List>
+                        </Box>
                     </Box>
                     {openPost && (
-                        <Box style={{ flex: 1,display: "flex", flexDirection: "column", margin: "10px", borderColor: "grey", borderStyle: "solid", borderRadius: "5px"}}>
-                            <Box style={{flex: 1, margin: "5px"}}>
-                                <Card style = {{ width: "100%", height: "100%", borderRadius: "4px", boxShadow: "0 0 10px 0 rgba(0,0,0,0.5)"}}>
-                                    <TextField id="description" label="Description" variant="outlined" style={{width: "95%", margin: "25px"}} value={post.description} onChange={(e) => setPost({...post, description: e.target.value})} multiline maxRows={15}/>
+                        <Box style={{flex: 1, margin: "10px", borderColor: "grey", borderStyle: "solid", borderRadius: "5px", backgroundColor: "#c3d3eb"}}>
+                            <Box style = {{backgroundColor: 'white', borderRadius: "5px", width: "96%", height: "96%", margin: "2%"}}>
+                                <Typography variant="h2">{post.title}</Typography>
+                                <Box>
+                                    <img src= {(post.author.profileImage != "no profileImage" && post.author.profileImage != "") ? post.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt = "IMG" style = {{borderRadius:"50%"}} width="100px" height = "100px"/>
+                                    <Box style = {{ display: "flex", flexDirection: "column", paddingLeft: "10px", alignItems: "cen", justifyContent: "left"}}>
+                                        <Typography variant="body2">Author: {post.author.displayName}</Typography>
+                                        <Typography variant="body2">Published: {post.published.substring(0,10)}</Typography>
+                                        <Typography variant="body2">Node: {post.author.host}</Typography>
+                                    </Box>
+                                </Box>
+                                <Typography variant="h5">Description:</Typography>
+                                <Typography variant="body2">{post.description}</Typography>
+                                <Button variant="contained" color="secondary" onClick={() => setopenPost(false)} style={{ position: "absolute", bottom: "20px", right: "20px"}}>
                                     <Typography variant="h6" style = {{textAlign:"left", paddingLeft:30,fontSize:20}}>Comments:</Typography>
                                         {Comments.map((comments) => (
                                         (`${comments.post.id}` === `${post.id.split("/").pop()}`) ? 
@@ -205,10 +239,12 @@ function Posts() {
                                         ))}
                                      <TextField id="comment" label="Comment..." variant="outlined" style={{width: "75%", margin: "25px"}}/>
                                      <Button variant="contained" color="primary" onClick ={() => postComment(document.getElementById("comment").value,`${post.id}`,`${post.author.id}`)}   style={{ margin: 10,position:"relative",top:"25px"}}>Comment</Button>
-                                </Card>
+                                    Close
+                                </Button>
                             </Box>
-                        </Box>)
-                    }
+                        </Box>
+                        
+                    )}
                 </Box>
             </Box>
         </Box>
