@@ -36,7 +36,7 @@ function Posts() {
                 path = followee.host+"/api/authors/"+id+"/posts";
             }
             if (followee.host == "https://group-13-epic-app.herokuapp.com/"){
-                path = followee.host+"api/authors/"+id+"/posts/";
+                path = followee.host+"api/authors/"+id+"/posts";
             }
             console.log("path",path)
             let followingPosts = await axios.get(path, {
@@ -99,7 +99,6 @@ function Posts() {
         for (let i = 0; i < allFollowingPosts.length; i++){
             //getting comments for LOCAL posts
             if (typeof  allFollowingPosts[i].author !== 'undefined'){ //running into weird bug at :3000 host w/out this
-                console.log("bye",allFollowingPosts[i].author)
                 if (allFollowingPosts[i].author.host === "https://t20-social-distribution.herokuapp.com"){
                 let commentListPath = `${getApiUrls()}`+"/service/authors/" + allFollowingPosts[i].author.id+ "/posts/" + allFollowingPosts[i].id+"/comments";
                 let comments = await axios.get(commentListPath, {
@@ -162,6 +161,7 @@ function Posts() {
 
     const [openPost, setopenPost] = React.useState(false);
     const [post, setPost] = React.useState([{}]);
+    const [openComments, setOpenComments] = React.useState(false);
     return (
         <Box>
             <Box className="App" style={{ display: "flex", flexDirection: "row", height : "100vh", width: "100vw", alignItems: "left", justifyContent: "left"}}>
@@ -219,8 +219,8 @@ function Posts() {
                         </Box>
                     </Box>
                     {openPost && (
-                        <Box style={{flex: 1, margin: "10px", borderColor: "grey", borderStyle: "solid", borderRadius: "5px", backgroundColor: "#c3d3eb"}}>
-                            <Box style = {{backgroundColor: 'white', borderRadius: "5px", width: "96%", height: "96%", overflowY:"scroll",margin: "2%"}}>
+                        <Box style={{flex: 1, margin: "10px", borderColor: "grey", borderStyle: "solid", borderRadius: "5px", backgroundColor: "#c3d3eb", display: "flex", flexDirection: "column"}}>
+                            <Card style = {{ marginRight: "10px",marginBottom: "10px",marginLeft: "10px", borderRadius: "10px", borderColor: "black",marginTop: "5px",flex:1}}>
                                 <Typography variant="h2">{post.title}</Typography>
                                 <Box>
                                     <img src= {(post.author.profileImage != "no profileImage" && post.author.profileImage != "") ? post.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt = "IMG" style = {{borderRadius:"50%"}} width="100px" height = "100px"/>
@@ -232,15 +232,26 @@ function Posts() {
                                 </Box>
                                 <Typography variant="h5">Description:</Typography>
                                 <Typography variant="body2">{post.description}</Typography>
-                                 <TextField id="description" label="Description" variant="outlined" style={{width: "95%", margin: "25px"}} value={post.description} onChange={(e) => setPost({...post, description: e.target.value})} multiline maxRows={15}/>
-                                        <div id = "postedComment" style = {{display:"none",borderRadius:"25px",backgroundColor:"#bce3c0",width: "40%", margin: "10px", paddingLeft:"5%",marginLeft:"30%"}}>
-                                            <Typography variant="h6" style = {{ textAlign:"left",fontSize:15}}>
-                                              {commentPosted? "Your comment has been sent!": ""}
-                                            </Typography>
-                                        </div>
-                                        {(`${post.author.id}`=== localStorage.getItem("id")) ? <Typography variant="h6" style = {{textAlign:"left", paddingLeft:30,fontSize:20}}>Comments:</Typography> :<h2></h2> }
-                                        {Comments.map((comments) => (
-                                         ((`${comments.post.id}` === `${post.id.split("/").pop()}`) && (`${post.author.id}`=== localStorage.getItem("id"))) ? 
+                                <div id = "postedComment" style = {{display:"none",borderRadius:"25px",backgroundColor:"#bce3c0",width: "40%", margin: "10px", paddingLeft:"5%",marginLeft:"30%"}}>
+                                    <Typography variant="h6" style = {{ textAlign:"left",fontSize:15}}>
+                                        {commentPosted? "Your comment has been sent!": ""}
+                                    </Typography>
+                                </div>
+                                <Button variant="contained" color="secondary" onClick={() => openComments ? setOpenComments(false) : setopenPost(false)} style={{ position: "absolute", bottom: "30px", right: "30px"}}>
+                                    Close
+                                </Button>
+                                {!openComments && (
+                                    <Button variant="contained" color="primary" onClick={() => setOpenComments(true)} style={{ position: "absolute", bottom: "30px", right: "120px"}}>
+                                        Comments
+                                    </Button>
+                                )}
+                            </Card>
+                            {openComments && (
+                                <Card style = {{ marginRight: "10px",marginBottom: "10px",marginLeft: "10px", borderRadius: "10px", borderColor: "black",marginTop: "5px",flex:1}}>
+                                    <TextField id="comment" label="Comment..." variant="outlined" style={{width: "75%", margin: "25px"}}/>            
+                                    <Button variant="contained" color="primary" onClick ={() => postComment(document.getElementById("comment").value,`${post.id}`,`${post.author.id}`)}   style={{ margin: 10,position:"relative",top:"25px"}}>Comment</Button>
+                                    {(`${post.author.id}`=== localStorage.getItem("id")) ? <Typography variant="h6" style = {{textAlign:"left", paddingLeft:30,fontSize:20}}>Comments:</Typography> :<h2></h2> }                                        {Comments.map((comments) => (
+                                            ((`${comments.post.id}` === `${post.id.split("/").pop()}`) && (`${post.author.id}`=== localStorage.getItem("id"))) ? 
                                             ( <div style = {{display:'flex',alignItems:'center',wordWrap:"break-word"}}>
                                                 <img src= {post.author.profileImage} alt = "" style = {{borderRadius:"50%",marginLeft:30,marginRight:15,marginBottom:10}} width={55} height = {55}/>
                                                 <Typography variant="h6" style = {{display: "inline-block",textAlign:"left", paddingLeft:15,fontSize:20}}>
@@ -250,15 +261,9 @@ function Posts() {
                                             ) 
                                             :(<h2></h2>)   
                                         ))}
-
-                                <TextField id="comment" label="Comment..." variant="outlined" style={{width: "75%", margin: "25px"}}/>            
-                                <Button variant="contained" color="primary" onClick ={() => postComment(document.getElementById("comment").value,`${post.id}`,`${post.author.id}`)}   style={{ margin: 10,position:"relative",top:"25px"}}>Comment</Button>
-                                <Button variant="contained" color="secondary" onClick={() => setopenPost(false)} style={{ position: "absolute", bottom: "20px", right: "20px"}}>
-                                    Close
-                                </Button>
-                            </Box>
+                                </Card>
+                            )}
                         </Box>
-                        
                     )}
                 </Box>
             </Box>
