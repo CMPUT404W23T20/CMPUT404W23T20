@@ -15,7 +15,10 @@ from django.forms.models import model_to_dict
 from django.conf import settings
 import jwt
 from django.db.models import Q
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from .authentication import JWTAuth, HTTPBasicAuth   # import the JWTAuthentication backend
+
 
 # need to be changed to proper format
 # proper format
@@ -45,6 +48,12 @@ class LoginView(APIView):
 # URL: ://service/authors/{AUTHOR_ID}/
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
 def authors(request, author_id = None):
+    # check BasicAuth for remote users
+    try:
+        HTTPBasicAuth.authenticate(request)
+    except:
+        return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
+
     if request.method == 'GET':
         # get all authors where hidden is false
         authors = Author.objects.filter(hidden = False)
@@ -68,9 +77,8 @@ def authors(request, author_id = None):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     elif request.method == 'PUT':
-        token = request.headers.get('Authorization', None)
-        payload = LoginSerializer.validateToken(token)
-        if author_id != str(payload.get('user_id', None)):
+        loggedin_author = JWTAuth.authenticate(request)
+        if author_id != loggedin_author['id']:
             return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
         serializer = AuthorSerializer(Author.objects.get(id = author_id), data=request.data)
         if serializer.is_valid():
@@ -78,12 +86,11 @@ def authors(request, author_id = None):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     elif request.method == 'DELETE':
-        token = request.headers.get('Authorization', None)
         try:
-            payload = LoginSerializer.validateToken(token)
+            loggedin_author = JWTAuth.authenticate(request)
         except:
             return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
-        author = Author.objects.get(id = payload.get('user_id', None))
+        author = Author.objects.get(id = loggedin_author['id'])
         if author_id != str(author.id):
             return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
         author.delete()
@@ -92,6 +99,12 @@ def authors(request, author_id = None):
 # URL: ://service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
 def followers(request, author_id = None, follower_id = None):
+    # check BasicAuth for remote users
+    try:
+        HTTPBasicAuth.authenticate(request)
+    except:
+        return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
+
     if request.method == 'GET':
         if not follower_id:
             # get all followers of author_id
@@ -153,6 +166,12 @@ def requests(request, author_id):
 
 @api_view(['GET'])
 def following(request, author_id):
+    # check BasicAuth for remote users
+    try:
+        HTTPBasicAuth.authenticate(request)
+    except:
+        return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
+
     if request.method == 'GET':
         # get all authors that author_id follows
         follows = Follow.objects.filter(follower = author_id)
@@ -167,6 +186,12 @@ def following(request, author_id):
         
 @api_view(['GET'])
 def friends(request, author_id):
+    # check BasicAuth for remote users
+    try:
+        HTTPBasicAuth.authenticate(request)
+    except:
+        return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
+
     if request.method == 'GET':
         # return users who follow author_id and author_id follows
         followIn = Follow.objects.filter(follower = author_id)
@@ -184,6 +209,12 @@ def friends(request, author_id):
     
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
 def posts(request, author_id = None, post_id = None):
+    # check BasicAuth for remote users
+    try:
+        HTTPBasicAuth.authenticate(request)
+    except:
+        return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
+
     if request.method == 'GET':
         if not author_id:
             # get all public posts
@@ -197,13 +228,12 @@ def posts(request, author_id = None, post_id = None):
         
         author = Author.objects.get(id = author_id)
         posts = Post.objects.filter(author= author)
-        token = request.headers.get('Authorization', None)
         try:
-            payload = LoginSerializer.validateToken(token)
+            loggedin_author = JWTAuth.authenticate(request)
         except:
-            payload = None
-        if payload:
-            requestAuthor = Author.objects.get(id = payload.get('user_id', None))
+            loggedin_author = None
+        if loggedin_author:
+            requestAuthor = Author.objects.get(id = loggedin_author['id'])
             if author_id != str(requestAuthor.id):
                 posts = posts.filter(visibility = 'PUBLIC')
 
@@ -223,9 +253,8 @@ def posts(request, author_id = None, post_id = None):
     
 
     elif request.method == 'POST':
-        token = request.headers.get('Authorization', None)
-        payload = LoginSerializer.validateToken(token)
-        author = Author.objects.get(id = payload.get('user_id', None))
+        loggedin_author = JWTAuth.authenticate(request)
+        author = Author.objects.get(id = loggedin_author['id'])
         if author_id != str(author.id):
             return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
         data = request.data
@@ -239,9 +268,8 @@ def posts(request, author_id = None, post_id = None):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     elif request.method == 'PUT':
-        token = request.headers.get('Authorization', None)
-        payload = LoginSerializer.validateToken(token)
-        author = Author.objects.get(id = payload.get('user_id', None))
+        loggedin_author = JWTAuth.authenticate(request)
+        author = Author.objects.get(id = loggedin_author['id'])
         if author_id != str(author.id):
             return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
         post = Post.objects.get(id = post_id)
@@ -254,9 +282,8 @@ def posts(request, author_id = None, post_id = None):
         return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
     
     elif request.method == 'DELETE':
-        token = request.headers.get('Authorization', None)
-        payload = LoginSerializer.validateToken(token)
-        author = Author.objects.get(id = payload.get('user_id', None))
+        loggedin_author = JWTAuth.authenticate(request)
+        author = Author.objects.get(id = loggedin_author['id'])
         if author_id != str(author.id):
             return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
         post = Post.objects.get(id = post_id)
@@ -267,6 +294,12 @@ def posts(request, author_id = None, post_id = None):
 
 @api_view(['GET', 'POST'])
 def comments(request, author_id, post_id):
+    # check BasicAuth for remote users
+    try:
+        HTTPBasicAuth.authenticate(request)
+    except:
+        return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
+
     if request.method == 'GET':
         comments = Comment.objects.filter(post = post_id)
         serializer = CommentSerializer(comments, many=True)
@@ -279,9 +312,8 @@ def comments(request, author_id, post_id):
             # comment['post']['author']['url'] = comment['post']['author']['url'] + str(comment['post']['author']['id'])
         return Response(serializer.data, status=status.HTTP_200_OK)
     elif request.method == 'POST':
-        token = request.headers.get('Authorization', None)
-        payload = LoginSerializer.validateToken(token)
-        author = Author.objects.get(id = payload.get('user_id', None))
+        loggedin_author = JWTAuth.authenticate(request)
+        author = Author.objects.get(id = loggedin_author['id'])
         data = request.data
         data['author'] = author.id
         data['authorName'] = author.displayName
@@ -294,6 +326,12 @@ def comments(request, author_id, post_id):
 
 @api_view(['GET', 'POST', 'DELETE'])
 def commentLikes(request, comment_id):
+    # check BasicAuth for remote users
+    try:
+        HTTPBasicAuth.authenticate(request)
+    except:
+        return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
+
     if request.method == 'GET':
         return Response("Not implemented", status=status.HTTP_501_NOT_IMPLEMENTED)
     elif request.method == 'POST':
@@ -303,6 +341,12 @@ def commentLikes(request, comment_id):
     
 @api_view(['GET'])
 def likedPosts(request, author_id):
+    # check BasicAuth for remote users
+    try:
+        HTTPBasicAuth.authenticate(request)
+    except:
+        return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
+
     if request.method == 'GET':
         likes = Like.objects.filter(author = author_id)
         items = []
@@ -325,6 +369,12 @@ def likedPosts(request, author_id):
 
 @api_view(['GET', 'POST', 'DELETE'])
 def inbox(request, author_id):
+    # check BasicAuth for remote users
+    try:
+        HTTPBasicAuth.authenticate(request)
+    except:
+        return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
+
     if request.method == 'GET':
         # get all inbox items for author
         author = Author.objects.get(id=author_id)
@@ -374,7 +424,7 @@ def inbox(request, author_id):
         # add object of type post/follow/like/comment to inbox of author_id
         # don't authorize becausing we are sending objects to another user
         """ token = request.headers.get('Authorization', None)
-        payload = LoginSerializer.validateToken(token) 
+        payload = JWTAuthentication.authenticate(request) 
         tokenAuthor = Author.objects.get(id = payload.get('user_id', None))
         if str(tokenAuthor.id) != author_id:
             return Response(status=status.HTTP_401_UNAUTHORIZED) """
@@ -385,16 +435,16 @@ def inbox(request, author_id):
 
         if request.data['type'] == 'post':
             post = Post.objects.get(id = request.data['id'])
-            inbox.items.posts.add(post)
+            inbox.posts.add(post)
         elif request.data['type'] == 'follow':
             follow = Follow.objects.get(id = request.data['id'])
-            inbox.items.follows.add(follow)
+            inbox.follows.add(follow)
         elif request.data['type'] == 'like':
             like = Like.objects.get(id = request.data['id'])
-            inbox.items.likes.add(like)
+            inbox.likes.add(like)
         elif request.data['type'] == 'comment':
             comment = Comment.objects.get(id = request.data['id'])
-            inbox.items.comments.add(comment)
+            inbox.comments.add(comment)
 
         inbox.save()
         return Response(status=status.HTTP_200_OK)
@@ -404,7 +454,9 @@ def inbox(request, author_id):
         # clear the items field of the inbox with author_id = author_id
         author = Author.objects.get(id = author_id)
         inbox = Inbox.objects.get(author = author)
-        inbox.items.posts.clear()
-        inbox.items.follows.clear()
+        inbox.posts.clear()
+        inbox.follows.clear()
+        inbox.comments.clear()
+        inbox.likes.clear()
         inbox.save()
         return Response(status=status.HTTP_200_OK)

@@ -38,7 +38,7 @@ function Friends() {
         let friendsResponse = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": localStorage.getItem("token")
+                "Authorization": "Bearer " + localStorage.getItem("token")
             }
         });
         let friendsList = friendsResponse.data;
@@ -48,7 +48,7 @@ function Friends() {
         let followingResponse = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": localStorage.getItem("token")
+                "Authorization": "Bearer " + localStorage.getItem("token")
             }
         });
 
@@ -57,7 +57,7 @@ function Friends() {
         let allAuthors = await axios.get(`${getApiUrls()}/service/authors`, {
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": localStorage.getItem("token")
+                "Authorization": "Bearer " + localStorage.getItem("token")
             }
         });
         let allAuthorsList = allAuthors.data;
@@ -112,7 +112,7 @@ function Friends() {
                 let path = `${getApiUrls()}/service/authors/${userId}/followers/${followingList[i].id}`;
                 let headers = {
                     "Content-Type": "application/json",
-                    "Authorization": localStorage.getItem("token")
+                    "Authorization": "Bearer " + localStorage.getItem("token")
                 }
                 if ((await axios.get(path, headers).data)) {
                     let friend = followingList[i];
@@ -140,7 +140,7 @@ function Friends() {
         let usersResponse = await axios.get(`${getApiUrls()}/service/authors`, {
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": localStorage.getItem("token")
+                "Authorization": "Bearer " + localStorage.getItem("token")
             }
         });
         // add userResponse.data to group20List
@@ -239,7 +239,7 @@ function Friends() {
         let followingResponse = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": localStorage.getItem("token")
+                "Authorization": "Bearer " + localStorage.getItem("token")
             }
         });
         // remove following from other users
@@ -298,7 +298,7 @@ function Friends() {
         let response = await axios.put(path, data,{
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": localStorage.getItem("token")
+                "Authorization": "Bearer " + localStorage.getItem("token")
             },
             }).catch((error) => {
                 console.log(error);
@@ -332,7 +332,7 @@ function Friends() {
         let response = await axios.delete(path, {
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": localStorage.getItem("token")
+                "Authorization": "Bearer " + localStorage.getItem("token")
             }
         });
         getLists()
@@ -340,7 +340,7 @@ function Friends() {
     }
     
     //Ensures that we are logged in 
-    let token =localStorage.getItem("token");
+    let token ="Bearer " + localStorage.getItem("token");
     const navigate = useNavigate();
     const userInfo = () =>{
         if (token === null ){
