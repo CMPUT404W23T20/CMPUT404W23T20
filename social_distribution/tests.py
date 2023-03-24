@@ -171,7 +171,7 @@ class APITests(APITestCase):
     
 
     # Testing post for an 
-    # Getting 405 error
+    # Getting 400 error
     def test_create_posts(self):
     # Check authentication
         self.create_authors()
@@ -188,7 +188,7 @@ class APITests(APITestCase):
             "title": "Test",
             "description": "Test description for post",
             "contentType": "text/plain",
-            "author": f"http://127.0.0.1:8000/service/author/{authorId}",
+            "author": f"{authorId}",
         }
 
         # Authentication
@@ -196,7 +196,8 @@ class APITests(APITestCase):
         headers = {'Authorization': f'Token {token.key}'}
 
         # Send the post request to create the post
-        path = f"http://127.0.0.1:8000/service/authors/{authorId}/posts/"
+        path = f"http://127.0.0.1:8000/service/authors/{authorId}/posts/{postId}"
+        
         response = self.client.post(path, data=data, headers=headers)
 
         # Check if the post was created successfully
@@ -285,19 +286,60 @@ class APITests(APITestCase):
 
         
     def test_post_inbox(self):
+        author = Author.objects.create(username='author1')
+
+        # create a post
+
+        # create a inbox
+
+        # post request
+
+        # assert 
+        path = f"http://127.0.0.1:8000/service/authors/{author.id}/"
         return None
     
     def test_delete_inbox(self):
+        author = Author.objects.create(username='author1')
+
+        # create a post
+
+        # create an inbox
+
+        # add post to inbox
+
+        # delete request
+
+        # assert
+        
+        path = f"http://127.0.0.1:8000/service/authors/{author.id}/"
         return None
 
-
     def test_get_comments(self):
+        author = Author.objects.create(username='author1')
+
+        # create a post
+
+        # create a comment underneath that post
+
+        # save it to db
+
+        # get request
+
+        path = f"http://127.0.0.1:8000/service/authors/{author.id}/"
         return None
 
     def test_post_comment(self):
+        author = Author.objects.create(username='author1')
+        path = f"http://127.0.0.1:8000/service/authors/{author.id}/"
         return None
 
     def test_get_likes(self):
+        author = Author.objects.create(username='author1')
+        # create post
+
+        # create a like object
+
+        path = f"http://127.0.0.1:8000/service/authors/{author.id}/"
         return None
 
    
