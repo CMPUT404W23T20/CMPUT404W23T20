@@ -11,7 +11,7 @@ function Posts() {
         let response = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": localStorage.getItem("token")
+                "Authorization": "Bearer " + localStorage.getItem("token")
             }
         });
 
@@ -35,7 +35,7 @@ function Posts() {
             unlisted: unlisted,
             visibility: visibility ? "FRIENDS" : "PUBLIC" 
         }
-        let token = localStorage.getItem("token");
+        let token = "Bearer " + localStorage.getItem("token");
         console.log(token);
         let postResponse = await axios.post(path, data, {
             headers: {
@@ -78,7 +78,7 @@ function Posts() {
         let response = await axios.delete(path, {
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": localStorage.getItem("token")
+                "Authorization": "Bearer " + localStorage.getItem("token")
             }
         });
         setopenPost(false);
@@ -97,7 +97,7 @@ function Posts() {
         await axios.put(path, data, {
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": localStorage.getItem("token")
+                "Authorization": "Bearer " + localStorage.getItem("token")
             }
         });
         setedit(false);
