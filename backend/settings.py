@@ -39,6 +39,16 @@ jwt_auth = {
     'JWT_AUTH_HEADER_PREFIX': 'Token',
 }
 
+""" REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'social_distribution.authentication.JWTAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ]
+}
+ """
+
 INSTALLED_APPS = [
     'social_distribution',
     'django.contrib.admin',

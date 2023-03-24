@@ -11,7 +11,7 @@ function Inbox() {
         let response = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": localStorage.getItem("token")
+                "Authorization": "Bearer " + localStorage.getItem("token")
             }
         });
         console.log(response.data);
@@ -23,7 +23,7 @@ function Inbox() {
         let response = await axios.delete(path, {
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": localStorage.getItem("token")
+                "Authorization": "Bearer " + localStorage.getItem("token")
             }
         });
         console.log(response.data);
@@ -38,7 +38,7 @@ function Inbox() {
         let response = await axios.put(path, {
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": localStorage.getItem("token")
+                "Authorization": "Bearer " + localStorage.getItem("token")
             }
         });
 
@@ -46,7 +46,7 @@ function Inbox() {
         await axios.post(path, response.data, {
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": localStorage.getItem("token")
+                "Authorization": "Bearer " + localStorage.getItem("token")
             }
         });
 
