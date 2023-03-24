@@ -3,13 +3,13 @@ from django.urls import reverse,resolve
 from django.test import TestCase
 from rest_framework.test import APIClient,RequestsClient, APITestCase
 from rest_framework.authtoken.models import Token
-from social_distribution.models import Author, Follow, Post
+from social_distribution.models import Author, Follow, Post, Inbox
 from django.contrib.auth.models import User
 from rest_framework import status
 import json
 import uuid
 
-class APTests(APITestCase):
+class APITests(APITestCase):
 
     def create_authors(self):
         '''
@@ -258,13 +258,38 @@ class APTests(APITestCase):
 
 
     def test_get_inbox(self):
-        return None
+        author = Author.objects.create(username='author1')
+        post = Post.objects.create(
+                title=f'Test Post',
+                description=f'Test description for Post',
+                contentType='text/plain',
+                author=author
+            )
 
+        inbox = Inbox.objects.create(author=author)
+        inbox.posts.add(post)
+        inbox.save()
+
+        path = f"http://127.0.0.1:8000/service/authors/{author.id}/inbox"
+
+        response = self.client.get(path)
+
+        print("GET INBOX ____________", response.data)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['title'], 'Test Post')
+
+        self.assertTrue('id' in response.data[0])
+        self.assertTrue('type' in response.data[0])
+        self.assertTrue('title' in response.data[0])
+
+        
     def test_post_inbox(self):
         return None
     
     def test_delete_inbox(self):
         return None
+
 
     def test_get_comments(self):
         return None
@@ -274,3 +299,5 @@ class APTests(APITestCase):
 
     def test_get_likes(self):
         return None
+
+   
