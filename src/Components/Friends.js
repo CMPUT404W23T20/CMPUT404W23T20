@@ -158,6 +158,8 @@ function Friends() {
                 "Content-Type": "application/json",
                 "Authorization": auth,
             }
+        }).catch(() => {
+            return [];
         });
         // add userResponse.data to group20List
         console.log("Group20 Users", response.data.items)
@@ -196,6 +198,8 @@ function Friends() {
             headers: {
                 "Content-Type": "application/json",
             }
+        }).catch(() => {
+            return [];
         });
         console.log("Group13 Users", response.data)
         if (!response.data.items) {
@@ -394,7 +398,7 @@ function Friends() {
             <Nav/>
             <Box style = {{display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'row', marginLeft:200, marginTop:40}}>
                 <Box style = {{flex:1,display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'column'}}>
-                    <Card style = {{width:500, height:450, backgroundColor:"#c3d3eb", borderColor: "grey", borderStyle: "solid", borderRadius: "5px"}}>
+                    <Card style = {{width:500, height:450, backgroundColor:"#c3d3eb", borderColor: "grey", borderStyle: "solid"}}>
                         <Box style = {{display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'row'}}>
                             <Typography variant="h5" style = {{paddingTop:5, alignSelf:'left'}}>Friends</Typography>
                             <TextField id="searchFriends" label="Search by name and host" style = {{width: 370, marginLeft: 20}} onChange={searchFriends}/>
@@ -419,7 +423,7 @@ function Friends() {
                             ))}
                         </Box>
                     </Card>
-                    <Card style = {{width:500, height:450, backgroundColor:"#c3d3eb", marginTop:20, borderColor: "grey", borderStyle: "solid", borderRadius: "5px"}}>
+                    <Card style = {{width:500, height:450, backgroundColor:"#c3d3eb", marginTop:20, borderColor: "grey", borderStyle: "solid"}}>
                         <Box style = {{display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'row'}}>
                             <Typography variant="h5" style = {{paddingTop:5, alignSelf:'left'}}>Following</Typography>
                             <TextField id="searchFollowing" label="Search by name and host" style = {{width: 350, marginLeft: 20}} onChange={searchFollowing}/>
@@ -446,7 +450,7 @@ function Friends() {
                     </Card>
                 </Box>
                 <Box style = {{flex:1,display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'column'}}>
-                    <Card style = {{width:500, height:450, backgroundColor:"#c3d3eb", borderColor: "grey", borderStyle: "solid", borderRadius: "5px"}}>
+                    <Card style = {{width:500, height:450, backgroundColor:"#c3d3eb", borderColor: "grey", borderStyle: "solid"}}>
                         <Box style = {{display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'row'}}>
                             <Typography variant="h5" style = {{paddingTop:5}}>Local Authors</Typography>
                             <TextField id="searchNotFollowing" label="Search by name and host" style = {{width: 300, marginLeft: 20}} onChange={searchNotFollowing}/>
@@ -472,7 +476,7 @@ function Friends() {
                             ))}
                         </Box>
                     </Card>
-                    <Card style = {{width:500, height:450, backgroundColor:"#c3d3eb", marginTop:20, borderColor: "grey", borderStyle: "solid", borderRadius: "5px"}}>
+                    <Card style = {{width:500, height:450, backgroundColor:"#c3d3eb", marginTop:20, borderColor: "grey", borderStyle: "solid"}}>
                         <Box style = {{display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'row'}}>
                             <Typography variant="h5" style = {{paddingTop:5}}>Other Authors</Typography>
                             <TextField id="searchOther" label="Search by name and host" style = {{width: 300,marginLeft:20}} onChange={searchOtherUsers}/>

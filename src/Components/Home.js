@@ -38,7 +38,6 @@ function Posts() {
             if (followee.host == "https://group-13-epic-app.herokuapp.com/"){
                 path = followee.host+"api/authors/"+id+"/posts";
             }
-            console.log("path",path)
             let followingPosts = await axios.get(path, {
                 headers: {
                     "Content-Type": "application/json",
@@ -169,7 +168,7 @@ function Posts() {
                 <Nav />
                 </Box>
                 <Box style={{ display: "flex", flexDirection: "row", backgroundColor: "white", flex: 1, height: "100vh"}}>
-                    <Box style={{display: "flex", flexDirection: "row",flex: 1, margin: "10px", borderColor: "grey", borderStyle: "solid", borderRadius: "5px", backgroundColor: "#c3d3eb"}}>
+                    <Box style={{display: "flex", flexDirection: "row",flex: 1, margin: "10px", borderColor: "grey", borderStyle: "solid", backgroundColor: "#c3d3eb"}}>
                         <Box style = {{ display: "flex", flexDirection: "column", flex: 1, margin: "10px"}}>
                             <Typography variant="h4">Following's Posts</Typography>
                             <List style = {{ flex: 1, overflowY: "scroll", maxHeight: "100%"}}>
@@ -219,7 +218,7 @@ function Posts() {
                         </Box>
                     </Box>
                     {openPost && (
-                        <Box style={{flex: 1, margin: "10px", borderColor: "grey", borderStyle: "solid", borderRadius: "5px", backgroundColor: "#c3d3eb", display: "flex", flexDirection: "column"}}>
+                        <Box style={{flex: 1, margin: "10px", borderColor: "grey", borderStyle: "solid", backgroundColor: "#c3d3eb", display: "flex", flexDirection: "column"}}>
                             <Card style = {{ marginRight: "10px",marginBottom: "10px",marginLeft: "10px", borderRadius: "10px", borderColor: "black",marginTop: "5px",flex:1}}>
                                 <Typography variant="h2">{post.title}</Typography>
                                 <Box>
@@ -247,13 +246,13 @@ function Posts() {
                                 )}
                             </Card>
                             {openComments && (
-                                <Card style = {{ marginRight: "10px",marginBottom: "10px",marginLeft: "10px", borderRadius: "10px", borderColor: "black",marginTop: "5px",flex:1}}>
+                                <Card style = {{ marginRight: "10px",marginBottom: "10px",marginLeft: "10px", borderRadius: "10px", borderColor: "black",marginTop: "5px",flex:1, overflowY: "scroll"}}>
                                     <TextField id="comment" label="Comment..." variant="outlined" style={{width: "75%", margin: "25px"}}/>            
                                     <Button variant="contained" color="primary" onClick ={() => postComment(document.getElementById("comment").value,`${post.id}`,`${post.author.id}`)}   style={{ margin: 10,position:"relative",top:"25px"}}>Comment</Button>
                                     {(`${post.author.id}`=== localStorage.getItem("id")) ? <Typography variant="h6" style = {{textAlign:"left", paddingLeft:30,fontSize:20}}>Comments:</Typography> :<h2></h2> }                                        {Comments.map((comments) => (
                                             ((`${comments.post.id}` === `${post.id.split("/").pop()}`) && (`${post.author.id}`=== localStorage.getItem("id"))) ? 
                                             ( <div style = {{display:'flex',alignItems:'center',wordWrap:"break-word"}}>
-                                                <img src= {post.author.profileImage} alt = "" style = {{borderRadius:"50%",marginLeft:30,marginRight:15,marginBottom:10}} width={55} height = {55}/>
+                                                <img src= {comments.author.profileImage} alt = "" style = {{borderRadius:"50%",marginLeft:30,marginRight:15,marginBottom:10}} width={55} height = {55}/>
                                                 <Typography variant="h6" style = {{display: "inline-block",textAlign:"left", paddingLeft:15,fontSize:20}}>
                                                     {comments.author.displayName}: {comments.comment}
                                                 </Typography>
