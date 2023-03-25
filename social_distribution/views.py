@@ -239,6 +239,7 @@ def posts(request, author_id = None, post_id = None):
             for post in serializer.data:
                 post['author'] = AuthorSerializer(Author.objects.get(id = post['author'])).data
                 post['author']['url'] = post['author']['url'] + str(post['author']['id'])
+                post['origin'] = post['origin'] + str(post['id'])
             response = {
                 "type": "posts",
                 "items": serializer.data
@@ -261,12 +262,14 @@ def posts(request, author_id = None, post_id = None):
             posts = PostSerializer(posts, many=True).data
             posts[0]['author'] = AuthorSerializer(Author.objects.get(id = posts[0]['author'])).data
             posts[0]['author']['url'] = posts[0]['author']['url'] + str(posts[0]['author']['id'])
+            posts[0]['origin'] = posts[0]['origin'] + str(posts[0]['id'])
             return Response(posts[0], status=status.HTTP_200_OK)
         
         serializer = PostSerializer(posts, many=True)
         for post in serializer.data:
             post['author'] = AuthorSerializer(Author.objects.get(id = post['author'])).data
             post['author']['url'] = post['author']['url'] + str(post['author']['id'])
+            post['origin'] = post['origin'] + str(post['id'])
         response = {
             "type": "posts",
             "items": serializer.data
@@ -282,7 +285,7 @@ def posts(request, author_id = None, post_id = None):
         data = request.data
         data['author'] = author.id
         data['authorName'] = author.displayName
-        data['origin'] = author.host
+        data['origin'] = author.host + "/service/author/" + str(author.id) + "/posts/"
         serializer = PostSerializer(data=data)
         if serializer.is_valid():
             serializer.save()

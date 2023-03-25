@@ -85,7 +85,7 @@ function Posts() {
         // send post to inbox of followers
         for (let follower of followersResponse.data.items) {
             path =`${getApiUrls()}/service/authors/${follower.id}/inbox`;
-            await axios.post(path, postResponse.data.items, {
+            await axios.post(path, postResponse.data, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": token
