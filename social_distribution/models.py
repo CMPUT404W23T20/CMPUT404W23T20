@@ -48,7 +48,7 @@ class Post(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=200, default="No title")
     source = models.CharField(max_length=200, default="No source")
-    origin = models.CharField(max_length=200, default= hostAddress + "/service/posts/")
+    origin = models.CharField(max_length=200, default= "no origin")
     description = models.CharField(max_length=2000, default="No description")
     contentType = models.CharField(max_length=200, default="text/plain")
     author = models.ForeignKey(Author, on_delete=models.CASCADE, default=1)

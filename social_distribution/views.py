@@ -285,7 +285,7 @@ def posts(request, author_id = None, post_id = None):
         data = request.data
         data['author'] = author.id
         data['authorName'] = author.displayName
-        data['origin'] = author.host + "/service/author/" + str(author.id) + "/posts/"
+        data['origin'] = author.host + "/service/authors/" + str(author.id) + "/posts/"
         serializer = PostSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
