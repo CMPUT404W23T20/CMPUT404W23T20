@@ -32,8 +32,8 @@ function Posts() {
             let followee = followingList[fpost]
             let id = followee.id.split("/").pop();
             let path = followee.host+"/service/authors/"+id+"/posts";
-            if (followee.host == "https://social-distribution-media.herokuapp.com"){
-                path = followee.host+"/api/authors/"+id+"/posts";
+            if (followee.host == "https://social-distribution-media.herokuapp.com/api"){
+                path = followee.host+"/authors/"+id+"/posts";
             }
             if (followee.host == "https://group-13-epic-app.herokuapp.com/"){
                 path = followee.host+"api/authors/"+id+"/posts";
@@ -41,7 +41,7 @@ function Posts() {
             let followingPosts = await axios.get(path, {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": (followee.host == path) ? "Bearer " + localStorage.getItem("token") : (followee.host == "https://social-distribution-media.herokuapp.com") ? authG6 : (followee.host == "https://group-13-epic-app.herokuapp.com/") ? "Basic R3JvdXAxMzp0ZXN0dGVzdHRlc3Q=" : "" 
+                    "Authorization": (followee.host == path) ? "Bearer " + localStorage.getItem("token") : (followee.host == "https://social-distribution-media.herokuapp.com/api") ? authG6 : (followee.host == "https://group-13-epic-app.herokuapp.com/") ? "Basic R3JvdXAxMzp0ZXN0dGVzdHRlc3Q=" : "" 
                 }
             }).catch((error) => {
                 console.log("error",error)
