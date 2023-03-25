@@ -148,7 +148,7 @@ function Friends() {
         return usersResponse.data.items;
     }
 
-    const getGroup20Users = async () => {
+    const getGroup2Users = async () => {
         // get users from group20
         let username = "Group20"
         let password = "jn8VWYcZDrLrkQDcVsRi"
@@ -163,7 +163,7 @@ function Friends() {
         });
         // add userResponse.data to group20List
         if (response.data && response.data.items) {
-            console.log("Group20 Users", response.data.items)
+            console.log("Group2 Users", response.data.items)
             return response.data.items;
         }
         return [];
@@ -171,10 +171,8 @@ function Friends() {
 
     const getGroup6Users = async () => {
         // get users from group6
-        let username = "Group6"
-        let password = ""
-        let auth = "Basic " + btoa(username + ":" + password);
-        let response = await axios.get("https://cmput404-group6-instatonne.herokuapp.com/api/authors", {
+        let auth = "Basic R3JvdXAyMDpncm91cDIwY21wdXQ0MDQ="
+        let response = await axios.get("https://cmput404-group6-instatonne.herokuapp.com/authors", {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": auth,
@@ -212,8 +210,8 @@ function Friends() {
     const getOtherUsers = async () => {
         let otherUsersList = [];
 
-        let group20Users = await getGroup20Users();
-        otherUsersList = otherUsersList.concat(group20Users);
+        let group2Users = await getGroup2Users();
+        otherUsersList = otherUsersList.concat(group2Users);
         //let duplicateUsers = await getDuplicateUsers();
         //otherUsersList = otherUsersList.concat(duplicateUsers);
         let group6Users = await getGroup6Users();

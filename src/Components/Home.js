@@ -38,10 +38,13 @@ function Posts() {
             if (followee.host == "https://group-13-epic-app.herokuapp.com/"){
                 path = followee.host+"api/authors/"+id+"/posts";
             }
+            if (followee.host == "https://cmput404-group6-instatonne.herokuapp.com"){
+                path = followee.host+"/author/"+id+"/posts";
+            }
             let followingPosts = await axios.get(path, {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": (followee.host == path) ? "Bearer " + localStorage.getItem("token") : (followee.host == "https://social-distribution-media.herokuapp.com/api") ? authG6 : (followee.host == "https://group-13-epic-app.herokuapp.com/") ? "Basic R3JvdXAxMzp0ZXN0dGVzdHRlc3Q=" : "" 
+                    "Authorization": (followee.host == path) ? "Bearer " + localStorage.getItem("token") : (followee.host == "https://social-distribution-media.herokuapp.com/api") ? authG6 : (followee.host == "https://group-13-epic-app.herokuapp.com/") ? "Basic R3JvdXAxMzp0ZXN0dGVzdHRlc3Q=" : (followee.host == "https://cmput404-group6-instatonne.herokuapp.com") ? "Basic R3JvdXAyMDpncm91cDIwY21wdXQ0MDQ=" : ""
                 }
             }).catch((error) => {
                 console.log("error",error)
