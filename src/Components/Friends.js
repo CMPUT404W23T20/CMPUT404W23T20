@@ -206,6 +206,23 @@ function Friends() {
         return [];
     }
 
+    const getGroup18Users = async () => {
+        // get users from group18
+        let response = await axios.get("https://distributed-social-net.herokuapp.com/service/authors", {
+            headers: {
+                "Content-Type": "application/json",
+            }
+        }).catch(() => {
+            return [];
+        });
+        if (response.data && response.data.items) {
+            console.log("Group18 Users", response.data.items)
+            return response.data.items;
+        }
+        return [];
+    }
+
+
 
     const getOtherUsers = async () => {
         let otherUsersList = [];
@@ -218,6 +235,8 @@ function Friends() {
         otherUsersList = otherUsersList.concat(group6Users);
         let group13Users = await getGroup13Users();
         otherUsersList = otherUsersList.concat(group13Users);
+        //let group18Users = await getGroup18Users();
+        //otherUsersList = otherUsersList.concat(group18Users);
         
 
         // remove friends from other users
@@ -284,6 +303,7 @@ function Friends() {
         let userId= userInfo().user_id;
         // remove host from id
         let id = other.id.split("/").pop();
+        if (other.host === "https://distributed-social-net.herokuapp.com/") id = id.replace(/-/g,'');
         let path =  `${getApiUrls()}/service/authors/${id}/followers/${userId}`;
         let data = {
             "type": "author",

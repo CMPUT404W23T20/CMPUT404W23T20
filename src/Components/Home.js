@@ -41,6 +41,11 @@ function Posts() {
             if (followee.host == "https://cmput404-group6-instatonne.herokuapp.com"){
                 path = followee.host+"/author/"+id+"/posts";
             }
+            if (followee.host == "https://distributed-social-net.herokuapp.com/"){
+                id = id.replace(/-/g,'');
+                path = followee.host+"service/authors/"+id+"/posts";
+
+            }
             let followingPosts = await axios.get(path, {
                 headers: {
                     "Content-Type": "application/json",
