@@ -41,7 +41,7 @@ function Friends() {
                 "Authorization": "Bearer " + localStorage.getItem("token")
             }
         });
-        let friendsList = friendsResponse.data;
+        let friendsList = friendsResponse.data.items;
 
         // getting following
         path =  `${getApiUrls()}/service/authors/${userId}/following`;
@@ -60,7 +60,7 @@ function Friends() {
                 "Authorization": "Bearer " + localStorage.getItem("token")
             }
         });
-        let allAuthorsList = allAuthors.data;
+        let allAuthorsList = allAuthors.data.items;
         let notFollowingList = []
         // get all other users that are not friends or following
         for (let i = 0; i < allAuthorsList.length; i++) {
@@ -68,8 +68,8 @@ function Friends() {
             let j = 0;
             let found = false;
             // check if author is in friends list
-            for (j = 0; j < followingResponse.data.length; j++) {
-                if (author.id === followingResponse.data[j].id) {
+            for (j = 0; j < followingResponse.data.items.length; j++) {
+                if (author.id === followingResponse.data.items[j].id) {
                     found = true;
                     break;
                 }
@@ -90,7 +90,7 @@ function Friends() {
         setFilteredNotFollowing(notFollowingList);
         setLoadingNotFollowing(false);
         // remove friends from following and self
-        let followingList = followingResponse.data;
+        let followingList = followingResponse.data.items;
         for (let i = 0; i < friendsList.length; i++) {
             let friend = friendsList[i];
             let j = 0;
@@ -145,7 +145,7 @@ function Friends() {
         });
         // add userResponse.data to group20List
         console.log("duplicate", usersResponse)
-        return usersResponse.data;
+        return usersResponse.data.items;
     }
 
     const getGroup20Users = async () => {
@@ -162,11 +162,11 @@ function Friends() {
             return [];
         });
         // add userResponse.data to group20List
-        console.log("Group20 Users", response.data.items)
-        if (!response.data) {
-            return [];
+        if (response.data && response.data.items) {
+            console.log("Group20 Users", response.data.items)
+            return response.data.items;
         }
-        return response.data.items;
+        return [];
     }
 
     const getGroup6Users = async () => {
@@ -182,11 +182,11 @@ function Friends() {
         }).catch(() => {
             return [];
         });
-        console.log("Group6 Users", response.data)
-        if (!response.data) {
-            return [];
+        if (response.data && response.data.items) {
+            console.log("Group6 Users", response.data.items)
+            return response.data.items;
         }
-        return response.data;
+        return [];
     }
 
     const getGroup13Users = async () => {
@@ -201,11 +201,11 @@ function Friends() {
         }).catch(() => {
             return [];
         });
-        console.log("Group13 Users", response.data)
-        if (!response.data.items) {
-            return [];
+        if (response.data && response.data.items) {
+            console.log("Group13 Users", response.data.items)
+            return response.data.items;
         }
-        return response.data.items;
+        return [];
     }
 
 
@@ -247,8 +247,8 @@ function Friends() {
             }
         });
         // remove following from other users
-        for (let i = 0; i < followingResponse.data.length; i++) {
-            let following = followingResponse.data[i];
+        for (let i = 0; i < followingResponse.data.items.length; i++) {
+            let following = followingResponse.data.items[i];
             let j = 0;
             let found = false;
             // remove host from id if it exists

@@ -23,7 +23,7 @@ function Posts() {
                 "Authorization": "Bearer " + localStorage.getItem("token")
             }
         });
-        let followingList = following.data
+        let followingList = following.data.items
         let allFollowingPosts = []
         let username = "Group20"
         let password = "jn8VWYcZDrLrkQDcVsRi"
@@ -60,7 +60,7 @@ function Posts() {
             }
         });
 
-        let posts = response.data;
+        let posts = response.data.items;
         // remove posts that are in allFollowingPosts by id
         posts = posts.filter((post) => {
             for (let i = 0; i < allFollowingPosts.length; i++){
@@ -88,8 +88,8 @@ function Posts() {
                 "Authorization": "Bearer "+localStorage.getItem("token")
             }
         });
-        let commentDataList = comments.data
-
+        let commentDataList = comments.data.items
+        if (commentDataList == undefined) commentDataList = []
         for (let i = 0; i < commentDataList.length; i++ ){
             commentList.push(commentDataList[i])  
         }
@@ -106,7 +106,7 @@ function Posts() {
                     "Authorization": "Bearer "+localStorage.getItem("token")
                         }
                     });
-                let commentDataList = comments.data
+                let commentDataList = comments.data.items
                 for (let i = 0; i < commentDataList.length; i++ ){
                     commentList.push(commentDataList[i])  
                 }

@@ -61,9 +61,13 @@ def authors(request, author_id = None):
             author = AuthorSerializer(authors.get(id = author_id)).data
             # author['url'] = author['url'] + str(author['id'])     dont modify in backend
             return Response(author, status=status.HTTP_200_OK)
-        """ for author in authors:      get in frontend instead
-            author.url = author.url + str(author.id) """
-        return Response(AuthorSerializer(authors, many=True).data, status=status.HTTP_200_OK)
+        for author in authors:
+            author.url = author.url + str(author.id)
+        response = {
+            "type": "authors",
+            "items": AuthorSerializer(authors, many=True).data
+        }
+        return Response(response, status=status.HTTP_200_OK)
     elif request.method == 'POST':
         data = request.data
         data['host'] = request.scheme + "://" + request.get_host()
@@ -115,7 +119,11 @@ def followers(request, author_id = None, follower_id = None):
                 author = Author.objects.get(id = follow['follower'])
                 # author.url = author.url + str(author.id)
                 followers.append(AuthorSerializer(author).data)
-            return Response(followers, status=status.HTTP_200_OK)
+            response = {
+                "type": "authors",
+                "items": followers
+            }
+            return Response(response, status=status.HTTP_200_OK)
         # return whether follower_id follows author_id
         follower = Follow.objects.filter(follower = follower_id, author = author_id)
         if follower:
@@ -179,10 +187,13 @@ def following(request, author_id):
         following = []
         for follow in follows:
                 author = Author.objects.get(id = follow['author'])
-                """ if author.host == request.get_host() or author.host == 'http://localhost:8000':
-                    author.url = author.url + str(author.id) """
+                author.url = author.url + str(author.id)
                 following.append(AuthorSerializer(author).data)
-        return Response(following, status=status.HTTP_200_OK)
+        response = {
+            "type": "authors",
+            "items": following
+        }
+        return Response(response, status=status.HTTP_200_OK)
         
 @api_view(['GET'])
 def friends(request, author_id):
@@ -203,9 +214,13 @@ def friends(request, author_id):
             for follow2 in followOut:
                 if follow['author'] == follow2['follower']:
                     author = Author.objects.get(id = follow['author'])
-                    # author.url = author.url + str(author.id)
+                    author.url = author.url + str(author.id)
                     friends.append(AuthorSerializer(author).data)
-        return Response(friends, status=status.HTTP_200_OK)
+        response = {
+            "type": "authors",
+            "items": friends
+        }
+        return Response(response, status=status.HTTP_200_OK)
     
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
 def posts(request, author_id = None, post_id = None):
@@ -223,8 +238,12 @@ def posts(request, author_id = None, post_id = None):
             serializer = PostSerializer(posts, many=True)
             for post in serializer.data:
                 post['author'] = AuthorSerializer(Author.objects.get(id = post['author'])).data
-                # post['author']['url'] = post['author']['url'] + str(post['author']['id'])
-            return Response(serializer.data, status=status.HTTP_200_OK)
+                post['author']['url'] = post['author']['url'] + str(post['author']['id'])
+            response = {
+                "type": "posts",
+                "items": serializer.data
+            }
+            return Response(response, status=status.HTTP_200_OK)
         
         author = Author.objects.get(id = author_id)
         posts = Post.objects.filter(author= author)
@@ -241,15 +260,18 @@ def posts(request, author_id = None, post_id = None):
             posts = posts.filter(id = post_id)
             posts = PostSerializer(posts, many=True).data
             posts[0]['author'] = AuthorSerializer(Author.objects.get(id = posts[0]['author'])).data
-            # posts[0]['author']['url'] = posts[0]['author']['url'] + str(posts[0]['author']['id'])
+            posts[0]['author']['url'] = posts[0]['author']['url'] + str(posts[0]['author']['id'])
             return Response(posts[0], status=status.HTTP_200_OK)
         
         serializer = PostSerializer(posts, many=True)
         for post in serializer.data:
             post['author'] = AuthorSerializer(Author.objects.get(id = post['author'])).data
-            # post['author']['url'] = post['author']['url'] + str(post['author']['id'])
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
+            post['author']['url'] = post['author']['url'] + str(post['author']['id'])
+        response = {
+            "type": "posts",
+            "items": serializer.data
+        }
+        return Response(response, status=status.HTTP_200_OK)
     
 
     elif request.method == 'POST':
@@ -316,12 +338,16 @@ def comments(request, author_id, post_id,comment_id=None):
 
         for comment in serializer.data:
             comment['author'] = AuthorSerializer(Author.objects.get(id = comment['author'])).data
-            # comment['author']['url'] = comment['author']['url'] + str(comment['author']['id'])
+            comment['author']['url'] = comment['author']['url'] + str(comment['author']['id'])
             comment['post'] = PostSerializer(Post.objects.get(id = comment['post'])).data
             comment['post']['origin'] = comment['post']['origin'] + str(comment['post']['id'])
             comment['post']['author'] = AuthorSerializer(Author.objects.get(id = comment['post']['author'])).data
-            # comment['post']['author']['url'] = comment['post']['author']['url'] + str(comment['post']['author']['id'])
-        return Response(serializer.data, status=status.HTTP_200_OK)
+            comment['post']['author']['url'] = comment['post']['author']['url'] + str(comment['post']['author']['id'])
+        response = {
+            "type": "comments",
+            "items": serializer.data
+        }
+        return Response(response, status=status.HTTP_200_OK)
     elif request.method == 'POST':
         loggedin_author = JWTAuth.authenticate(request)
         author = Author.objects.get(id = loggedin_author['id'])
@@ -365,16 +391,16 @@ def likedPosts(request, author_id):
             if like.post != None:
                 post = PostSerializer(Post.objects.get(id = like.post.id)).data
                 post['author'] = AuthorSerializer(Author.objects.get(id = post['author'])).data
-                # post['author']['url'] = post['author']['url'] + str(post['author']['id'])
+                post['author']['url'] = post['author']['url'] + str(post['author']['id'])
                 items.append(post)
             elif like.comment != None:
                 comment = CommentSerializer(Comment.objects.get(id = like.comment.id)).data
                 comment['author'] = AuthorSerializer(Author.objects.get(id = comment['author'])).data
-                # comment['author']['url'] = comment['author']['url'] + str(comment['author']['id'])
+                comment['author']['url'] = comment['author']['url'] + str(comment['author']['id'])
                 comment['post'] = PostSerializer(Post.objects.get(id = comment['post'])).data
                 comment['post']['origin'] = comment['post']['origin'] + str(comment['post']['id'])
                 comment['post']['author'] = AuthorSerializer(Author.objects.get(id = comment['post']['author'])).data
-                # comment['post']['author']['url'] = comment['post']['author']['url'] + str(comment['post']['author']['id'])
+                comment['post']['author']['url'] = comment['post']['author']['url'] + str(comment['post']['author']['id'])
                 items.append(comment)
         return Response(items, status=status.HTTP_200_OK)
 
@@ -428,8 +454,12 @@ def inbox(request, author_id):
 
         # combine all items into a single list
         items = serializer.data['posts'] + serializer.data['follows'] + serializer.data['comments'] + serializer.data['likes']
-
-        return Response(items)
+        response = {
+            "type": "inbox",
+            "author": author_id,
+            "items": items
+        }
+        return Response(response)
 
     elif request.method == 'POST':
         # add object of type post/follow/like/comment to inbox of author_id

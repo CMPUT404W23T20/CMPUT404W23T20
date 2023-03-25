@@ -16,11 +16,12 @@ function Posts() {
                 "Authorization": "Bearer " + localStorage.getItem("token")
             }
         });
-        let posts = response.data;
-        console.log(posts);
+        let posts = response.data.items;
+        console.log(response.data);
         let commentList = []
 
         //get all comments in the "Public Posts" header
+        if (posts == undefined) posts = [];
         for (let i = 0; i < posts.length; i++){
 
             let commentListPath = `${getApiUrls()}`+"/service/authors/" + posts[i].author.id+ "/posts/" +posts[i].id+"/comments";
@@ -30,7 +31,7 @@ function Posts() {
                 "Authorization": "Bearer "+localStorage.getItem("token")
             }
             });
-            let commentDataList = comments.data
+            let commentDataList = comments.data.items
 
             for (let i = 0; i < commentDataList.length; i++ ){
                 commentList.push(commentDataList[i])  
@@ -82,9 +83,9 @@ function Posts() {
         console.log(followersResponse.data);
 
         // send post to inbox of followers
-        for (let follower of followersResponse.data) {
+        for (let follower of followersResponse.data.items) {
             path =`${getApiUrls()}/service/authors/${follower.id}/inbox`;
-            await axios.post(path, postResponse.data, {
+            await axios.post(path, postResponse.data.items, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": token

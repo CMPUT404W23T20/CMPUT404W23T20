@@ -14,8 +14,8 @@ function Inbox() {
                 "Authorization": "Bearer " + localStorage.getItem("token")
             }
         });
-        console.log(response.data);
-        return response.data
+        console.log(response.data.items);
+        return response.data.items
     }
 
     const handleClear = async () => {
