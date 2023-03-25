@@ -39,19 +39,21 @@ function Posts() {
                 path = followee.host+"api/authors/"+id+"/posts";
             }
             if (followee.host == "https://cmput404-group6-instatonne.herokuapp.com"){
-                path = followee.host+"/author/"+id+"/posts";
+                id = id.replace(/-/g,'');
+                path = followee.host+"/authors/"+id+"/posts";
             }
             if (followee.host == "https://distributed-social-net.herokuapp.com/"){
                 id = id.replace(/-/g,'');
                 path = followee.host+"service/authors/"+id+"/posts";
 
             }
+            // for when group 6 has authorization working
+            // (followee.host == "https://cmput404-group6-instatonne.herokuapp.com") ? "Basic R3JvdXAyMDpncm91cDIwY21wdXQ0MDQ=" : ""
             let followingPosts = await axios.get(path, {
-                headers: {
+                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": (followee.host == path) ? "Bearer " + localStorage.getItem("token") : (followee.host == "https://social-distribution-media.herokuapp.com/api") ? authG6 : (followee.host == "https://group-13-epic-app.herokuapp.com/") ? "Basic R3JvdXAxMzp0ZXN0dGVzdHRlc3Q=" : (followee.host == "https://cmput404-group6-instatonne.herokuapp.com") ? "Basic R3JvdXAyMDpncm91cDIwY21wdXQ0MDQ=" : ""
-                }
-            }).catch((error) => {
+                    "Authorization" : (followee.host == path) ? "Bearer " + localStorage.getItem("token") : (followee.host == "https://social-distribution-media.herokuapp.com/api") ? authG6 : (followee.host == "https://cmput404-group6-instatonne.herokuapp.com") ? "Basic R3JvdXAyMDpncm91cDIwY21wdXQ0MDQ=" : ""
+                }}).catch((error) => {
                 console.log("error",error)
             });
             // add all posts to allFollowingPosts if request was successful

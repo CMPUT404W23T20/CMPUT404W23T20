@@ -235,8 +235,8 @@ function Friends() {
         otherUsersList = otherUsersList.concat(group6Users);
         let group13Users = await getGroup13Users();
         otherUsersList = otherUsersList.concat(group13Users);
-        //let group18Users = await getGroup18Users();
-        //otherUsersList = otherUsersList.concat(group18Users);
+        let group18Users = await getGroup18Users();
+        otherUsersList = otherUsersList.concat(group18Users);
         
 
         // remove friends from other users
@@ -277,7 +277,7 @@ function Friends() {
                 if (otherUsersList[j].id.includes("/")) {
                     otherUsersList[j].id = otherUsersList[j].id.split("/").pop();
                 }
-                if (following.id === otherUsersList[j].id) {
+                if (following.id === otherUsersList[j].id || following.id.replace(/-/g,'') === otherUsersList[j].id.replace(/-/g,'')) {
                     found = true;
                     break;
                 }
@@ -313,7 +313,7 @@ function Friends() {
             "url": other.url,
             "github": other.github ? other.github : "no github",
             "username": other.username ? other.username : "no username",
-            "profileImage": other.profileImage ? other.profileImage : "no profileImage",
+            "profileImage": other.profileImage ? other.profileImage == 'none' ? "no profileImage" : other.profileImage : "no profileImage",
             "hidden": 1
         }
         // send follow request to server
@@ -504,7 +504,7 @@ function Friends() {
                             {!loadingOtherUsers && filteredOtherUsers.map((author) => (
                                 <CardContent >
                                     <div style = {{display:'flex',alignItems:'center',width:500,wordWrap:"break-word"}}>
-                                        <img src= {(author.profileImage != "no profileImage" && author.profileImage != "") ? author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt = "IMG" style = {{borderRadius:"50%"}} width={55} height = {55}/>
+                                        <img src= {(author.profileImage != "no profileImage" && author.profileImage != "" && author.profileImage != "none") ? author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt = "IMG" style = {{borderRadius:"50%"}} width={55} height = {55}/>
                                         <span>
                                             <a href = " "><h4 style ={{width:150,wordWrap:"break-word"}}>{author.displayName}</h4></a>
                                         </span>
