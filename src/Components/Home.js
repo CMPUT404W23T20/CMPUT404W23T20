@@ -141,13 +141,13 @@ function Posts() {
     }, []);
 
     const [commentPosted,setCommentPosted ] = React.useState(false);
-    const postComment = async(comment, postId, authorId) =>{
-        console.log("comment: ",comment,postId,authorId)
-        let path = `${getApiUrls()}`+"/service/authors/"+authorId+ "/posts/"+postId+"/comments";
+    const postComment = async(comment, post, authorId) =>{
+        console.log("comment: ",comment,post.id,authorId)
+        let path = `${getApiUrls()}`+"/service/authors/"+authorId+ "/posts/"+post.id+"/comments";
         let data = {
             author: localStorage.getItem("id"),
             comment: comment,
-            post: postId
+            post: post.id
         }
         let postComment = await axios.post(path, data, {
             headers: {
@@ -155,6 +155,7 @@ function Posts() {
                 "Authorization": "Bearer "+localStorage.getItem("token")
             }
         });
+
         setCommentPosted(true);
         getFeed()
         //clear the input box after sending comment*/
@@ -165,6 +166,20 @@ function Posts() {
             function(){
                 setCommentPosted(false);
             },5000);
+        
+        if (post.author.host ===  "https://t20-social-distribution.herokuapp.com") {
+                path = `${getApiUrls()}/service/authors/${post.author.id}/inbox`;
+                await axios.post(path, postComment.data, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer "+localStorage.getItem("token")
+                    }
+                }).catch((error) => {
+                    console.log(error);
+                });
+        }    
+      
+
        
     }
 
@@ -258,7 +273,7 @@ function Posts() {
                             {openComments && (
                                 <Card style = {{ marginRight: "10px",marginBottom: "10px",marginLeft: "10px", borderRadius: "10px", borderColor: "black",marginTop: "5px",flex:1, overflowY: "scroll"}}>
                                     <TextField id="comment" label="Comment..." variant="outlined" style={{width: "75%", margin: "25px"}}/>            
-                                    <Button variant="contained" color="primary" onClick ={() => postComment(document.getElementById("comment").value,`${post.id}`,`${post.author.id}`)}   style={{ margin: 10,position:"relative",top:"25px"}}>Comment</Button>
+                                    <Button variant="contained" color="primary" onClick ={() => postComment(document.getElementById("comment").value,post,`${post.author.id}`)}   style={{ margin: 10,position:"relative",top:"25px"}}>Comment</Button>
                                     {(`${post.author.id}`=== localStorage.getItem("id")) ? <Typography variant="h6" style = {{textAlign:"left", paddingLeft:30,fontSize:20}}>Comments:</Typography> :<h2></h2> }                                        {Comments.map((comments) => (
                                             ((`${comments.post.id}` === `${post.id.split("/").pop()}`) && (`${post.author.id}`=== localStorage.getItem("id"))) ? 
                                             ( <div style = {{display:'flex',alignItems:'center',wordWrap:"break-word"}}>
