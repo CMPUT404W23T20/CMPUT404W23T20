@@ -302,7 +302,8 @@ function Friends() {
         // handles follow button
         let userId= userInfo().user_id;
         // remove host from id
-        let id = other.id.split("/").pop();
+        let id = other.id 
+        id = id.split("/").pop();
         if (other.host === "https://distributed-social-net.herokuapp.com/") id = id.replace(/-/g,'');
         let path =  `${getApiUrls()}/service/authors/${id}/followers/${userId}`;
         let data = {
@@ -322,10 +323,10 @@ function Friends() {
                 "Content-Type": "application/json",
                 "Authorization": "Bearer " + localStorage.getItem("token")
             },
-            }).catch((error) => {
-                console.log(error);
-            });
-        // add item to inbox of other user if they are on our server
+        }).catch((error) => {
+            console.log(error);
+        });
+        // send follow request to followee on local
         if (other.host ===  getApiUrls()) {
             path = `${getApiUrls()}/service/authors/${other.id}/inbox`;
             await axios.post(path, response.data, {
@@ -338,6 +339,52 @@ function Friends() {
             });
         }   
 
+        // sending follow for other servers
+        // get follower info
+        let userResponse = await axios.get(`${getApiUrls()}/service/authors/${userId}`, {
+            headers: {
+                "Content-Type": "application/json",
+            }
+        }).catch((error) => {
+            console.log(error);
+        });
+        let userData = userResponse.data;
+        // add follow request to inbox of other
+        if (other.host == "https://social-distribution-media.herokuapp.com/api"){
+            path = other.host+"/authors/"+id+"/inbox";
+        }
+        if (other.host == "https://group-13-epic-app.herokuapp.com/"){
+            path = other.host+"api/authors/"+id+"/inbox/";
+        }
+        if (other.host == "https://cmput404-group6-instatonne.herokuapp.com"){
+            id = id.replace(/-/g,'');
+            path = other.host+"/authors/"+id+"/inbox";
+        }
+        if (other.host == "https://distributed-social-net.herokuapp.com/"){
+            id = id.replace(/-/g,'');
+            path = other.host+"service/authors/"+id+"/inbox";
+        }
+        let username = "Group20"
+        let password = "jn8VWYcZDrLrkQDcVsRi"
+        let authG6 = "Basic " + btoa(username + ":" + password);
+        other.id = other.url
+        userData.id = userData.url
+        data = {
+            "type": "Follow",
+            "summary": "New follower",
+            "actor": userData,
+            "object": other
+        }
+        console.log('follow inbox data',data)
+        await axios.post(path, data, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization" : (other.host == path) ? "Bearer " + localStorage.getItem("token") : (other.host == "https://social-distribution-media.herokuapp.com/api") ? authG6 : (other.host == "https://cmput404-group6-instatonne.herokuapp.com") ? "Basic R3JvdXAyMDpncm91cDIwY21wdXQ0MDQ=" : ""
+            }
+        }).catch((error) => {
+            console.log(error);
+        });
+        
         // remove item from other users list and add to following list
         setFilteredOtherUsers(filteredOtherUsers.filter((item) => item.id !== other.id));
         setFilteredFollowing(filteredFollowing.concat(other));

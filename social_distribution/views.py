@@ -59,7 +59,7 @@ def authors(request, author_id = None):
         authors = Author.objects.filter(hidden = False)
         if author_id:
             author = AuthorSerializer(authors.get(id = author_id)).data
-            # author['url'] = author['url'] + str(author['id'])     dont modify in backend
+            author['url'] = author['url'] + str(author['id'])
             return Response(author, status=status.HTTP_200_OK)
         for author in authors:
             author.url = author.url + str(author.id)
