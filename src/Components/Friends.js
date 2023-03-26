@@ -368,6 +368,7 @@ function Friends() {
         let password = "jn8VWYcZDrLrkQDcVsRi"
         let authG6 = "Basic " + btoa(username + ":" + password);
         other.id = other.url
+        userData.id = userData.url
         data = {
             "type": "Follow",
             "summary": "New follower",
