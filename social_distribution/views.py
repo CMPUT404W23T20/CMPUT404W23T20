@@ -348,6 +348,8 @@ def comments(request, author_id, post_id,comment_id=None):
             comment['post']['author']['url'] = comment['post']['author']['url'] + str(comment['post']['author']['id'])
         response = {
             "type": "comments",
+            "post":  request.get_host()+"/service/authors/"+author_id+"/posts/"+post_id,
+            "id": request.get_host()+"/service/authors/"+author_id+"/posts/"+post_id+"/comments",
             "items": serializer.data
         }
         return Response(response, status=status.HTTP_200_OK)

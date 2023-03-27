@@ -142,33 +142,44 @@ function Posts() {
 
     const [commentPosted,setCommentPosted ] = React.useState(false);
     const postComment = async(comment, post, authorId) =>{
-        console.log("comment: ",comment,post.id,authorId)
-        let path = `${getApiUrls()}`+"/service/authors/"+authorId+ "/posts/"+post.id+"/comments";
-        let data = {
-            author: localStorage.getItem("id"),
-            comment: comment,
-            post: post.id
-        }
-        let postComment = await axios.post(path, data, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer "+localStorage.getItem("token")
-            }
-        });
-
-        setCommentPosted(true);
-        getFeed()
-        //clear the input box after sending comment*/
-        document.getElementById("comment").value = ""
-        document.getElementById("postedComment").style.display = "Block"
-
-        setTimeout( 
-            function(){
-                setCommentPosted(false);
-            },5000);
         
+        let id = post.author.id.split("/").pop()
+        let path = `${getApiUrls()}`+"/service/authors/"+authorId+ "/posts/"+post.id+"/comments";
+
+        if (post.author.host == "https://social-distribution-media.herokuapp.com/api"){
+            path = post.id+"/comments"
+            console.log("2",path)
+        }
+        if ( post.author.host == "https://group-13-epic-app.herokuapp.com/"){
+            path = post.author.id+"/inbox" //send to inbox
+            console.log("13",path)
+        }
+        if (post.author.host == "https://cmput404-group6-instatonne.herokuapp.com"){ //have not verified this group to check if path is correct
+            path = post.id +"/comments";
+            console.log("6",path)
+        }
+        if (post.author.host == "https://distributed-social-net.herokuapp.com/"){ 
+            path = post.id + "/comments"
+            console.log("random",path)
+        }
+       
         if (post.author.host ===  "https://t20-social-distribution.herokuapp.com") {
-                path = `${getApiUrls()}/service/authors/${post.author.id}/inbox`;
+            let data = {
+                author: localStorage.getItem("id"),
+                comment: comment,
+                post: post.id
+            }
+
+            //post to comments
+            let postComment = await axios.post(path, data, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer "+localStorage.getItem("token")
+                }
+            });
+                
+            //post to inbox
+            path = `${getApiUrls()}/service/authors/${post.author.id}/inbox`;
                 await axios.post(path, postComment.data, {
                     headers: {
                         "Content-Type": "application/json",
@@ -176,9 +187,38 @@ function Posts() {
                     }
                 }).catch((error) => {
                     console.log(error);
-                });
+            });
         }    
-      
+        else{ //comment to a local node
+            let data = {
+                "type": "comment",
+                "author": `${getApiUrls()}`+"/service/authors/"+authorId,  //author of this comment
+                "contentType": "text/plain",
+                "comment": comment, //comment user made
+                 "post": post.id, //author of the post
+            }
+
+            let username = "Group20"
+            let password = "jn8VWYcZDrLrkQDcVsRi"
+            let authG6 = "Basic " + btoa(username + ":" + password);
+
+            await axios.post(path, data, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization" : (post.author.host == path) ? "Bearer " + localStorage.getItem("token") : (post.author.host == "https://social-distribution-media.herokuapp.com/api") ? authG6 : (post.author.host == "https://cmput404-group6-instatonne.herokuapp.com") ? "Basic R3JvdXAyMDpncm91cDIwY21wdXQ0MDQ=" : ""
+
+                }
+            }).catch((error) => {
+                console.log(error);
+        });
+            console.log(data)
+
+
+        }
+
+        
+        
+
 
        
     }
