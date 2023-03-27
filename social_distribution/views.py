@@ -526,7 +526,7 @@ def inbox(request, author_id):
                 if followerSerializer.is_valid():
                     followerSerializer.save()
                 else:
-                    return Response(status=status.HTTP_400_BAD_REQUEST)
+                    return Response(followerSerializer.data ,status=status.HTTP_400_BAD_REQUEST)
             follower = Author.objects.get(id = actor['id'])
             summary = follower.displayName + ' is now following ' + author.displayName
             # check if follow already exists
