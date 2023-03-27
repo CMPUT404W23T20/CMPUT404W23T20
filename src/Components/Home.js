@@ -147,7 +147,7 @@ function Posts() {
         let path = `${getApiUrls()}`+"/service/authors/"+authorId+ "/posts/"+post.id+"/comments";
 
         if (post.author.host == "https://social-distribution-media.herokuapp.com/api"){
-            path = post.id+"/comments"
+            path = post.id+"/inbox"
             console.log("2",path)
         }
         if ( post.author.host == "https://group-13-epic-app.herokuapp.com/"){
@@ -155,11 +155,11 @@ function Posts() {
             console.log("13",path)
         }
         if (post.author.host == "https://cmput404-group6-instatonne.herokuapp.com"){ //have not verified this group to check if path is correct
-            path = post.id +"/comments";
+            path = post.id +"/inbox";
             console.log("6",path)
         }
         if (post.author.host == "https://distributed-social-net.herokuapp.com/"){ 
-            path = post.id + "/comments"
+            path = post.id + "/inbox"
             console.log("random",path)
         }
        
@@ -189,7 +189,7 @@ function Posts() {
                     console.log(error);
             });
         }    
-        else{ //comment to a local node
+        else{ //comment to a foreign node
             let data = {
                 "type": "comment",
                 "author": `${getApiUrls()}`+"/service/authors/"+authorId,  //author of this comment
