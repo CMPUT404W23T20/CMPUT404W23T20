@@ -112,9 +112,9 @@ function Inbox() {
                                                     </div>
                                                 </Box>
                                             )}
-                                            {item.type === "like" && (
+                                            {item.type.toLowerCase() === "like" && (
                                                 <Box>
-                                                    <Typography variant="h5">{item.author.displayName + " liked your post " + item.post.title}</Typography>
+                                                    <Typography variant="h5">{item.summary}</Typography>
                                                 </Box>
                                             )}
                                         </Box>

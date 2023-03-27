@@ -6,6 +6,7 @@ import axios from 'axios';
 import { getTextFieldUtilityClass } from '@mui/material';
 import { getApiUrls } from '../utils/utils';
 import CircularProgress from '@mui/material/CircularProgress';
+import jwt_decode from "jwt-decode";
 
 function Posts() {
     const [Posts, setPosts] = React.useState([]);
@@ -228,6 +229,54 @@ function Posts() {
         
 
     }
+    const userInfo = () =>{           
+        let token = localStorage.getItem("token")
+        if (token === null ){
+            console.log("Not logged in");
+         
+        }
+        var decoded = JSON.stringify(jwt_decode(token));
+       
+        var decode_info= JSON.parse(decoded)
+        //console.log(decode_info)
+        return decode_info;
+        
+    };
+
+    const likeObject= async(object) =>{
+        /* Make 2 posts requests
+         1) Add to the author's "liked" url
+         2) Post to inbox 
+        */
+
+       //local to local like 
+        let author =userInfo()
+        let path = `${getApiUrls()}/service/authors/`+author.user_id+ "/liked";
+        
+        let data = { 
+            author: localStorage.getItem("id"),
+            post: post.id,
+            summary: `${author.username} liked your ${object.type}`,
+            objectLiked: "Post",
+            object:object.origin
+        }
+        let postLike = await axios.post(path, data, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer "+localStorage.getItem("token")
+            }
+        });
+
+        let inboxPath = `${getApiUrls()}/service/authors/${object.author.id}/inbox`;
+                await axios.post(inboxPath, postLike.data, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer "+localStorage.getItem("token")
+                    }
+                }).catch((error) => {
+                    console.log(error);
+            });
+    }
 
     const [openPost, setopenPost] = React.useState(false);
     const [post, setPost] = React.useState([{}]);
@@ -316,9 +365,10 @@ function Posts() {
                                         <Button variant="contained" color="primary" onClick={() => setOpenComments(true)} style={{ position: "absolute", bottom: "30px", right: "120px"}}>
                                         Comments
                                        </Button> 
-                                       <Button variant="outlined" color="secondary" startIcon={<FavoriteIcon />} style={{position: "absolute", bottom: "30px", right: "400px"}}   >  
+                                       <Button variant="outlined" color="secondary" startIcon={<FavoriteIcon />} onClick ={() => likeObject(post)}style={{position: "absolute", bottom: "30px", right: "400px"}}   >  
                                             Like
                                         </Button>
+                                        <div>hihih: {post.likes}</div>
                                       
                                     </div>
                                     

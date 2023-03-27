@@ -50,6 +50,9 @@ urlpatterns = [
     path('service/authors/<str:author_id>/posts/<str:post_id>/comments/<str:comment_id>', views.comments, name='comment'),
     path('service/authors/<str:author_id>/inbox', views.inbox, name='inbox'),
     path('service/authors/<str:author_id>/liked', views.likedPosts, name='liked'),
+    path('service/authors/<str:author_id>/posts/<str:post_id>', views.posts, name='posts'),
+    path('service/authors/<str:author_id>/posts/<str:post_id>/comments/<str:comment_id>', views.comments, name='comment'),
+
    
     re_path(r'^.*',csrf_exempt(TemplateView.as_view(template_name='index.html')))
 ]

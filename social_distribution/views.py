@@ -236,9 +236,26 @@ def posts(request, author_id = None, post_id = None):
                 "items": serializer.data
             }
             return Response(response, status=status.HTTP_200_OK)
-        
-        author = Author.objects.get(id = author_id)
-        posts = Post.objects.filter(author= author)
+        elif author_id and not post_id: 
+            author = Author.objects.get(id = author_id)
+            posts = Post.objects.filter(author= author)
+            serializer = PostSerializer(posts, many=True)
+            '''
+            for post in serializer.data:
+                #get all comments w/ that post
+                count = Comment.objects.filter(post = post['id']).count()
+                post['count'] = count
+                #get all likes
+                likes = Like.objects.filter(object = post['origin']+post['id']).count()
+                post['likes'] = likes
+            '''
+               
+            response = {
+                "type": "posts",
+                "items": serializer.data
+            }
+            return Response(response, status=status.HTTP_200_OK)
+
         try:
             loggedin_author = JWTAuth.authenticate(request)
         except:
@@ -500,6 +517,7 @@ def inbox(request, author_id):
         tokenAuthor = Author.objects.get(id = payload.get('user_id', None))
         if str(tokenAuthor.id) != author_id:
             return Response(status=status.HTTP_401_UNAUTHORIZED) """
+       
         author = Author.objects.get(id = author_id)
         inbox = Inbox.objects.get(author = author)
         if not inbox:
@@ -573,7 +591,7 @@ def inbox(request, author_id):
             inbox.save()
             return Response(status=status.HTTP_200_OK)
 
-        elif request.data['type'] == 'like':
+        elif request.data['type'].lower() == 'like'  :
             like = Like.objects.get(id = request.data['id'])
             inbox.likes.add(like)
             inbox.save()

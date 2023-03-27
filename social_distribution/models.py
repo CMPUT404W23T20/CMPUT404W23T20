@@ -30,7 +30,21 @@ class Follow(models.Model):
     summary = models.CharField(max_length=200)
     actor = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='actor')
     object = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='object') """
-    
+
+class Like(models.Model):
+    type = models.CharField(max_length=200, default="Like")
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE)
+    summary = models.CharField(max_length=200, default="No summary")
+    object = models.CharField(max_length=200, default="None")
+
+    OBJECT_CHOICES = [("Comment","Comment"),("Post","Post"),("None","None")]
+    objectLiked = models.CharField(
+        max_length=200,
+        choices=OBJECT_CHOICES,
+        default="None",
+    )
+
 class Comment(models.Model):
     type = models.CharField(max_length=200, default="comment")
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -39,6 +53,7 @@ class Comment(models.Model):
     contentType = models.CharField(max_length=200, default="text/plain")
     published = models.DateTimeField(auto_now_add=True)
     post = models.ForeignKey('Post', on_delete=models.CASCADE)
+    likes = models.IntegerField(default=0)
 
     def __str__(self):
         return self.comment
@@ -61,26 +76,12 @@ class Post(models.Model):
     visibility = models.CharField(max_length=200, default="PUBLIC")
     friend = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='friend', null=True, blank=True)
     unlisted = models.BooleanField(default=False)
+    likes = models.IntegerField(default=0)
 
     def __str__(self):
         return self.title
 
-class Like(models.Model):
-    type = models.CharField(max_length=200, default="Like")
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    author = models.ForeignKey(Author, on_delete=models.CASCADE)
-    summary = models.CharField(max_length=200, default="No summary")
-    object = models.CharField(max_length=200, default="None")
 
-    OBJECT_CHOICES = [("Comment","Comment"),("Post","Post"),("None","None")]
-    objectLiked = models.CharField(
-        max_length=200,
-        choices=OBJECT_CHOICES,
-        default="None",
-    )
-
-
-    
 """ class InboxItem(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     follows = models.ManyToManyField(Follow, blank=True)
