@@ -138,7 +138,7 @@ function Inbox() {
                                     {item.type === "follow" && (<Card style = {{ width: "100%", display: "flex", flexDirection: "row", justifyContent: "space-between"}} onClick = {() => {handleOpenPost(item.post)}}>
                                         <Box style = {{ paddingLeft: 2}}>
                                             <Box style = {{ display: "flex", flexDirection: "row", marginTop: "10px", marginLeft: "10px"}}>
-                                                <img src= {(item.author.profileImage != "no profileImage" && item.author.profileImage != "") ? item.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt = "IMG" style = {{borderRadius:"50%"}} width="100px" height = "100px"/>
+                                                <img src= {(item.follower.profileImage != "no profileImage" && item.follower.profileImage != "") ? item.follower.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt = "IMG" style = {{borderRadius:"50%"}} width="100px" height = "100px"/>
                                                 <Box style = {{ display: "flex", flexDirection: "column", paddingLeft: "10px"}}>
                                                     <Typography variant="h5">Follow Request</Typography>
                                                     <Typography variant="body2">Author: {item.follower.displayName}</Typography>
