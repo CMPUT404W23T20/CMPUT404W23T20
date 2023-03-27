@@ -522,7 +522,7 @@ def inbox(request, author_id):
             
             if not follower:
                 # if follower doesn't exist, then the follow is remote and need to check if we need to add ghost
-                followerSerializer = AuthorSerializer(actor)
+                followerSerializer = AuthorSerializer(data = actor)
                 if followerSerializer.is_valid():
                     followerSerializer.save()
                 else:
