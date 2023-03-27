@@ -9,4 +9,4 @@ https://edisondevadoss.medium.com/remove-duplicate-data-from-array-object-in-jav
 https://gist.github.com/dotja/6da4783e3f1f1e1dd569a116660e9c42 
 
 # Documentation
-http://127.0.0.1:8000/docs/
+https://t20-social-distribution.herokuapp.com/docs
