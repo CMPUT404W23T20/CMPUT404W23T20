@@ -254,6 +254,17 @@ def posts(request, author_id = None, post_id = None):
             posts[0]['author'] = AuthorSerializer(Author.objects.get(id = posts[0]['author'])).data
             posts[0]['author']['url'] = posts[0]['author']['url'] + str(posts[0]['author']['id'])
             posts[0]['origin'] = posts[0]['origin'] + str(posts[0]['id'])
+
+            #find all like objects that have the object same as id
+            #replace with request.get_host()
+            fullRequestPath  = "https://t20-social-distribution.herokuapp.com" +request.path
+            likes = Like.objects.filter(object = fullRequestPath)
+            posts[0]['likes'] = likes.count()
+
+            #find all the comments that are associated with that post and count
+            count = Comment.objects.filter(post =post_id).count()
+            posts[0]['count'] = count
+        
             return Response(posts[0], status=status.HTTP_200_OK)
         
         serializer = PostSerializer(posts, many=True)
@@ -372,7 +383,7 @@ def commentLikes(request, comment_id):
     elif request.method == 'DELETE':
         return Response("Not implemented", status=status.HTTP_501_NOT_IMPLEMENTED)
     
-@api_view(['GET'])
+@api_view(['GET','POST'])
 def likedPosts(request, author_id):
     # check BasicAuth for remote users
     try:
@@ -409,8 +420,20 @@ def likedPosts(request, author_id):
             "type": "liked",
             "items":items,
         }
-        
         return Response(response, status=status.HTTP_200_OK)
+    elif request.method == 'POST':
+        loggedin_author = JWTAuth.authenticate(request)
+        author = Author.objects.get(id = loggedin_author['id'])
+        data = request.data
+        data['author'] = author.id
+        serializer = LikeSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+     
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 @api_view(['GET', 'POST', 'DELETE'])
 def inbox(request, author_id):
@@ -456,8 +479,8 @@ def inbox(request, author_id):
         for i in range(len(serializer.data['likes'])):
             like_data = LikeSerializer(Like.objects.get(id=serializer.data['likes'][i])).data
             like_data['author'] = AuthorSerializer(Author.objects.get(id=like_data['author'])).data
-            like_data['post'] = PostSerializer(Post.objects.get(id=like_data['post'])).data
-            like_data['post']['author'] = AuthorSerializer(Author.objects.get(id=like_data['post']['author'])).data
+            #like_data['post'] = PostSerializer(Post.objects.get(id=like_data['post'])).data
+            #like_data['post']['author'] = AuthorSerializer(Author.objects.get(id=like_data['post']['author'])).data
             serializer.data['likes'][i] = like_data
 
         # combine all items into a single list
