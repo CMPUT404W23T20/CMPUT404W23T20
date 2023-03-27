@@ -141,20 +141,78 @@ function Posts() {
     }, []);
 
     const [commentPosted,setCommentPosted ] = React.useState(false);
-    const postComment = async(comment, postId, authorId) =>{
-        console.log("comment: ",comment,postId,authorId)
-        let path = `${getApiUrls()}`+"/service/authors/"+authorId+ "/posts/"+postId+"/comments";
-        let data = {
-            author: localStorage.getItem("id"),
-            comment: comment,
-            post: postId
+    const postComment = async(comment, post, authorId) =>{
+        
+        let id = post.author.id.split("/").pop()
+        let path = `${getApiUrls()}`+"/service/authors/"+authorId+ "/posts/"+post.id+"/comments";
+
+        if (post.author.host == "https://social-distribution-media.herokuapp.com/api"){
+            path = post.author.id+"/inbox"
         }
-        let postComment = await axios.post(path, data, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer "+localStorage.getItem("token")
+        if ( post.author.host == "https://group-13-epic-app.herokuapp.com/"){
+            path = post.author.id+"/inbox/" //send to inbox
+        }
+        if (post.author.host == "https://cmput404-group6-instatonne.herokuapp.com"){ //have not verified this group to check if path is correct
+            path = post.author.id +"/inbox";
+        }
+        if (post.author.host == "https://distributed-social-net.herokuapp.com/"){ 
+            path = post.author.id + "/inbox"
+        }
+       
+        if (post.author.host ===  "https://t20-social-distribution.herokuapp.com") { //sending this comment to a local post
+            let data = {
+                author: localStorage.getItem("id"),
+                comment: comment,
+                post: post.id
             }
+
+            //post to comments
+            let postComment = await axios.post(path, data, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer "+localStorage.getItem("token")
+                }
+            });
+                
+            //post to inbox
+            path = `${getApiUrls()}/service/authors/${post.author.id}/inbox`;
+                await axios.post(path, postComment.data, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer "+localStorage.getItem("token")
+                    }
+                }).catch((error) => {
+                    console.log(error);
+            });
+        }    
+        else{ //comment to a foreign node
+            let data = {
+                "type": "comment",
+                "author": "https://t20-social-distribution.herokuapp.com/service/authors/"+ localStorage.getItem("id"),  //author of this comment
+                "contentType": "text/plain",
+                "comment": comment, //comment user made
+                 "post": post.id, //author of the post
+            }
+
+            let username = "Group20"
+            let password = "jn8VWYcZDrLrkQDcVsRi"
+            let authG6 = "Basic " + btoa(username + ":" + password);
+
+            await axios.post(path, data, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization" : (post.author.host == path) ? "Bearer " + localStorage.getItem("token") : (post.author.host == "https://social-distribution-media.herokuapp.com/api") ? authG6 : (post.author.host == "https://cmput404-group6-instatonne.herokuapp.com") ? "Basic R3JvdXAyMDpncm91cDIwY21wdXQ0MDQ=" : ""
+
+                }
+            }).catch((error) => {
+                console.log(error);
         });
+            console.log(data)
+
+
+        }
+
+
         setCommentPosted(true);
         getFeed()
         //clear the input box after sending comment*/
@@ -165,7 +223,8 @@ function Posts() {
             function(){
                 setCommentPosted(false);
             },5000);
-       
+        
+
     }
 
     const [openPost, setopenPost] = React.useState(false);
@@ -258,7 +317,7 @@ function Posts() {
                             {openComments && (
                                 <Card style = {{ marginRight: "10px",marginBottom: "10px",marginLeft: "10px", borderRadius: "10px", borderColor: "black",marginTop: "5px",flex:1, overflowY: "scroll"}}>
                                     <TextField id="comment" label="Comment..." variant="outlined" style={{width: "75%", margin: "25px"}}/>            
-                                    <Button variant="contained" color="primary" onClick ={() => postComment(document.getElementById("comment").value,`${post.id}`,`${post.author.id}`)}   style={{ margin: 10,position:"relative",top:"25px"}}>Comment</Button>
+                                    <Button variant="contained" color="primary" onClick ={() => postComment(document.getElementById("comment").value,post,`${post.author.id}`)}   style={{ margin: 10,position:"relative",top:"25px"}}>Comment</Button>
                                     {(`${post.author.id}`=== localStorage.getItem("id")) ? <Typography variant="h6" style = {{textAlign:"left", paddingLeft:30,fontSize:20}}>Comments:</Typography> :<h2></h2> }                                        {Comments.map((comments) => (
                                             ((`${comments.post.id}` === `${post.id.split("/").pop()}`) && (`${post.author.id}`=== localStorage.getItem("id"))) ? 
                                             ( <div style = {{display:'flex',alignItems:'center',wordWrap:"break-word"}}>

@@ -339,6 +339,8 @@ def comments(request, author_id, post_id,comment_id=None):
             comment['post']['author']['url'] = comment['post']['author']['url'] + str(comment['post']['author']['id'])
         response = {
             "type": "comments",
+            "post":  request.get_host()+"/service/authors/"+author_id+"/posts/"+post_id,
+            "id": request.get_host()+"/service/authors/"+author_id+"/posts/"+post_id+"/comments",
             "items": serializer.data
         }
         return Response(response, status=status.HTTP_200_OK)
@@ -519,10 +521,10 @@ def inbox(request, author_id):
         elif request.data['type'] == 'comment':
             """
             {
-                "author": "https://group-13-epic-app.herokuapp.com/api/authors/fe1eeb18-aba4-4133-ad03-94396d39a6ff",
+                "author": "https://group-13-epic-app.herokuapp.com/api/authors/16bfb4ac-125b-4b35-917f-feb79d0a16b3",
                 "comment": "test external comment 2", 
                 "contentType": "text/plain",
-                "post":  "https://t20-social-distribution.herokuapp.com/service/author/8f48ce38-2a17-4bb3-8cc0-54c44dc66270/posts/937cac87-a3a5-4044-8c4e-f7d1b7fec4e7",
+                "post":  "https://t20-social-distribution.herokuapp.com/service/authors/8f48ce38-2a17-4bb3-8cc0-54c44dc66270/posts/937cac87-a3a5-4044-8c4e-f7d1b7fec4e7",
                 "type": "comment"
             }
             """
