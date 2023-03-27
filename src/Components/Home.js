@@ -136,8 +136,9 @@ function Posts() {
 
 
     React.useEffect(() => {
-        getFeed()
-        
+        if (localStorage.getItem("token") != null){
+            getFeed()
+        }
     }, []);
 
     const [commentPosted,setCommentPosted ] = React.useState(false);

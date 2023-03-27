@@ -78,9 +78,9 @@ CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = [
     'http://localhost:3000','http://127.0.0.1:8000','http://localhost:8000',
     'https://t20-social-distribution.herokuapp.com','http://localhost:8001',
-    'https://social-distribution-media.herokuapp.com','https://epic-app.vercel.app/',
+    'https://social-distribution-media.herokuapp.com','https://epic-app.vercel.app',
     'https://group-13-epic-app.herokuapp.com', 'https://social-distribution-media.herokuapp.com',
-    'https://cmput404-group6-instatonne.herokuapp.com/app', 'https://cmput404-group6-instatonne.herokuapp.com',
+    'https://cmput404-group6-instatonne.herokuapp.com',
 ]
 
 CSRF_TRUSTED_ORIGINS = ['https://*.t20-social-distribution.herokuapp.com',
