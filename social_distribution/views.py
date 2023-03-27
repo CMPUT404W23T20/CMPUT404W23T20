@@ -520,13 +520,13 @@ def inbox(request, author_id):
             return Response(status=status.HTTP_200_OK)
         elif request.data['type'] == 'comment':
             """
-            {
-                "author": "https://group-13-epic-app.herokuapp.com/api/authors/16bfb4ac-125b-4b35-917f-feb79d0a16b3",
-                "comment": "test external comment 2", 
-                "contentType": "text/plain",
-                "post":  "https://t20-social-distribution.herokuapp.com/service/authors/8f48ce38-2a17-4bb3-8cc0-54c44dc66270/posts/937cac87-a3a5-4044-8c4e-f7d1b7fec4e7",
-                "type": "comment"
-            }
+{
+    "author": "https://group-13-epic-app.herokuapp.com/api/authors/16bfb4ac-125b-4b35-917f-feb79d0a16b3",
+    "comment": "test external comment 2", 
+    "contentType": "text/plain",
+    "post":  "https://t20-social-distribution.herokuapp.com/service/authors/8f48ce38-2a17-4bb3-8cc0-54c44dc66270/posts/937cac87-a3a5-4044-8c4e-f7d1b7fec4e7",
+    "type": "comment"
+}
             """
             # if request.data has id field, then it is a local comment
             if 'id' not in request.data:
@@ -536,16 +536,16 @@ def inbox(request, author_id):
                 author_response = requests.get(author_url)
                 author_data = author_response.json()
                 author_data['id'] = author_data['id'][author_data['id'].rfind('/')+1:]
-                author = Author.objects.filter(id = author_data['id'])
-                if not author:
+                authorQuery = Author.objects.filter(id = author_data['id'])
+                if not authorQuery:
                     author_data['username'] = author_data['displayName']
                     author_data['hidden'] = True
                     authorSerializer = AuthorSerializer(data = author_data)
                     if authorSerializer.is_valid():
                         authorSerializer.save()
-                        author = Author.objects.get(id = author_data['id'])
                     else:
                         return Response(authorSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                author = Author.objects.get(id = author_data['id'])
                 postId = request.data['post'][request.data['post'].rfind('/')+1:]
                 post = Post.objects.get(id = postId)
                 comment = Comment.objects.create(author = author, post = post, comment = request.data['comment'], contentType = request.data['contentType'])
