@@ -381,9 +381,15 @@ def likedPosts(request, author_id):
         return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
 
     if request.method == 'GET':
-        likes = Like.objects.filter(author = author_id)
+        likes =  Like.objects.filter(author = author_id)
         items = []
-        for like in likes:
+        serializer = LikeSerializer(likes,many=True)
+        
+        for like in serializer.data:
+            
+            like['author'] = AuthorSerializer(Author.objects.get(id = like['author'])).data
+            items.append(like)
+            '''
             if like.post != None:
                 post = PostSerializer(Post.objects.get(id = like.post.id)).data
                 post['author'] = AuthorSerializer(Author.objects.get(id = post['author'])).data
@@ -398,7 +404,13 @@ def likedPosts(request, author_id):
                 comment['post']['author'] = AuthorSerializer(Author.objects.get(id = comment['post']['author'])).data
                 comment['post']['author']['url'] = comment['post']['author']['url'] + str(comment['post']['author']['id'])
                 items.append(comment)
-        return Response(items, status=status.HTTP_200_OK)
+            '''
+        response = {
+            "type": "liked",
+            "items":items,
+        }
+        
+        return Response(response, status=status.HTTP_200_OK)
 
 @api_view(['GET', 'POST', 'DELETE'])
 def inbox(request, author_id):

@@ -22,6 +22,11 @@ class InboxSerializer(serializers.ModelSerializer):
         model = Inbox
         fields = '__all__'
 
+class LikeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Like
+        fields = '__all__'
+
 """ class InboxItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = InboxItem

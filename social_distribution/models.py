@@ -66,11 +66,19 @@ class Post(models.Model):
         return self.title
 
 class Like(models.Model):
-    type = models.CharField(max_length=200, default="like")
+    type = models.CharField(max_length=200, default="Like")
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True, blank=True)
-    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, null=True, blank=True)
+    summary = models.CharField(max_length=200, default="No summary")
+    object = models.CharField(max_length=200, default="None")
+
+    OBJECT_CHOICES = [("Comment","Comment"),("Post","Post"),("None","None")]
+    objectLiked = models.CharField(
+        max_length=200,
+        choices=OBJECT_CHOICES,
+        default="None",
+    )
+
 
     
 """ class InboxItem(models.Model):

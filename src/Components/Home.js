@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Button, Card,List, ListItem, TextField, Typography } from '@material-ui/core';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import Nav from './Nav';
 import axios from 'axios';
 import { getTextFieldUtilityClass } from '@mui/material';
@@ -254,6 +255,7 @@ function Posts() {
                                                         <Typography variant="body2">Author: {post.author.displayName}</Typography>
                                                         <Typography variant="body2">Published: {post.published.substring(0,10)}</Typography>
                                                         <Typography variant="body2">Node: {post.author.host}</Typography>
+                                                        
                                                     </Box>
                                                 </Box>)}
                                             </Box>
@@ -296,7 +298,7 @@ function Posts() {
                                     <Box style = {{ display: "flex", flexDirection: "column", paddingLeft: "10px", alignItems: "cen", justifyContent: "left"}}>
                                         <Typography variant="body2">Author: {post.author.displayName}</Typography>
                                         <Typography variant="body2">Published: {post.published.substring(0,10)}</Typography>
-                                        <Typography variant="body2">Node: {post.author.host}</Typography>
+                                        <Typography variant="body2">Node: {post.author.host}</Typography>                                     
                                     </Box>
                                 </Box>
                                 <Typography variant="h5">Description:</Typography>
@@ -310,9 +312,16 @@ function Posts() {
                                     Close
                                 </Button>
                                 {!openComments && (
-                                    <Button variant="contained" color="primary" onClick={() => setOpenComments(true)} style={{ position: "absolute", bottom: "30px", right: "120px"}}>
+                                    <div>
+                                        <Button variant="contained" color="primary" onClick={() => setOpenComments(true)} style={{ position: "absolute", bottom: "30px", right: "120px"}}>
                                         Comments
-                                    </Button>
+                                       </Button> 
+                                       <Button variant="outlined" color="secondary" startIcon={<FavoriteIcon />} style={{position: "absolute", bottom: "30px", right: "400px"}}   >  
+                                            Like
+                                        </Button>
+                                      
+                                    </div>
+                                    
                                 )}
                             </Card>
                             {openComments && (
