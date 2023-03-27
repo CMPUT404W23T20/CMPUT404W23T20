@@ -477,6 +477,31 @@ def inbox(request, author_id):
             return Response(status=status.HTTP_200_OK)
 
         elif request.data['type'] == 'Follow' or request.data['type'] == 'follow':
+            """
+{
+    "actor": {
+        "type": "author",
+        "id": "https://group-13-epic-app.herokuapp.com/api/authors/16bfb4ac-125b-4b35-917f-feb79d0a16b3",
+        "host": "https://group-13-epic-app.herokuapp.com/",
+        "displayName": "bonavoy",
+        "url": "https://group-13-epic-app.herokuapp.com/api/authors/16bfb4ac-125b-4b35-917f-feb79d0a16b3",
+        "github": "http://github.com/swag",
+        "profileImage": "https://api.dicebear.com/5.x/micah/svg?backgroundColor=fffd01&seed=16bfb4ac-125b-4b35-917f-feb79d0a16b3"
+    },
+    "object": {
+        "id": "8f48ce38-2a17-4bb3-8cc0-54c44dc66270",
+        "host": "https://t20-social-distribution.herokuapp.com",
+        "displayName": "1",
+        "username": "1",
+        "url": "https://t20-social-distribution.herokuapp.com/service/authors/8f48ce38-2a17-4bb3-8cc0-54c44dc66270",
+        "github": "No github",
+        "profileImage": "https://i.imgur.com/k7XVwpB.jpeg",
+        "type": "author"
+    },
+    "summary": "bonavoy followed 1",
+    "type": "Follow"
+}
+            """
             actor = request.data['actor']
             object = request.data['object']
             if 'id' not in actor:
@@ -492,24 +517,24 @@ def inbox(request, author_id):
             actor['id'] = actor['id'][actor['id'].rfind('/')+1:]
             object['id'] = object['id'][object['id'].rfind('/')+1:]
 
-            follower = Author.objects.get(id = object['id'])
+            follower = Author.objects.filter(id = actor['id'])
             followee = Author.objects.get(id = object['id'])
             
-            if follower:
-                # if follower exists, then the follow is local
-                follow = Follow.objects.get(follower = follower, author = followee)
-                inbox.follows.add(follow)
-            else:
+            if not follower:
                 # if follower doesn't exist, then the follow is remote and need to check if we need to add ghost
                 followerSerializer = AuthorSerializer(actor)
                 if followerSerializer.is_valid():
                     followerSerializer.save()
                 else:
                     return Response(status=status.HTTP_400_BAD_REQUEST)
-                follower = Author.objects.get(id = actor['id'])
-                summary = follower.displayName + ' is now following ' + author.displayName
+            follower = Author.objects.get(id = actor['id'])
+            summary = follower.displayName + ' is now following ' + author.displayName
+            # check if follow already exists
+            if Follow.objects.filter(follower = follower, author = followee).exists():
+                follow = Follow.objects.get(follower = follower, author = followee)
+            else:
                 follow = Follow.objects.create(follower = follower, author = followee, summary = summary)
-                inbox.follows.add(follow)
+            inbox.follows.add(follow)
             inbox.save()
             return Response(status=status.HTTP_200_OK)
 
