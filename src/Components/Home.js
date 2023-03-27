@@ -147,19 +147,19 @@ function Posts() {
         let path = `${getApiUrls()}`+"/service/authors/"+authorId+ "/posts/"+post.id+"/comments";
 
         if (post.author.host == "https://social-distribution-media.herokuapp.com/api"){
-            path = post.id+"/inbox"
+            path = post.author.id+"/inbox"
         }
         if ( post.author.host == "https://group-13-epic-app.herokuapp.com/"){
             path = post.author.id+"/inbox" //send to inbox
         }
         if (post.author.host == "https://cmput404-group6-instatonne.herokuapp.com"){ //have not verified this group to check if path is correct
-            path = post.id +"/inbox";
+            path = post.author.id +"/inbox";
         }
         if (post.author.host == "https://distributed-social-net.herokuapp.com/"){ 
-            path = post.id + "/inbox"
+            path = post.author.id + "/inbox"
         }
        
-        if (post.author.host ===  "https://t20-social-distribution.herokuapp.com") {
+        if (post.author.host ===  "https://t20-social-distribution.herokuapp.com") { //sending this comment to a local post
             let data = {
                 author: localStorage.getItem("id"),
                 comment: comment,
@@ -188,7 +188,7 @@ function Posts() {
         else{ //comment to a foreign node
             let data = {
                 "type": "comment",
-                "author": `${getApiUrls()}`+"/service/authors/"+authorId,  //author of this comment
+                "author": `${getApiUrls()}`+"/service/authors/"+ localStorage.getItem("id"),  //author of this comment
                 "contentType": "text/plain",
                 "comment": comment, //comment user made
                  "post": post.id, //author of the post
