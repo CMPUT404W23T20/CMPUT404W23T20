@@ -27,8 +27,13 @@ SECRET_KEY = 'django-insecure-hw=1yrhm5yi61$z6!oo*jwb8$m@vv8ryfmnq=aoa+#-4(z7v$#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['https://t20-social-distribution.herokuapp.com/','http://127.0.0.1:8000','http://localhost:8000','http://localhost:8001'
-                 ,'http://localhost:3000']
+ALLOWED_HOSTS = [
+    'http://localhost:3000','http://127.0.0.1:8000','http://localhost:8000',
+    'https://t20-social-distribution.herokuapp.com','http://localhost:8001',
+    'https://social-distribution-media.herokuapp.com','https://epic-app.vercel.app',
+    'https://group-13-epic-app.herokuapp.com', 'https://social-distribution-media.herokuapp.com',
+    'https://cmput404-group6-instatonne.herokuapp.com'
+]
 
 
 # Application definition
@@ -170,3 +175,4 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 django_on_heroku.settings(locals())
+
