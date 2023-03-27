@@ -2,6 +2,7 @@ from pstats import Stats
 import statistics
 from django.shortcuts import render
 from django.template import Context
+import requests
 from rest_framework import viewsets, status
 from .serializers import PostSerializer, LoginSerializer, CommentSerializer, AuthorSerializer, InboxSerializer, LikeSerializer, FollowSerializer
 from .models import Post, Author, Comment, Inbox, Like, Follow
@@ -101,7 +102,7 @@ def authors(request, author_id = None):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 # URL: ://service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
-@api_view(['GET', 'POST', 'PUT', 'DELETE'])
+@api_view(['GET', 'PUT', 'DELETE'])
 def followers(request, author_id = None, follower_id = None):
     # check BasicAuth for remote users
     try:
@@ -151,26 +152,16 @@ def followers(request, author_id = None, follower_id = None):
             return Response("Already following", status=status.HTTP_200_OK)
         author = Author.objects.get(id = author_id)
         follower = Author.objects.get(id = follower_id)
-        summary = AuthorSerializer(follower).data['displayName'] + ' is now following ' + AuthorSerializer(author).data['displayName']
-        follower = Follow.objects.create(author = author, follower = follower, summary = summary)
-        follower.save()
-        return Response(FollowSerializer(follower).data, status=status.HTTP_200_OK)
+        summary = follower.displayName + ' is now following ' + author.displayName
+        follow = Follow.objects.create(author = author, follower = follower, summary = summary)
+        follow.save()
+        return Response(FollowSerializer(follow).data, status=status.HTTP_200_OK)
 
     elif request.method == 'DELETE':
         # remove follower_id from author_id's followers
         follower = Follow.objects.filter(author = author_id, follower = follower_id)
         follower.delete()
         return Response(status=status.HTTP_200_OK)
-
-""" @api_view(['PUT'])
-def requests(request, author_id):
-    if request.method == 'PUT':
-        # add follower_id to author_id's followers
-        author = Author.objects.get(id = author_id)
-        follower = Author.objects.get(id = follower_id)
-        follower = Follow.objects.create(author = author, follower = follower)
-        follower.save()
-        return Response(status=status.HTTP_200_OK) """
 
 @api_view(['GET'])
 def following(request, author_id):
@@ -482,19 +473,91 @@ def inbox(request, author_id):
         if request.data['type'] == 'post':
             post = Post.objects.get(id = request.data['id'])
             inbox.posts.add(post)
-        elif request.data['type'] == 'follow':
-            follow = Follow.objects.get(id = request.data['id'])
-            inbox.follows.add(follow)
+            inbox.save()
+            return Response(status=status.HTTP_200_OK)
+
+        elif request.data['type'] == 'Follow' or request.data['type'] == 'follow':
+            actor = request.data['actor']
+            object = request.data['object']
+            if 'id' not in actor:
+                actorUrl = actor
+                actorResponse = requests.get(actorUrl)
+                actor = actorResponse.json()
+            if 'id' not in object:
+                objectUrl = object
+                objectResponse = requests.get(objectUrl)
+                object = objectResponse.json()
+
+            # remove everything before the last / 
+            actor['id'] = actor['id'][actor['id'].rfind('/')+1:]
+            object['id'] = object['id'][object['id'].rfind('/')+1:]
+
+            follower = Author.objects.get(id = object['id'])
+            followee = Author.objects.get(id = object['id'])
+            
+            if follower:
+                # if follower exists, then the follow is local
+                follow = Follow.objects.get(follower = follower, author = followee)
+                inbox.follows.add(follow)
+            else:
+                # if follower doesn't exist, then the follow is remote and need to check if we need to add ghost
+                followerSerializer = AuthorSerializer(actor)
+                if followerSerializer.is_valid():
+                    followerSerializer.save()
+                else:
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
+                follower = Author.objects.get(id = actor['id'])
+                summary = follower.displayName + ' is now following ' + author.displayName
+                follow = Follow.objects.create(follower = follower, author = followee, summary = summary)
+                inbox.follows.add(follow)
+            inbox.save()
+            return Response(status=status.HTTP_200_OK)
+
         elif request.data['type'] == 'like':
             like = Like.objects.get(id = request.data['id'])
             inbox.likes.add(like)
+            inbox.save()
+            return Response(status=status.HTTP_200_OK)
         elif request.data['type'] == 'comment':
+            """
+            {
+                "author": "https://group-13-epic-app.herokuapp.com/api/authors/fe1eeb18-aba4-4133-ad03-94396d39a6ff",
+                "comment": "test external comment 2", 
+                "contentType": "text/plain",
+                "post":  "https://t20-social-distribution.herokuapp.com/service/author/8f48ce38-2a17-4bb3-8cc0-54c44dc66270/posts/937cac87-a3a5-4044-8c4e-f7d1b7fec4e7",
+                "type": "comment"
+            }
+            """
+            # if request.data has id field, then it is a local comment
+            if 'id' not in request.data:
+                # comment from remote server
+                # call to remote server to get author data
+                author_url = request.data['author']
+                author_response = requests.get(author_url)
+                author_data = author_response.json()
+                author_data['id'] = author_data['id'][author_data['id'].rfind('/')+1:]
+                author = Author.objects.filter(id = author_data['id'])
+                if not author:
+                    author_data['username'] = author_data['displayName']
+                    author_data['hidden'] = True
+                    authorSerializer = AuthorSerializer(data = author_data)
+                    if authorSerializer.is_valid():
+                        authorSerializer.save()
+                        author = Author.objects.get(id = author_data['id'])
+                    else:
+                        return Response(authorSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                postId = request.data['post'][request.data['post'].rfind('/')+1:]
+                post = Post.objects.get(id = postId)
+                comment = Comment.objects.create(author = author, post = post, comment = request.data['comment'], contentType = request.data['contentType'])
+                inbox.comments.add(comment)
+                inbox.save()
+                return Response(status=status.HTTP_200_OK)
             comment = Comment.objects.get(id = request.data['id'])
             inbox.comments.add(comment)
-
-        inbox.save()
-        return Response(status=status.HTTP_200_OK)
-        
+            inbox.save()
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
     
     elif request.method == 'DELETE':
         # clear the items field of the inbox with author_id = author_id
@@ -506,3 +569,4 @@ def inbox(request, author_id):
         inbox.likes.clear()
         inbox.save()
         return Response(status=status.HTTP_200_OK)
+

@@ -130,9 +130,9 @@ function Friends() {
         setFilteredFollowing(followingList);
         setLoadingFollowing(false);
         getOtherUsers()
-        console.log("friends", friendsList)
-        console.log("following", followingList)
-        console.log("not following", notFollowingList)
+        //console.log("friends", friendsList)
+        //console.log("following", followingList)
+        //console.log("not following", notFollowingList)
     }
 
     const getDuplicateUsers = async () => {
@@ -144,7 +144,7 @@ function Friends() {
             }
         });
         // add userResponse.data to group20List
-        console.log("duplicate", usersResponse)
+        //console.log("duplicate", usersResponse)
         return usersResponse.data.items;
     }
 
@@ -163,7 +163,7 @@ function Friends() {
         });
         // add userResponse.data to group20List
         if (response.data && response.data.items) {
-            console.log("Group2 Users", response.data.items)
+            //console.log("Group2 Users", response.data.items)
             return response.data.items;
         }
         return [];
@@ -181,7 +181,7 @@ function Friends() {
             return [];
         });
         if (response.data && response.data.items) {
-            console.log("Group6 Users", response.data.items)
+            //console.log("Group6 Users", response.data.items)
             return response.data.items;
         }
         return [];
@@ -200,7 +200,7 @@ function Friends() {
             return [];
         });
         if (response.data && response.data.items) {
-            console.log("Group13 Users", response.data.items)
+            //console.log("Group13 Users", response.data.items)
             return response.data.items;
         }
         return [];
@@ -216,7 +216,7 @@ function Friends() {
             return [];
         });
         if (response.data && response.data.items) {
-            console.log("Group18 Users", response.data.items)
+            //console.log("Group18 Users", response.data.items)
             return response.data.items;
         }
         return [];
@@ -286,7 +286,7 @@ function Friends() {
                 otherUsersList.splice(j, 1);
             }
         }
-        console.log("other users", otherUsersList)
+        //console.log("other users", otherUsersList)
         setOtherUsers(otherUsersList);
         setFilteredOtherUsers(otherUsersList);
         setLoadingOtherUsers(false);
@@ -326,19 +326,6 @@ function Friends() {
         }).catch((error) => {
             console.log(error);
         });
-        // send follow request to followee on local
-        if (other.host ===  getApiUrls()) {
-            path = `${getApiUrls()}/service/authors/${other.id}/inbox`;
-            await axios.post(path, response.data, {
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": token
-                }
-            }).catch((error) => {
-                console.log(error);
-            });
-        }   
-
         // sending follow for other servers
         // get follower info
         let userResponse = await axios.get(`${getApiUrls()}/service/authors/${userId}`, {
@@ -350,6 +337,7 @@ function Friends() {
         });
         let userData = userResponse.data;
         // add follow request to inbox of other
+        path = `${getApiUrls()}/service/authors/${id}/inbox`;
         if (other.host == "https://social-distribution-media.herokuapp.com/api"){
             path = other.host+"/authors/"+id+"/inbox";
         }
@@ -375,7 +363,7 @@ function Friends() {
             "actor": userData,
             "object": other
         }
-        console.log('follow inbox data',data)
+        console.log('follow inbox data',data, path)
         await axios.post(path, data, {
             headers: {
                 "Content-Type": "application/json",
@@ -416,7 +404,7 @@ function Friends() {
         var decoded = JSON.stringify(jwt_decode(token));
        
         var decode_info= JSON.parse(decoded)
-        console.log(decode_info)
+        //console.log(decode_info)
         return decode_info;
         
     };
