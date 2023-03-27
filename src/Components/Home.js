@@ -150,7 +150,7 @@ function Posts() {
             path = post.author.id+"/inbox"
         }
         if ( post.author.host == "https://group-13-epic-app.herokuapp.com/"){
-            path = post.author.id+"/inbox" //send to inbox
+            path = post.author.id+"/inbox/" //send to inbox
         }
         if (post.author.host == "https://cmput404-group6-instatonne.herokuapp.com"){ //have not verified this group to check if path is correct
             path = post.author.id +"/inbox";
@@ -188,7 +188,7 @@ function Posts() {
         else{ //comment to a foreign node
             let data = {
                 "type": "comment",
-                "author": `${getApiUrls()}`+"/service/authors/"+ localStorage.getItem("id"),  //author of this comment
+                "author": "https://t20-social-distribution.herokuapp.com/service/authors/"+ localStorage.getItem("id"),  //author of this comment
                 "contentType": "text/plain",
                 "comment": comment, //comment user made
                  "post": post.id, //author of the post
