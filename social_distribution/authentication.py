@@ -5,6 +5,7 @@ from .models import Author
 from django.contrib.auth.models import User
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
+from django.contrib.auth import get_user_model
 
 class JWTAuth(BaseAuthentication):
     def authenticate(request):
@@ -26,17 +27,19 @@ class HTTPBasicAuth(BaseAuthentication):
 
         try:
             credentials = auth_header.split(' ')[1]
-            decoded_credentials = credentials.encode('ascii').decode('base64')
+            decoded_credentials = base64.b64decode(credentials).decode('utf-8')
             username, password = decoded_credentials.split(':', 1)
         except:
             raise AuthenticationFailed('Invalid basic authentication header')
 
+        UserModel = get_user_model()
+
         try:
-            user = User.objects.get(username=username)
-        except User.DoesNotExist:
+            user = UserModel.objects.get(username=username)
+        except UserModel.DoesNotExist:
             raise AuthenticationFailed('Invalid username or password')
 
         if not user.check_password(password):
             raise AuthenticationFailed('Invalid username or password')
 
-        return (user, None)
+        return user

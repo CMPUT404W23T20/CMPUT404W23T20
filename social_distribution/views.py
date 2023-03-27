@@ -19,6 +19,8 @@ from django.db.models import Q
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from .authentication import JWTAuth, HTTPBasicAuth   # import the JWTAuthentication backend
+from rest_framework.exceptions import AuthenticationFailed
+
 
 
 # need to be changed to proper format
@@ -52,8 +54,8 @@ def authors(request, author_id = None):
     # check BasicAuth for remote users
     try:
         HTTPBasicAuth.authenticate(request)
-    except:
-        return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
+    except AuthenticationFailed as e:
+        return Response({'error': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
     if request.method == 'GET':
         # get all authors where hidden is false
@@ -107,8 +109,8 @@ def followers(request, author_id = None, follower_id = None):
     # check BasicAuth for remote users
     try:
         HTTPBasicAuth.authenticate(request)
-    except:
-        return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
+    except AuthenticationFailed as e:
+        return Response({'error': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
     if request.method == 'GET':
         if not follower_id:
@@ -168,8 +170,8 @@ def following(request, author_id):
     # check BasicAuth for remote users
     try:
         HTTPBasicAuth.authenticate(request)
-    except:
-        return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
+    except AuthenticationFailed as e:
+        return Response({'error': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
     if request.method == 'GET':
         # get all authors that author_id follows
@@ -191,8 +193,8 @@ def friends(request, author_id):
     # check BasicAuth for remote users
     try:
         HTTPBasicAuth.authenticate(request)
-    except:
-        return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
+    except AuthenticationFailed as e:
+        return Response({'error': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
     if request.method == 'GET':
         # return users who follow author_id and author_id follows
@@ -218,8 +220,8 @@ def posts(request, author_id = None, post_id = None):
     # check BasicAuth for remote users
     try:
         HTTPBasicAuth.authenticate(request)
-    except:
-        return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
+    except AuthenticationFailed as e:
+        return Response({'error': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
     if request.method == 'GET':
         if not author_id:
@@ -313,8 +315,8 @@ def comments(request, author_id, post_id,comment_id=None):
     # check BasicAuth for remote users
     try:
         HTTPBasicAuth.authenticate(request)
-    except:
-        return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
+    except AuthenticationFailed as e:
+        return Response({'error': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
     if request.method == 'GET':
         comments = Comment.objects.filter(post = post_id)
@@ -362,8 +364,8 @@ def commentLikes(request, comment_id):
     # check BasicAuth for remote users
     try:
         HTTPBasicAuth.authenticate(request)
-    except:
-        return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
+    except AuthenticationFailed as e:
+        return Response({'error': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
     if request.method == 'GET':
         return Response("Not implemented", status=status.HTTP_501_NOT_IMPLEMENTED)
@@ -377,8 +379,8 @@ def likedPosts(request, author_id):
     # check BasicAuth for remote users
     try:
         HTTPBasicAuth.authenticate(request)
-    except:
-        return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
+    except AuthenticationFailed as e:
+        return Response({'error': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
     if request.method == 'GET':
         likes = Like.objects.filter(author = author_id)
@@ -405,8 +407,8 @@ def inbox(request, author_id):
     # check BasicAuth for remote users
     try:
         HTTPBasicAuth.authenticate(request)
-    except:
-        return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
+    except AuthenticationFailed as e:
+        return Response({'error': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
     if request.method == 'GET':
         # get all inbox items for author
