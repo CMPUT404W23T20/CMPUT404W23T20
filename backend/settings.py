@@ -27,8 +27,10 @@ SECRET_KEY = 'django-insecure-hw=1yrhm5yi61$z6!oo*jwb8$m@vv8ryfmnq=aoa+#-4(z7v$#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['https://t20-social-distribution.herokuapp.com/','http://127.0.0.1:8000','http://localhost:8000','http://localhost:8001'
-                 ,'http://localhost:3000']
+ALLOWED_HOSTS = [
+    'https://t20-social-distribution.herokuapp.com/','http://127.0.0.1:8000','http://localhost:8000','http://localhost:8001'
+                 ,'http://localhost:3000'
+]
 
 
 # Application definition
@@ -83,11 +85,13 @@ CORS_ORIGIN_WHITELIST = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000','http://127.0.0.1:8000','http://localhost:8000',
-    'https://t20-social-distribution.herokuapp.com','http://localhost:8001',
-    'https://social-distribution-media.herokuapp.com','https://epic-app.vercel.app',
-    'https://group-13-epic-app.herokuapp.com', 'https://social-distribution-media.herokuapp.com',
-    'https://cmput404-group6-instatonne.herokuapp.com'
+    "http://localhost:8000",
+    "http://localhost:3000",
+    "https://t20-social-distribution.herokuapp.com",
+    "https://social-distribution-media.herokuapp.com",
+    "https://group-13-epic-app.herokuapp.com",
+    "https://epic-app.vercel.app",
+    "https://cmput404-group6-instatonne.herokuapp.com",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -97,6 +101,16 @@ CSRF_TRUSTED_ORIGINS = [
     'https://*.group-13-epic-app.herokuapp.com', 'https://*.social-distribution-media.herokuapp.com',
     'https://*.cmput404-group6-instatonne.herokuapp.com'
 ]
+CORS_ALLOW_HEADERS = [
+    "X-CSRFToken",
+    "Cookie",
+    "Authorization",
+    "Content-Type"
+]
+
+CSRF_COOKIE_HTTPONLY = False
+CORS_ALLOW_CREDENTIALS = True
+
 
 ROOT_URLCONF = 'backend.urls'
 
