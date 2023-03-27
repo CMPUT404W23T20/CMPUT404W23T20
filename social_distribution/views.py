@@ -537,7 +537,7 @@ def inbox(request, author_id):
                 author = Author.objects.filter(id = author_data['id'])
                 if not author:
                     author_data['username'] = author_data['displayName']
-                    author_data['hiiden'] = True
+                    author_data['hidden'] = True
                     authorSerializer = AuthorSerializer(data = author_data)
                     if authorSerializer.is_valid():
                         authorSerializer.save()
