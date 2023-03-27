@@ -148,19 +148,15 @@ function Posts() {
 
         if (post.author.host == "https://social-distribution-media.herokuapp.com/api"){
             path = post.id+"/inbox"
-            console.log("2",path)
         }
         if ( post.author.host == "https://group-13-epic-app.herokuapp.com/"){
             path = post.author.id+"/inbox" //send to inbox
-            console.log("13",path)
         }
         if (post.author.host == "https://cmput404-group6-instatonne.herokuapp.com"){ //have not verified this group to check if path is correct
             path = post.id +"/inbox";
-            console.log("6",path)
         }
         if (post.author.host == "https://distributed-social-net.herokuapp.com/"){ 
             path = post.id + "/inbox"
-            console.log("random",path)
         }
        
         if (post.author.host ===  "https://t20-social-distribution.herokuapp.com") {
@@ -216,11 +212,19 @@ function Posts() {
 
         }
 
-        
+
+        setCommentPosted(true);
+        getFeed()
+        //clear the input box after sending comment*/
+        document.getElementById("comment").value = ""
+        document.getElementById("postedComment").style.display = "Block"
+
+        setTimeout( 
+            function(){
+                setCommentPosted(false);
+            },5000);
         
 
-
-       
     }
 
     const [openPost, setopenPost] = React.useState(false);
