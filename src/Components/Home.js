@@ -242,7 +242,6 @@ function Posts() {
         return decode_info;
         
     };
-
     const likeObject= async(object) =>{
         /* Make 2 posts requests
          1) Add to the author's "liked" url
@@ -276,8 +275,10 @@ function Posts() {
                 }).catch((error) => {
                     console.log(error);
             });
+        
+  
     }
-
+   
     const getPostLikes = async(post) =>{
         let path = `${getApiUrls()}/service/authors/`+ post.author.id+"/posts/"+post.id+"/likes"
         let postLikes = await axios.get(path, {
@@ -379,9 +380,8 @@ function Posts() {
                                        <Button variant="outlined" color="secondary" startIcon={<FavoriteIcon />} onClick ={() => likeObject(post)}style={{position: "absolute", bottom: "30px", right: "400px"}}   >  
                                         Likes
                                         </Button>
-                                        <div>
-                                            {() => getPostLikes(post)}
-                                        </div>
+                                        <h2>{post.likes}</h2>
+                                        
                                       
                                     </div>
                                     
