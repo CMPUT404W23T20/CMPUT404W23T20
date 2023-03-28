@@ -278,6 +278,17 @@ function Posts() {
             });
     }
 
+    const getPostLikes = async(post) =>{
+        let path = `${getApiUrls()}/service/authors/`+ post.author.id+"/posts/"+post.id+"/likes"
+        let postLikes = await axios.get(path, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer "+localStorage.getItem("token")
+            }
+         });
+         return postLikes.data.items.length
+    }
+
     const [openPost, setopenPost] = React.useState(false);
     const [post, setPost] = React.useState([{}]);
     const [openComments, setOpenComments] = React.useState(false);
@@ -366,9 +377,11 @@ function Posts() {
                                         Comments
                                        </Button> 
                                        <Button variant="outlined" color="secondary" startIcon={<FavoriteIcon />} onClick ={() => likeObject(post)}style={{position: "absolute", bottom: "30px", right: "400px"}}   >  
-                                            Like
+                                        Likes
                                         </Button>
-                                        <div>hihih: {post.likes}</div>
+                                        <div>
+                                            {() => getPostLikes(post)}
+                                        </div>
                                       
                                     </div>
                                     
