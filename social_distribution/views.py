@@ -4,8 +4,8 @@ from django.shortcuts import render
 from django.template import Context
 import requests
 from rest_framework import viewsets, status
-from .serializers import PostSerializer, LoginSerializer, CommentSerializer, AuthorSerializer, InboxSerializer, LikeSerializer, FollowSerializer
-from .models import Post, Author, Comment, Inbox, Like, Follow
+from .serializers import PostSerializer, LoginSerializer, CommentSerializer, AuthorSerializer, InboxSerializer, LikeSerializer, FollowSerializer, PostURLSerializer
+from .models import Post, Author, Comment, Inbox, Like, Follow, PostURL
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.core import serializers
@@ -420,7 +420,14 @@ def inbox(request, author_id):
 
         # get author data and add to serializer
         author_data = AuthorSerializer(Author.objects.get(id=serializer.data['author'])).data
-        serializer.data['author'] = author_data
+        serializer.data['author'] = author_data 
+
+        #return Response(serializer.data, status=status.HTTP_200_OK)
+
+        # process postUrls
+        for i in range(len(serializer.data['postURLs'])):
+            posURL = PostURLSerializer(PostURL.objects.get(id=serializer.data['postURLs'][i])).data
+            serializer.data['postURLs'][i] = posURL
 
         # process posts
         for i in range(len(serializer.data['posts'])):
@@ -439,6 +446,7 @@ def inbox(request, author_id):
         for i in range(len(serializer.data['comments'])):
             comment_data = CommentSerializer(Comment.objects.get(id=serializer.data['comments'][i])).data
             comment_data['post'] = PostSerializer(Post.objects.get(id=comment_data['post'])).data
+            comment_data['post']['origin'] = comment_data['post']['origin'] + str(comment_data['post']['id'])
             comment_data['author'] = AuthorSerializer(Author.objects.get(id=comment_data['author'])).data
             serializer.data['comments'][i] = comment_data
 
@@ -451,7 +459,7 @@ def inbox(request, author_id):
             serializer.data['likes'][i] = like_data
 
         # combine all items into a single list
-        items = serializer.data['posts'] + serializer.data['follows'] + serializer.data['comments'] + serializer.data['likes']
+        items = serializer.data['posts'] + serializer.data['follows'] + serializer.data['comments'] + serializer.data['likes'] + serializer.data['postURLs']
         response = {
             "type": "inbox",
             "author": author_id,
@@ -460,57 +468,39 @@ def inbox(request, author_id):
         return Response(response)
 
     elif request.method == 'POST':
-        # add object of type post/follow/like/comment to inbox of author_id
+        # add object of type post/follow/like/comment/postURL to inbox of author_id
         # don't authorize becausing we are sending objects to another user
-        """ token = request.headers.get('Authorization', None)
-        payload = JWTAuthentication.authenticate(request) 
-        tokenAuthor = Author.objects.get(id = payload.get('user_id', None))
-        if str(tokenAuthor.id) != author_id:
-            return Response(status=status.HTTP_401_UNAUTHORIZED) """
         author = Author.objects.get(id = author_id)
         inbox = Inbox.objects.get(author = author)
         if not inbox:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        if request.data['type'] == 'post':
-            post = Post.objects.get(id = request.data['id'])
-            inbox.posts.add(post)
+        if request.data['type'].lower() == 'post':
+            # add post to inbox remote or local
+            postData = request.data
+            id = postData['id']
+            id = id[id.rfind('/')+1:]
+            post = Post.objects.filter(id = id).first()
+            if post:
+                # if post exists, then it is a local post
+                inbox.posts.add(post)
+            else:
+                # if post does not exist, then it is a remote post
+                postURL = PostURL.objects.create(url = postData['id'])
+                inbox.postURLs.add(postURL)
             inbox.save()
             return Response(status=status.HTTP_200_OK)
 
-        elif request.data['type'] == 'Follow' or request.data['type'] == 'follow':
-            """
-{
-    "actor": {
-        "type": "author",
-        "id": "https://group-13-epic-app.herokuapp.com/api/authors/16bfb4ac-125b-4b35-917f-feb79d0a16b3",
-        "host": "https://group-13-epic-app.herokuapp.com/",
-        "displayName": "bonavoy",
-        "url": "https://group-13-epic-app.herokuapp.com/api/authors/16bfb4ac-125b-4b35-917f-feb79d0a16b3",
-        "github": "http://github.com/swag",
-        "profileImage": "https://api.dicebear.com/5.x/micah/svg?backgroundColor=fffd01&seed=16bfb4ac-125b-4b35-917f-feb79d0a16b3"
-    },
-    "object": {
-        "id": "8f48ce38-2a17-4bb3-8cc0-54c44dc66270",
-        "host": "https://t20-social-distribution.herokuapp.com",
-        "displayName": "1",
-        "username": "1",
-        "url": "https://t20-social-distribution.herokuapp.com/service/authors/8f48ce38-2a17-4bb3-8cc0-54c44dc66270",
-        "github": "No github",
-        "profileImage": "https://i.imgur.com/k7XVwpB.jpeg",
-        "type": "author"
-    },
-    "summary": "bonavoy followed 1",
-    "type": "Follow"
-}
-            """
+        elif request.data['type'].lower() == 'follow':
             actor = request.data['actor']
             object = request.data['object']
             if 'id' not in actor:
+                # if id is not in actor, then it is a remote follow and we need to add ghost
                 actorUrl = actor
                 actorResponse = requests.get(actorUrl)
                 actor = actorResponse.json()
             if 'id' not in object:
+                # if id is not in object, then it is a remote follow and we need to add ghost
                 objectUrl = object
                 objectResponse = requests.get(objectUrl)
                 object = objectResponse.json()
@@ -543,21 +533,38 @@ def inbox(request, author_id):
             inbox.save()
             return Response(status=status.HTTP_200_OK)
 
-        elif request.data['type'] == 'like':
-            like = Like.objects.get(id = request.data['id'])
+        elif request.data['type'].lower() == 'like':
+            # handles both local and remote likes
+            # if id is in request.data, then it is a local like
+            if "id" in request.data:
+                # get like from database
+                like = Like.objects.get(id = request.data['id'])
+            else:
+                # create like if remote like
+                authorURL = request.data['author']
+                authorResponse = requests.get(authorURL)
+                author = authorResponse.json()
+                author['id'] = author['id'][author['id'].rfind('/')+1:]
+                author = Author.objects.filter(id = author['id']).first() 
+                if not author:
+                    # add a ghost author for remote like if it doesn't exist
+                    author = Author.objects.create(id = author['id'], displayName = author['displayName'], username = author['displayName'], hidden = True, url = author['url'])
+                postURL = request.data['post']
+                postId = postURL[postURL.rfind('/')+1:]
+                post = Post.objects.filter(id = postId).first()
+                if not post:
+                    # if post doesn't exist, then return bad request
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
+                like = Like.objects.create(author = author, post = post)
+            if not like:
+                # if like doesn't exist, then return bad request
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            # add like to inbox and save 
             inbox.likes.add(like)
             inbox.save()
             return Response(status=status.HTTP_200_OK)
-        elif request.data['type'] == 'comment':
-            """
-{
-    "author": "https://group-13-epic-app.herokuapp.com/api/authors/16bfb4ac-125b-4b35-917f-feb79d0a16b3",
-    "comment": "test external comment 2", 
-    "contentType": "text/plain",
-    "post":  "https://t20-social-distribution.herokuapp.com/service/authors/8f48ce38-2a17-4bb3-8cc0-54c44dc66270/posts/937cac87-a3a5-4044-8c4e-f7d1b7fec4e7",
-    "type": "comment"
-}
-            """
+        elif request.data['type'].lower() == 'comment':
+            # handles both local and remote comments 
             # if request.data has id field, then it is a local comment
             if 'id' not in request.data:
                 # comment from remote server
@@ -568,21 +575,30 @@ def inbox(request, author_id):
                 author_data['id'] = author_data['id'][author_data['id'].rfind('/')+1:]
                 authorQuery = Author.objects.filter(id = author_data['id'])
                 if not authorQuery:
+                    # add ghost author if it doesn't exist
                     author_data['username'] = author_data['displayName']
                     author_data['hidden'] = True
                     authorSerializer = AuthorSerializer(data = author_data)
                     if authorSerializer.is_valid():
                         authorSerializer.save()
                     else:
+                        # if author serializer is not valid, then return bad request
                         return Response(authorSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                # get author and post from database
                 author = Author.objects.get(id = author_data['id'])
                 postId = request.data['post'][request.data['post'].rfind('/')+1:]
                 post = Post.objects.get(id = postId)
+                if not post or not author:
+                    # if post or author doesn't exist, then return bad request
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
                 comment = Comment.objects.create(author = author, post = post, comment = request.data['comment'], contentType = request.data['contentType'])
                 inbox.comments.add(comment)
                 inbox.save()
                 return Response(status=status.HTTP_200_OK)
             comment = Comment.objects.get(id = request.data['id'])
+            if not comment:
+                # if comment doesn't exist, then return bad request
+                return Response(status=status.HTTP_400_BAD_REQUEST)
             inbox.comments.add(comment)
             inbox.save()
             return Response(status=status.HTTP_200_OK)
@@ -593,6 +609,8 @@ def inbox(request, author_id):
         # clear the items field of the inbox with author_id = author_id
         author = Author.objects.get(id = author_id)
         inbox = Inbox.objects.get(author = author)
+        for postURL in inbox.postURLs.all():
+            postURL.delete()
         inbox.posts.clear()
         inbox.follows.clear()
         inbox.comments.clear()

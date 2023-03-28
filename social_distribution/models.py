@@ -1,7 +1,7 @@
 from django.db import models
 import uuid
 # Create your models here.
-hostAddress = "https://t20-social-distribution.herokuapp.com/"
+hostAddress = "https://t20-social-distribution.herokuapp.com"
 class Author(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     type = models.CharField(max_length=200, default="author")
@@ -43,6 +43,8 @@ class Comment(models.Model):
     def __str__(self):
         return self.comment
 
+
+
 class Post(models.Model):
     type = models.CharField(max_length=200, default="post")
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -80,11 +82,17 @@ class Like(models.Model):
     comments = models.ManyToManyField(Comment, blank=True)
     likes = models.ManyToManyField(Like, blank=True) """
 
+class PostURL(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    url = models.CharField(max_length=200)
+    type = models.CharField(max_length=200, default="postURL")
+
 class Inbox(models.Model):
     type = models.CharField(max_length=200, default="inbox")
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
     follows = models.ManyToManyField(Follow, blank=True)
     posts = models.ManyToManyField(Post, blank=True)
+    postURLs = models.ManyToManyField(PostURL, blank=True)
     comments = models.ManyToManyField(Comment, blank=True)
     likes = models.ManyToManyField(Like, blank=True)
