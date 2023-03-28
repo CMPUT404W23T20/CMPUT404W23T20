@@ -17,7 +17,22 @@ function Inbox() {
                 "Authorization": "Bearer " + localStorage.getItem("token")
             }
         });
-        console.log(response.data.items);
+        let responseItems = response.data.items;
+        // get all posts in postsURLs and replace with post object
+        for (let i = 0; i < responseItems.length; i++) {
+            if (responseItems[i].type === "postURL") {
+                console.log(responseItems[i].url);
+                let path = responseItems[i].url;
+                let postResponse = await axios.get(path, {
+                    headers: {
+                        "Content-Type": "application/json",
+                    }
+                });
+                // replace postURL with post object
+                responseItems[i] = postResponse.data;
+            }
+        }
+        console.log(responseItems);
         setLoading(false);
         return response.data.items
     }
@@ -71,17 +86,18 @@ function Inbox() {
         setComments([])
         let path
         let response
-        path = `${getApiUrls()}/service/authors/${post.author.id ? post.author.id : post.author}/posts/${post.id}`;
+        /*path = `${getApiUrls()}/service/authors/${post.author.id ? post.author.id : post.author}/posts/${post.id}`;
         response = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json",
             }
-        });
-        setPost(response.data);
+        });*/
+        setPost(post);
 
         // get comments on post
-        console.log (response.data.author.id, localStorage.getItem("id"))
-        if (response.data.author.id === localStorage.getItem("id")) {
+        console.log(post)
+        let id = post.author.id.split("/").pop()
+        if (id === localStorage.getItem("id")) {
             path = `${getApiUrls()}/service/authors/${post.author.id}/posts/${post.id}/comments`;
             response = await axios.get(path, {
                 headers: {
@@ -180,7 +196,7 @@ function Inbox() {
                                     Close
                                 </Button>
                             </Card>
-                            <Card style = {{ marginRight: "10px",marginBottom: "10px",marginLeft: "10px", borderRadius: "10px", borderColor: "black",marginTop: "5px",flex:1, overflowY: "scroll"}}>
+                            {(comments.length > 0) && <Card style = {{ marginRight: "10px",marginBottom: "10px",marginLeft: "10px", borderRadius: "10px", borderColor: "black",marginTop: "5px",flex:1, overflowY: "scroll"}}>
                                 <Typography variant="h6" style = {{textAlign:"left", paddingLeft:30,fontSize:20}}>Comments:</Typography>                                        
                                 {comments.map((comments) => (
                                         <div style = {{display:'flex',alignItems:'center',wordWrap:"break-word"}}>
@@ -190,7 +206,7 @@ function Inbox() {
                                             </Typography>
                                         </div>
                                     ))}
-                            </Card>
+                            </Card>}
                         </Box>
                     )}
                 </Box>

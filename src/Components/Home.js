@@ -240,7 +240,7 @@ function Posts() {
                 <Box style={{ display: "flex", flexDirection: "row", backgroundColor: "white", flex: 1, height: "100vh"}}>
                     <Box style={{display: "flex", flexDirection: "row",flex: 1, margin: "10px", borderColor: "grey", borderStyle: "solid", backgroundColor: "#c3d3eb"}}>
                         <Box style = {{ display: "flex", flexDirection: "column", flex: 1, margin: "10px"}}>
-                            <Typography variant="h4">Following's Posts</Typography>
+                            <Typography variant="h4">Following's Public Posts</Typography>
                             <List style = {{ flex: 1, overflowY: "scroll", maxHeight: "100%"}}>
                                 {!loadingFollowing && <CircularProgress />}
                                 {loadingFollowing && followingPosts.map((post) => (
