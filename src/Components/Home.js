@@ -45,7 +45,6 @@ function Posts() {
             if (followee.host == "https://distributed-social-net.herokuapp.com/"){
                 id = id.replace(/-/g,'');
                 path = followee.host+"service/authors/"+id+"/posts";
-
             }
             // for when group 6 has authorization working
             // (followee.host == "https://cmput404-group6-instatonne.herokuapp.com") ? "Basic R3JvdXAyMDpncm91cDIwY21wdXQ0MDQ=" : ""

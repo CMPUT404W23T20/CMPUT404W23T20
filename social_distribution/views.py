@@ -446,6 +446,7 @@ def inbox(request, author_id):
         for i in range(len(serializer.data['comments'])):
             comment_data = CommentSerializer(Comment.objects.get(id=serializer.data['comments'][i])).data
             comment_data['post'] = PostSerializer(Post.objects.get(id=comment_data['post'])).data
+            comment_data['post']['origin'] = comment_data['post']['origin'] + str(comment_data['post']['id'])
             comment_data['author'] = AuthorSerializer(Author.objects.get(id=comment_data['author'])).data
             serializer.data['comments'][i] = comment_data
 
@@ -608,6 +609,8 @@ def inbox(request, author_id):
         # clear the items field of the inbox with author_id = author_id
         author = Author.objects.get(id = author_id)
         inbox = Inbox.objects.get(author = author)
+        for postURL in inbox.postURLs.all():
+            postURL.delete()
         inbox.posts.clear()
         inbox.follows.clear()
         inbox.comments.clear()

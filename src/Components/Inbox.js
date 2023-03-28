@@ -80,22 +80,32 @@ function Inbox() {
     }, []);
 
     const [comments, setComments] = React.useState([]);
+    const [loadingPost , setLoadingPost] = React.useState(false);
 
     const handleOpenPost = async (post) => {
+        setopenPost(true);
+        setLoadingPost(true);
         // get all information on post
         setComments([])
         let path
         let response
-        /*path = `${getApiUrls()}/service/authors/${post.author.id ? post.author.id : post.author}/posts/${post.id}`;
+        // if https://t20-social-distribution.herokuapp.com is in the origin of the post, then we need to get the post from the local host
+        if (post.origin.includes("t20-social-distribution.herokuapp.com")) {
+            path = `${getApiUrls()}/service/authors/${post.author.id ? post.author.id : post.author}/posts/${post.id}`;
+            console.log(path)  
+        } else {
+            path = post.id
+        }
         response = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json",
             }
-        });*/
+        });
+        post = response.data;
         setPost(post);
 
         // get comments on post
-        console.log(post)
+        
         let id = post.author.id.split("/").pop()
         if (id === localStorage.getItem("id")) {
             path = `${getApiUrls()}/service/authors/${post.author.id}/posts/${post.id}/comments`;
@@ -106,8 +116,7 @@ function Inbox() {
             });
             setComments(response.data.items);
         }
-        
-        setopenPost(true);
+        setLoadingPost(false);
     }
 
     const [openPost, setopenPost] = React.useState(false);
@@ -151,7 +160,7 @@ function Inbox() {
                                             </Box>
                                         </Box>
                                     </Card>)}
-                                    {item.type === "follow" && (<Card style = {{ width: "100%", display: "flex", flexDirection: "row", justifyContent: "space-between"}} onClick = {() => {handleOpenPost(item.post)}}>
+                                    {item.type === "follow" && (<Card style = {{ width: "100%", display: "flex", flexDirection: "row", justifyContent: "space-between"}} onClick={() => setopenPost(false)}>
                                         <Box style = {{ paddingLeft: 2}}>
                                             <Box style = {{ display: "flex", flexDirection: "row", marginTop: "10px", marginLeft: "10px"}}>
                                                 <img src= {(item.follower.profileImage != "no profileImage" && item.follower.profileImage != "") ? item.follower.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt = "IMG" style = {{borderRadius:"50%"}} width="100px" height = "100px"/>
@@ -178,35 +187,38 @@ function Inbox() {
                     </Box>
                     {openPost && (
                         <Box style={{flex: 1, margin: "10px", borderColor: "grey", borderStyle: "solid", backgroundColor: "#c3d3eb", display: "flex", flexDirection: "column"}}>
-                            <Card style = {{ marginRight: "10px",marginBottom: "10px",marginLeft: "10px", borderRadius: "10px", borderColor: "black",marginTop: "5px",flex:1}}>
-                                <Typography variant="h2">{post.title}</Typography>
-                                <Box>
-                                    <img src= {(post.author.profileImage != "no profileImage" && post.author.profileImage != "") ? post.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt = "IMG" style = {{borderRadius:"50%"}} width="100px" height = "100px"/>
-                                    <Box style = {{ display: "flex", flexDirection: "column", paddingLeft: "10px", alignItems: "cen", justifyContent: "left"}}>
-                                        <Typography variant="body2">Author: {post.author.displayName}</Typography>
-                                        <Typography variant="body2">Published: {post.published.substring(0,10)}</Typography>
-                                        <Typography variant="body2">Node: {post.author.host}</Typography>
+                            {loadingPost && <CircularProgress />}
+                            {!loadingPost && <Box style={{flex: 1, display: "flex", flexDirection: "column"}}>
+                                <Card style = {{ marginRight: "10px",marginBottom: "10px",marginLeft: "10px", borderRadius: "10px", borderColor: "black",marginTop: "5px",flex:1}}>
+                                    <Typography variant="h2">{post.title}</Typography>
+                                    <Box>
+                                        <img src= {(post.author.profileImage != "no profileImage" && post.author.profileImage != "") ? post.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt = "IMG" style = {{borderRadius:"50%"}} width="100px" height = "100px"/>
+                                        <Box style = {{ display: "flex", flexDirection: "column", paddingLeft: "10px", alignItems: "cen", justifyContent: "left"}}>
+                                            <Typography variant="body2">Author: {post.author.displayName}</Typography>
+                                            <Typography variant="body2">Published: {post.published.substring(0,10)}</Typography>
+                                            <Typography variant="body2">Node: {post.author.host}</Typography>
+                                        </Box>
                                     </Box>
-                                </Box>
-                                <Typography variant="h5">Description:</Typography>
-                                <Typography variant="body2">{post.description}</Typography>
-                                <div id = "postedComment" style = {{display:"none",borderRadius:"25px",backgroundColor:"#bce3c0",width: "40%", margin: "10px", paddingLeft:"5%",marginLeft:"30%"}}>
-                                </div>
-                                <Button variant="contained" color="secondary" onClick={() => setopenPost(false)} style={{ position: "absolute", bottom: "30px", right: "30px"}}>
-                                    Close
-                                </Button>
-                            </Card>
-                            {(comments.length > 0) && <Card style = {{ marginRight: "10px",marginBottom: "10px",marginLeft: "10px", borderRadius: "10px", borderColor: "black",marginTop: "5px",flex:1, overflowY: "scroll"}}>
-                                <Typography variant="h6" style = {{textAlign:"left", paddingLeft:30,fontSize:20}}>Comments:</Typography>                                        
-                                {comments.map((comments) => (
-                                        <div style = {{display:'flex',alignItems:'center',wordWrap:"break-word"}}>
-                                            <img src= {comments.author.profileImage} alt = "" style = {{borderRadius:"50%",marginLeft:30,marginRight:15,marginBottom:10}} width={55} height = {55}/>
-                                            <Typography variant="h6" style = {{display: "inline-block",textAlign:"left", paddingLeft:15,fontSize:20}}>
-                                                {comments.author.displayName}: {comments.comment}
-                                            </Typography>
-                                        </div>
-                                    ))}
-                            </Card>}
+                                    <Typography variant="h5">Description:</Typography>
+                                    <Typography variant="body2">{post.description}</Typography>
+                                    <div id = "postedComment" style = {{display:"none",borderRadius:"25px",backgroundColor:"#bce3c0",width: "40%", margin: "10px", paddingLeft:"5%",marginLeft:"30%"}}>
+                                    </div>
+                                    <Button variant="contained" color="secondary" onClick={() => setopenPost(false)} style={{ position: "absolute", bottom: "30px", right: "30px"}}>
+                                        Close
+                                    </Button>
+                                </Card>
+                                {(comments.length > 0) && <Card style = {{ marginRight: "10px",marginBottom: "10px",marginLeft: "10px", borderRadius: "10px", borderColor: "black",marginTop: "5px",flex:1, overflowY: "scroll"}}>
+                                    <Typography variant="h6" style = {{textAlign:"left", paddingLeft:30,fontSize:20}}>Comments:</Typography>                                        
+                                    {comments.map((comments) => (
+                                            <div style = {{display:'flex',alignItems:'center',wordWrap:"break-word"}}>
+                                                <img src= {comments.author.profileImage} alt = "" style = {{borderRadius:"50%",marginLeft:30,marginRight:15,marginBottom:10}} width={55} height = {55}/>
+                                                <Typography variant="h6" style = {{display: "inline-block",textAlign:"left", paddingLeft:15,fontSize:20}}>
+                                                    {comments.author.displayName}: {comments.comment}
+                                                </Typography>
+                                            </div>
+                                        ))}
+                                </Card>}
+                            </Box>}
                         </Box>
                     )}
                 </Box>
