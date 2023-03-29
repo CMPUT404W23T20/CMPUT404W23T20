@@ -260,30 +260,66 @@ function Posts() {
         let objectType = (object.type ==="post")? "Post":"Comment"
         let objectOrigin = (objectType === "Post") ? object.origin : object.post.origin +"/comments/" + object.id
 
-        console.log("OBJECT SENT",object)
-        let data = { 
-            author: localStorage.getItem("id"),
-            post: post.id,
-            summary: `${author.username} liked your ${object.type}`,
-            objectLiked: objectType,
-            object: objectOrigin
+        if (object.author.host === "https://t20-social-distribution.herokuapp.com"){
+
+            let data = { 
+                author: localStorage.getItem("id"),
+                post: post.id,
+                summary: `${author.username} liked your ${object.type}`,
+                objectLiked: objectType,
+                object: objectOrigin
+            }
+
+            let postLike = await axios.post(path, data, {  //send this to author liked
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer "+localStorage.getItem("token")
+                }
+            });
+    
+            let inboxPath = `${getApiUrls()}/service/authors/${object.author.id}/inbox`; //send this to inbox of whoever posted
+                    await axios.post(inboxPath, postLike.data, {
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": "Bearer "+localStorage.getItem("token")
+                        }
+                    }).catch((error) => {
+                        console.log(error);
+                });
+
         }
-        let postLike = await axios.post(path, data, {
+        else{ //foreign node
+
+            let inboxPath = object.author.id+"/inbox";
+            if ( object.author.host == "https://group-13-epic-app.herokuapp.com/"){
+                inboxPath = object.author.id+"/inbox/" //send to inbox
+             }
+
+            let foreignLikeData = {
+            author:"https://t20-social-distribution.herokuapp.com/service/authors/"+ localStorage.getItem("id"),
+            object: object.id,
+            type: "Like",
+          }
+          
+          let username = "Group20"
+          let password = "jn8VWYcZDrLrkQDcVsRi"
+          let authG6 = "Basic " + btoa(username + ":" + password);
+
+          await axios.post(inboxPath, foreignLikeData, {
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": "Bearer "+localStorage.getItem("token")
+                "Authorization" : (object.author.host == path) ? "Bearer " + localStorage.getItem("token") : (object.author.host == "https://social-distribution-media.herokuapp.com/api") ? authG6 : (object.author.host == "https://cmput404-group6-instatonne.herokuapp.com") ? "Basic R3JvdXAyMDpncm91cDIwY21wdXQ0MDQ=" : ""
+
             }
+        }).catch((error) => {
+            console.log(error);
         });
 
-        let inboxPath = `${getApiUrls()}/service/authors/${object.author.id}/inbox`;
-                await axios.post(inboxPath, postLike.data, {
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": "Bearer "+localStorage.getItem("token")
-                    }
-                }).catch((error) => {
-                    console.log(error);
-            });
+
+
+        }
+
+        
     }
    
     const getPostLikes = async(post) =>{
