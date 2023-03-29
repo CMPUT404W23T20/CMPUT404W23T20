@@ -268,6 +268,7 @@ def posts(request, author_id = None, post_id = None):
                 posts = posts.filter(visibility = 'PUBLIC')
 
         if post_id:
+            
             author = Author.objects.get(id = author_id)
             posts = Post.objects.filter(author= author)
             posts = posts.filter(id = post_id)

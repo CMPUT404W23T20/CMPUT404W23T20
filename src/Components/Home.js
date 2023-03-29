@@ -1,6 +1,8 @@
 import React from 'react';
 import { Box, Button, Card,List, ListItem, TextField, Typography } from '@material-ui/core';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import IconButton from '@mui/material/IconButton';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import Nav from './Nav';
 import axios from 'axios';
 import { getTextFieldUtilityClass } from '@mui/material';
@@ -89,6 +91,7 @@ function Posts() {
 
 
         let commentList = []
+        let postLikesList = []
 
         //get all comments in the "Public Posts" header
         for (let i = 0; i < posts.length; i++){
@@ -100,10 +103,13 @@ function Posts() {
                 "Authorization": "Bearer "+localStorage.getItem("token")
             }
         });
+            
         let commentDataList = comments.data.items
         if (commentDataList == undefined) commentDataList = []
+
         for (let i = 0; i < commentDataList.length; i++ ){
             commentList.push(commentDataList[i])  
+            
         }
         }
 
@@ -251,13 +257,16 @@ function Posts() {
        //local to local like 
         let author =userInfo()
         let path = `${getApiUrls()}/service/authors/`+author.user_id+ "/liked";
-        
+        let objectType = (object.type ==="post")? "Post":"Comment"
+        let objectOrigin = (objectType === "Post") ? object.origin : object.post.origin +"/comments/" + object.id
+
+        console.log("OBJECT SENT",object)
         let data = { 
             author: localStorage.getItem("id"),
             post: post.id,
             summary: `${author.username} liked your ${object.type}`,
-            objectLiked: "Post",
-            object:object.origin
+            objectLiked: objectType,
+            object: objectOrigin
         }
         let postLike = await axios.post(path, data, {
             headers: {
@@ -275,8 +284,6 @@ function Posts() {
                 }).catch((error) => {
                     console.log(error);
             });
-        
-  
     }
    
     const getPostLikes = async(post) =>{
@@ -377,12 +384,10 @@ function Posts() {
                                         <Button variant="contained" color="primary" onClick={() => setOpenComments(true)} style={{ position: "absolute", bottom: "30px", right: "120px"}}>
                                         Comments
                                        </Button> 
-                                       <Button variant="outlined" color="secondary" startIcon={<FavoriteIcon />} onClick ={() => likeObject(post)}style={{position: "absolute", bottom: "30px", right: "400px"}}   >  
-                                        Likes
+                                       <Button variant="outlined" title = "like"color="secondary" startIcon={<FavoriteIcon />} onClick ={() => likeObject(post)}style={{position: "absolute", bottom: "30px", right: "400px"}}   >  
+                                        Like
                                         </Button>
-                                        <h2>{post.likes}</h2>
                                         
-                                      
                                     </div>
                                     
                                 )}
@@ -391,13 +396,18 @@ function Posts() {
                                 <Card style = {{ marginRight: "10px",marginBottom: "10px",marginLeft: "10px", borderRadius: "10px", borderColor: "black",marginTop: "5px",flex:1, overflowY: "scroll"}}>
                                     <TextField id="comment" label="Comment..." variant="outlined" style={{width: "75%", margin: "25px"}}/>            
                                     <Button variant="contained" color="primary" onClick ={() => postComment(document.getElementById("comment").value,post,`${post.author.id}`)}   style={{ margin: 10,position:"relative",top:"25px"}}>Comment</Button>
-                                    {(`${post.author.id}`=== localStorage.getItem("id")) ? <Typography variant="h6" style = {{textAlign:"left", paddingLeft:30,fontSize:20}}>Comments:</Typography> :<h2></h2> }                                        {Comments.map((comments) => (
+                                    {(`${post.author.id}`=== localStorage.getItem("id")) ? <Typography variant="h6" style = {{textAlign:"left", paddingLeft:30,fontSize:20}}>Comments:</Typography> :<h2></h2> }                                       
+                                         {Comments.map((comments) => (
                                             ((`${comments.post.id}` === `${post.id.split("/").pop()}`) && (`${post.author.id}`=== localStorage.getItem("id"))) ? 
                                             ( <div style = {{display:'flex',alignItems:'center',wordWrap:"break-word"}}>
                                                 <img src= {comments.author.profileImage} alt = "" style = {{borderRadius:"50%",marginLeft:30,marginRight:15,marginBottom:10}} width={55} height = {55}/>
                                                 <Typography variant="h6" style = {{display: "inline-block",textAlign:"left", paddingLeft:15,fontSize:20}}>
                                                     {comments.author.displayName}: {comments.comment}
                                                 </Typography>
+                                                <IconButton  variant="outlined" color = "secondary" aria-label="likeComment" onClick ={() => likeObject(comments)}   style = {{ marginLeft:15}}>
+                                                    <FavoriteBorderIcon />
+                                                </IconButton>
+                                               
                                             </div>
                                             ) 
                                             :(<h2></h2>)   
