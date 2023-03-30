@@ -247,13 +247,49 @@ function Posts() {
         return decode_info;
         
     };
+
+    //check if you've already sent a like object 
+    //avoid duplicates
+    const likeExists = async(object) =>{
+        let path = `${getApiUrls()}/service/authors/`+localStorage.getItem("id") + "/liked";
+        let response = await axios.get(path, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer "+localStorage.getItem("token")
+            }
+            }).catch((error) => {
+                console.log(error);
+             });
+        let items = response.data.items
+        for (let i = 0; i < items.length; i++){
+            if (items[i].object === object){
+                return true;
+            }
+        }
+        return false;
+        
+    }
     const likeObject= async(object) =>{
         /* Make 2 posts requests for a local post
          1) Add to the author's "liked" url
          2) Post to inbox (only this for foreign posts)
         */
 
-       
+       //check if like already exists
+        let existingLike = false
+        if (object.author.host === "https://t20-social-distribution.herokuapp.com"){
+            const objectURL = (object.type === "post") ? object.origin : object.post.origin +"/comments/" + object.id
+            existingLike = await(likeExists(objectURL))
+        }
+        else{ //checking using id of foreign comment/post
+            const objectLikeExists = object.id;
+            existingLike = await(likeExists(objectLikeExists))
+        }
+        
+        if (existingLike === true){ //person has already liked this
+            return //don't got through with the rest of this function
+        }
+    
         //local to local like 
         let author =userInfo()
         let path = `${getApiUrls()}/service/authors/`+author.user_id+ "/liked";
@@ -275,7 +311,7 @@ function Posts() {
                 data = { 
                     author: localStorage.getItem("id"),
                     comment: object.id,
-                    summary: `${author.username} liked your ${object.type}`,
+                    summary: `${author.username} likes your ${object.type}`,
                     objectLiked: objectType,
                     object: objectOrigin,     
                 }

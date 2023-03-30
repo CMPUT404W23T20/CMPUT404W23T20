@@ -186,7 +186,6 @@ function Inbox() {
                                                              {(`${item.objectLiked}`==="Comment") ? (<Typography>Comment: "{item.comment.comment}"</Typography>): 
                                                                 <Box>
                                                                     <Typography variant="body2">Author: {item.author.displayName}</Typography>
-                                                                    <Typography variant="body2">Published: {item.published.substring(0,10)}</Typography>
                                                                     <Typography variant="body2">Node: {item.author.host}</Typography>
                                                                 </Box>
                                                                 
