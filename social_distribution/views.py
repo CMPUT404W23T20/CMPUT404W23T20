@@ -488,6 +488,7 @@ def postLikes(request, author_id,post_id):
         serializer = LikeSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
+   
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -547,8 +548,12 @@ def inbox(request, author_id):
         for i in range(len(serializer.data['likes'])):
             like_data = LikeSerializer(Like.objects.get(id=serializer.data['likes'][i])).data
             like_data['author'] = AuthorSerializer(Author.objects.get(id=like_data['author'])).data
-            #like_data['post'] = PostSerializer(Post.objects.get(id=like_data['post'])).data
-            #like_data['post']['author'] = AuthorSerializer(Author.objects.get(id=like_data['post']['author'])).data
+
+            if like_data['post']:
+                like_data['post'] = PostSerializer(Post.objects.get(id=like_data['post'])).data
+                like_data['post']['author'] = AuthorSerializer(Author.objects.get(id=like_data['post']['author'])).data
+            elif like_data['comment']:
+                like_data['comment'] = CommentSerializer(Comment.objects.get(id=like_data['comment'])).data
             serializer.data['likes'][i] = like_data
 
         # combine all items into a single list
@@ -639,13 +644,14 @@ def inbox(request, author_id):
                 if not author:
                     # add a ghost author for remote like if it doesn't exist
                     author = Author.objects.create(id = author['id'], displayName = author['displayName'], username = author['displayName'], hidden = True, url = author['url'])
-                print("hooo")
-                #postURL = request.data['post']
-                #postId = postURL[postURL.rfind('/')+1:]
-                #post = Post.objects.filter(id = postId).first()
-                #if not post:
+              
+                postURL = request.data['post']
+                postId = postURL[postURL.rfind('/')+1:]
+                post = Post.objects.filter(id = postId).first()
+                comment = Comment.objects.get(id = request.data['comment'])
+                if not post or not comment:
                     # if post doesn't exist, then return bad request
-                 #   return Response(status=status.HTTP_400_BAD_REQUEST)
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
                 like = Like.objects.create(author = author,object=object)
             if not like:
                 # if like doesn't exist, then return bad request

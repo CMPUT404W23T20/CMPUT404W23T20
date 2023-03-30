@@ -248,26 +248,39 @@ function Posts() {
         
     };
     const likeObject= async(object) =>{
-        /* Make 2 posts requests
+        /* Make 2 posts requests for a local post
          1) Add to the author's "liked" url
-         2) Post to inbox 
+         2) Post to inbox (only this for foreign posts)
         */
 
-       //local to local like 
+       
+        //local to local like 
         let author =userInfo()
         let path = `${getApiUrls()}/service/authors/`+author.user_id+ "/liked";
         let objectType = (object.type ==="post")? "Post":"Comment"
         let objectOrigin = (objectType === "Post") ? object.origin : object.post.origin +"/comments/" + object.id
 
         if (object.author.host === "https://t20-social-distribution.herokuapp.com"){
-
-            let data = { 
-                author: localStorage.getItem("id"),
-                post: post.id,
-                summary: `${author.username} liked your ${object.type}`,
-                objectLiked: objectType,
-                object: objectOrigin
+            let data ={}
+            if (object.type === "post") { //liked post
+                 data = { 
+                    author: localStorage.getItem("id"),
+                    post:object.id,
+                    summary: `${author.username} likes your ${object.type}`,
+                    objectLiked: objectType,
+                    object: objectOrigin,             
+                }
             }
+            else{ //liked comment
+                data = { 
+                    author: localStorage.getItem("id"),
+                    comment: object.id,
+                    summary: `${author.username} liked your ${object.type}`,
+                    objectLiked: objectType,
+                    object: objectOrigin,     
+                }
+            }
+            
 
             let postLike = await axios.post(path, data, {  //send this to author liked
                 headers: {

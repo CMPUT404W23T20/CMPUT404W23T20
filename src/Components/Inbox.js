@@ -4,6 +4,7 @@ import Nav from './Nav';
 import axios from 'axios';
 import { getApiUrls } from '../utils/utils';
 import CircularProgress from '@mui/material/CircularProgress';
+import { TypeSpecimenOutlined } from '@mui/icons-material';
 
 
 function Inbox() {
@@ -176,9 +177,25 @@ function Inbox() {
                                         </Button>
                                     </Card>)}    
                                     {item.type.toLowerCase() === "like" && (
-                                                <Box>
-                                                    <Typography variant="h5">{item.summary}</Typography>
-                                                </Box>
+                                                <Card style = {{ width: "100%"}} > 
+                                                    <Box style = {{ paddingLeft: 2}}>
+                                                        <Box style = {{ display: "flex", flexDirection: "row", marginTop: "10px", marginLeft: "10px"}}>
+                                                        <img src= {(item.author.profileImage != "no profileImage" && item.author.profileImage != "") ? item.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt = "IMG" style = {{borderRadius:"50%"}} width="100px" height = "100px"/>   
+                                                        <Box style = {{ display: "flex", flexDirection: "column", paddingLeft: "10px"}} >
+                                                            <Typography variant="h5">{item.summary}</Typography>
+                                                             {(`${item.objectLiked}`==="Comment") ? (<Typography>Comment: "{item.comment.comment}"</Typography>): 
+                                                                <Box>
+                                                                    <Typography variant="body2">Author: {item.author.displayName}</Typography>
+                                                                    <Typography variant="body2">Published: {item.published.substring(0,10)}</Typography>
+                                                                    <Typography variant="body2">Node: {item.author.host}</Typography>
+                                                                </Box>
+                                                                
+                                                             }
+                                                        </Box>
+                                                        </Box>
+                                                        
+                                                    </Box>
+                                                </Card>
                                         )}
                                 </ListItem>
                             ))}
