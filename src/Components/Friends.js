@@ -235,8 +235,8 @@ function Friends() {
         otherUsersList = otherUsersList.concat(group6Users);
         let group13Users = await getGroup13Users();
         otherUsersList = otherUsersList.concat(group13Users);
-        let group18Users = await getGroup18Users();
-        otherUsersList = otherUsersList.concat(group18Users);
+        //let group18Users = await getGroup18Users();
+        //otherUsersList = otherUsersList.concat(group18Users);
         
 
         // remove friends from other users

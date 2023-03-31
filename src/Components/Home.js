@@ -1,10 +1,12 @@
 import React from 'react';
-import { Box, Button, Card, List, ListItem, TextField, Typography } from '@material-ui/core';
+import { Box, Button, Card, List, ListItem, TextField, Typography, MenuItem, InputLabel, ListItemText } from '@material-ui/core';
 import Nav from './Nav';
 import axios from 'axios';
-import { getTextFieldUtilityClass } from '@mui/material';
+import { FormControl, Modal, getTextFieldUtilityClass } from '@mui/material';
 import { getApiUrls } from '../utils/utils';
 import CircularProgress from '@mui/material/CircularProgress';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import Checkbox from '@mui/material/Checkbox';
 
 function Posts() {
     const [Posts, setPosts] = React.useState([]);
@@ -12,6 +14,56 @@ function Posts() {
     const [Comments, setComments] = React.useState([]);
     const [loadingFollowing, setLoadingFollowing] = React.useState(false);
     const [loadingPosts, setLoadingPosts] = React.useState(false);
+    const [friends, setFriends] = React.useState([]);
+    const [friend, setFriend] = React.useState([]);
+
+    const getFriends = async () => {
+        // gets all friends for use in creating posts
+        let path = `${getApiUrls()}/service/authors/${localStorage.getItem("id")}/friends`;
+        let response = await axios.get(path, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        });
+        let friends = response.data.items;
+        setFriends(friends);
+    }
+
+    const handleRepost = async (post) => {
+        console.log("repost", post)
+        console.log("sending to", friend)
+        // send to all friend with display name in friend
+        for (let i = 0; i < friend.length; i++) {
+            // get id of friend in friends with display name = friend[i]
+            let id = ""
+            for (let j = 0; j < friends.length; j++) {
+                if (friends[j].displayName == friend[i]) {
+                    id = friends[j].id
+                    break
+                }
+            }
+            // send post to friend
+            let path = `${getApiUrls()}/service/authors/${id}/inbox`;
+            let response = await axios.post(path, post, {
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": "Bearer " + localStorage.getItem("token")
+                        }
+                    });
+            console.log(response)
+        }
+    }
+
+    const handleChange = (event) => {
+        const {
+          target: { value },
+        } = event;
+        setFriend(
+          // On autofill we get a stringified value.
+          typeof value === 'string' ? value.split(',') : value,
+        );
+      };
 
     const getFeed = async () => {
         /* 1.get all our friends put into a list
@@ -138,6 +190,7 @@ function Posts() {
     React.useEffect(() => {
         if (localStorage.getItem("token") != null) {
             getFeed()
+            getFriends()
         }
     }, []);
 
@@ -224,13 +277,17 @@ function Posts() {
             function () {
                 setCommentPosted(false);
             }, 5000);
+    }
 
-
+    const Repost = async (post) => {
+        console.log(post)
     }
 
     const [openPost, setopenPost] = React.useState(false);
     const [post, setPost] = React.useState([{}]);
     const [openComments, setOpenComments] = React.useState(false);
+    const [selectedFriends, setSelectedFriends] = React.useState();
+    const [repostModal, setRepostModal] = React.useState(false);
     return (
         <Box>
             <Box className="App" style={{ display: "flex", flexDirection: "row", height: "100vh", width: "100vw", alignItems: "left", justifyContent: "left" }}>
@@ -245,7 +302,7 @@ function Posts() {
                                 {!loadingFollowing && <CircularProgress />}
                                 {loadingFollowing && followingPosts.map((post) => (
                                     <ListItem key={post.id} onClick={() => { setopenPost(true); setPost(post) }}>
-                                        <Card style={{ width: "100%" }}>
+                                        <Card style={{ width: "100%", display: "flex", flexDirection: "row", alignItems: "center" }}>
                                             <Box style={{ paddingLeft: 2 }}>
                                                 {(post.type === 'post') && (<Box style={{ display: "flex", flexDirection: "row", marginTop: "10px", marginLeft: "10px" }}>
                                                     <img src={(post.author.profileImage != "no profileImage" && post.author.profileImage != "") ? post.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt="IMG" style={{ borderRadius: "50%" }} width="100px" height="100px" />
@@ -319,6 +376,7 @@ function Posts() {
                                         Comments
                                     </Button>
                                 )}
+                                <Button onClick = {() => {setRepostModal(true)}} style={{ position: "absolute", bottom: "30px", right: openComments ? "120px" : "250px" }} color='primary' variant='contained'>Repost</Button>
                             </Card>
                             {openComments && (
                                 <Card style={{ marginRight: "10px", marginBottom: "10px", marginLeft: "10px", borderRadius: "10px", borderColor: "black", marginTop: "5px", flex: 1, overflowY: "scroll" }}>
@@ -341,6 +399,25 @@ function Posts() {
                     )}
                 </Box>
             </Box>
+            <Modal open={repostModal} onClose={() => {setRepostModal(false); setFriend([])}} style={{ display: "flex", alignItems: "center", justifyContent: "center" }} aria-labelledby="simple-modal-title" aria-describedby="simple-modal-description">
+                <Box style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh" }}>
+                    <Card style={{ padding: "20px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                        <Typography variant="h4">Repost</Typography>
+                        <FormControl style={{ width: "100%", margin: "10px" }}>
+                            <InputLabel htmlFor="repostTitle">friend</InputLabel>
+                            <Select id="repostTitle" label="friend" renderValue={(selected) => selected.join(', ')} multiple MenuProps = {{ PaperProps: { style: { maxHeight: 48 * 4.5 + 8, width: 250 } } }} onChange ={handleChange} value={friend}>
+                                {friends.map((friendItem) => (
+                                    <MenuItem key={friendItem.id} value={friendItem.displayName}>
+                                        <Checkbox checked={friend.indexOf(friendItem.displayName) > -1} />
+                                        <ListItemText primary={friendItem.displayName} />
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                        <Button variant="contained" color="primary" onClick={() => handleRepost(post)} style={{ margin: 10, position: "relative", top: "25px" }}>Repost</Button>
+                    </Card>
+                </Box>
+            </Modal>
         </Box>
     )
 }

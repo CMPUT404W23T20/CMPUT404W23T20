@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, Card, List, ListItem, TextField, Typography, FormControlLabel, Checkbox } from '@material-ui/core';
+import { Box, Button, Card, List, ListItem, TextField, Typography, FormControlLabel, Checkbox, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
 import Nav from './Nav';
 import axios from 'axios';
 import { getApiUrls } from '../utils/utils';
@@ -7,6 +7,20 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 function Posts() {
     const [Comments, setComments] = React.useState([]);
+    const [Friends, setFriends] = React.useState([]);
+
+    const getFriends = async () => {
+        // gets all friends for use in creating posts
+        let path = `${getApiUrls()}/service/authors/${localStorage.getItem("id")}/friends`;
+        let response = await axios.get(path, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        });
+        let friends = response.data.items;
+        setFriends(friends);
+    }
 
     const getposts = async () => {
         let path = `${getApiUrls()}/service/authors/${localStorage.getItem("id")}/posts`;
@@ -50,6 +64,7 @@ function Posts() {
             setPosts(data);
             setLoadingPosts(true);
         });
+        getFriends();
     }, []);
 
     const CreatePost = async (title, description, imageData) => {
@@ -72,33 +87,46 @@ function Posts() {
             }
         });
         console.log(postResponse.data);
+        // if post is not unlisted send to followers/friends
+        if (!unlisted) {
+            // if visility is set to friends and a friend is selected, send post to friend
+            if (visibility && friend != "") {
+                path = `${getApiUrls()}/service/authors/${friend}/inbox`;
+                await axios.post(path, postResponse.data, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": token
+                    }
+                });
+            } else {
+                // get followers
+                path = `${getApiUrls()}/service/authors/${localStorage.getItem("id")}/followers`;
+                let followersResponse = await axios.get(path, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": token
+                    }
+                });
+                console.log(followersResponse.data);
 
-        // get followers
-        path = `${getApiUrls()}/service/authors/${localStorage.getItem("id")}/followers`;
-        let followersResponse = await axios.get(path, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": token
-            }
-        });
-        console.log(followersResponse.data);
-
-        // send post to inbox of followers
-        for (let follower of followersResponse.data.items) {
-            path = `${getApiUrls()}/service/authors/${follower.id}/inbox`;
-            await axios.post(path, postResponse.data, {
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": token
+                // send post to inbox of followers
+                for (let follower of followersResponse.data.items) {
+                    path = `${getApiUrls()}/service/authors/${follower.id}/inbox`;
+                    await axios.post(path, postResponse.data, {
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": token
+                        }
+                    });
                 }
-            });
+            }
         }
-
         setcreatePost(false);
         getposts().then((data) => {
             setPosts(data);
         }
         );
+        setFriend("");
     }
 
     const HandleDelete = async () => {
@@ -154,6 +182,7 @@ function Posts() {
     const [unlisted, setUnlisted] = React.useState(false);
     const [visibility, setVisibility] = React.useState(false);
     const [loadingPosts, setLoadingPosts] = React.useState(false);
+    const [friend, setFriend] = React.useState();
     return (
         <Box>
             <Box className="App" style={{ display: "flex", flexDirection: "row", height: "100vh", width: "100vw", alignItems: "left", justifyContent: "left" }}>
@@ -255,6 +284,11 @@ function Posts() {
                                 <input type="file" accept="image/*" onChange={handleImageUpload} />
                                 <FormControlLabel control={<Checkbox id="unlisted" name="unlisted" />} onChange={() => setUnlisted(!unlisted)} label="Unlisted" />
                                 <FormControlLabel control={<Checkbox id="visibility" name="visibility" onChange={() => setVisibility(!visibility)} />} label="Friends Only" />
+                                {visibility && <Select id = "select" label = "Friend" value={friend} onChange={(e) => setFriend(e.target.value)} style={{ width: "95%", margin: "25px" }}>
+                                    {Friends.map((friend) => (
+                                        <MenuItem value={friend.id}>{friend.displayName}</MenuItem>
+                                    ))}
+                                </Select>}
                             </Box>
                             <Box style={{ alignSelf: "flex-end" }}>
                                 <Button variant="contained" color="primary" onClick={() => CreatePost(document.getElementById("title").value, document.getElementById("description").value, imageData)} style={{ margin: 10, alignSelf: "flex-end" }}>

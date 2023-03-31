@@ -240,7 +240,7 @@ def posts(request, author_id = None, post_id = None):
             return Response(response, status=status.HTTP_200_OK)
         
         author = Author.objects.get(id = author_id)
-        posts = Post.objects.filter(author= author)
+        posts = Post.objects.filter(author= author, visibility = 'PUBLIC')
         try:
             loggedin_author = JWTAuth.authenticate(request)
         except:
