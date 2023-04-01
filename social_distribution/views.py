@@ -243,24 +243,7 @@ def posts(request, author_id = None, post_id = None):
                 "items": serializer.data
             }
             return Response(response, status=status.HTTP_200_OK)
-        if author_id and not post_id:  
-            author = Author.objects.get(id = author_id)
-            posts = Post.objects.filter(author= author)
-            serializer = PostSerializer(posts, many=True)
-            for post in serializer.data:
-                #get all comments w/ that post
-                count = Comment.objects.filter(post = post['id']).count()
-                post['count'] = count
-                #get all likes
-                likes = Like.objects.filter(object = post['origin']+post['id']).count()
-                post['likes'] = likes               
-            response = {
-                "type": "posts",
-                "items": serializer.data
-            }
-            return Response(response, status=status.HTTP_200_OK)
-
-        
+         
         author = Author.objects.get(id = author_id)
         posts = Post.objects.filter(author= author, visibility = 'PUBLIC')
         try:
@@ -298,6 +281,12 @@ def posts(request, author_id = None, post_id = None):
             post['author'] = AuthorSerializer(Author.objects.get(id = post['author'])).data
             post['author']['url'] = post['author']['url'] + str(post['author']['id'])
             post['origin'] = post['origin'] + str(post['id'])
+            count = Comment.objects.filter(post = post['id']).count()
+            post['count'] = count
+                #get all likes
+            likes = Like.objects.filter(object = post['origin']+post['id']).count()
+            post['likes'] = likes   
+
         response = {
             "type": "posts",
             "items": serializer.data

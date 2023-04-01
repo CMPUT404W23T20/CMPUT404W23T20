@@ -104,6 +104,7 @@ function Posts() {
                 id = id.replace(/-/g, '');
                 path = followee.host + "service/authors/" + id + "/posts";
             }
+            console.log("path",path)
             // for when group 6 has authorization working
             // (followee.host == "https://cmput404-group6-instatonne.herokuapp.com") ? "Basic R3JvdXAyMDpncm91cDIwY21wdXQ0MDQ=" : ""
             let followingPosts = await axios.get(path, {
@@ -157,13 +158,11 @@ function Posts() {
                     "Authorization": "Bearer " + localStorage.getItem("token")
                 }
             });
-                
-        let commentDataList = comments.data.items
+            let commentDataList = comments.data.items
             if (commentDataList == undefined) commentDataList = []
     
         for (let i = 0; i < commentDataList.length; i++) {
                 commentList.push(commentDataList[i])
-                
         }
         }
 
@@ -189,8 +188,6 @@ function Posts() {
 
 
         }
-        //getting all comments in the "Following" header
-        setPublicComments(publicComments)
         setComments(commentList)
     }
 
