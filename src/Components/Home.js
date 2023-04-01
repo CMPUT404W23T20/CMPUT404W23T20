@@ -31,6 +31,7 @@ function Posts() {
     }
 
     const handleRepost = async (post) => {
+        post.source = `${getApiUrls()}/service/authors/` + localStorage.getItem("id")
         console.log("repost", post)
         console.log("sending to", friend)
         // send to all friend with display name in friend
@@ -279,9 +280,6 @@ function Posts() {
             }, 5000);
     }
 
-    const Repost = async (post) => {
-        console.log(post)
-    }
 
     const [openPost, setopenPost] = React.useState(false);
     const [post, setPost] = React.useState([{}]);

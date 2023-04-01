@@ -10,6 +10,7 @@ function Inbox() {
     const [loading, setLoading] = React.useState(true);
     const get_inbox_items = async () => {
         setLoading(true);
+        // get inbox items
         let path = `${getApiUrls()}/service/authors/${localStorage.getItem("id")}/inbox`;
         let response = await axios.get(path, {
             headers: {
@@ -27,9 +28,49 @@ function Inbox() {
                     headers: {
                         "Content-Type": "application/json",
                     }
+                }).catch((error) => {
+                    // skip this post
+                    console.log(error);
                 });
                 // replace postURL with post object
-                responseItems[i] = postResponse.data;
+                if (postResponse) {
+                    responseItems[i] = postResponse.data;
+                }
+            }
+        }
+        // check if follow request is already accepted
+        for (let i = 0; i < responseItems.length; i++) {
+            if (responseItems[i].type === "follow") {
+                let path = `${getApiUrls()}/service/authors/${responseItems[i].follower.id}/followers/${localStorage.getItem("id")}`;
+                let response = await axios.get(path, {
+                    headers: {
+                        "Content-Type": "application/json",
+                    }
+                }).catch((error) => {
+                    console.log(error);
+                });
+                if (response.data) {
+                    // pop this item from the inbox
+                    responseItems.splice(i, 1);
+                    i--;
+                }
+            }
+        }
+        // get all source authors data
+        for (let i = 0; i < responseItems.length; i++) {
+            if (responseItems[i].type === "post") {
+                if (!responseItems[i].source.includes(responseItems[i].origin)) {
+                    let response = await axios.get(responseItems[i].source, {
+                        headers: {
+                            "Content-Type": "application/json",
+                        }
+                    }).catch((error) => {
+                        console.log(error);
+                    });
+                    if (response && response.data) {
+                        responseItems[i].source = response.data;
+                    }
+                }
             }
         }
         console.log(responseItems);
@@ -45,13 +86,13 @@ function Inbox() {
                 "Authorization": "Bearer " + localStorage.getItem("token")
             }
         });
-        console.log(response.data);
         get_inbox_items().then((data) => {
             setItems(data);
         });
     }
 
     const followBack = async (follower) => {
+        // add follow back to the follower
         let userId = localStorage.getItem("id");
         let path = `${getApiUrls()}/service/authors/${follower.id}/followers/${userId}`;
         let response = await axios.put(path, {
@@ -60,15 +101,8 @@ function Inbox() {
                 "Authorization": "Bearer " + localStorage.getItem("token")
             }
         });
-
-        path = `${getApiUrls()}/service/authors/${follower.id}/inbox`;
-        await axios.post(path, response.data, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            }
-        });
-
+        // refresh inbox
+        setItems( await get_inbox_items());
         return response.data;
     }
 
@@ -140,6 +174,7 @@ function Inbox() {
                                                 <img src={(item.author.profileImage != "no profileImage" && item.author.profileImage != "") ? item.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt="IMG" style={{ borderRadius: "50%" }} width="100px" height="100px" />
                                                 <Box style={{ display: "flex", flexDirection: "column", paddingLeft: "10px" }}>
                                                     <Typography variant="h5">Title: {item.title}</Typography>
+                                                    {(item.source != item.origin) && (item.source != "No source") && (item.source != null) && (<Typography variant="body2">Sent By: {item.source.author.displayName}</Typography>)}
                                                     <Typography variant="body2">Author: {item.author.displayName}</Typography>
                                                     <Typography variant="body2">Published: {item.published.substring(0, 10)}</Typography>
                                                     <Typography variant="body2">Node: {item.author.host}</Typography>
@@ -233,3 +268,6 @@ function Inbox() {
 }
 
 export default Inbox;
+
+
+

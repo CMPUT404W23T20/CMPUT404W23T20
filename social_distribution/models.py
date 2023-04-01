@@ -86,6 +86,7 @@ class Like(models.Model):
 class PostURL(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     url = models.CharField(max_length=200)
+    source = models.CharField(max_length=200, default=None)
     type = models.CharField(max_length=200, default="postURL")
 
 class Inbox(models.Model):
