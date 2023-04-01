@@ -19,8 +19,6 @@ from django.db.models import Q
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from .authentication import JWTAuth, HTTPBasicAuth   # import the JWTAuthentication backend
-from rest_framework.exceptions import AuthenticationFailed
-
 
 
 # need to be changed to proper format
@@ -54,8 +52,8 @@ def authors(request, author_id = None):
     # check BasicAuth for remote users
     try:
         HTTPBasicAuth.authenticate(request)
-    except AuthenticationFailed as e:
-        return Response({'error': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+    except:
+        return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
 
     if request.method == 'GET':
         # get all authors where hidden is false
@@ -109,8 +107,8 @@ def followers(request, author_id = None, follower_id = None):
     # check BasicAuth for remote users
     try:
         HTTPBasicAuth.authenticate(request)
-    except AuthenticationFailed as e:
-        return Response({'error': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+    except:
+        return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
 
     if request.method == 'GET':
         if not follower_id:
@@ -172,8 +170,8 @@ def following(request, author_id):
     # check BasicAuth for remote users
     try:
         HTTPBasicAuth.authenticate(request)
-    except AuthenticationFailed as e:
-        return Response({'error': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+    except:
+        return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
 
     if request.method == 'GET':
         # get all authors that author_id follows
@@ -195,8 +193,8 @@ def friends(request, author_id):
     # check BasicAuth for remote users
     try:
         HTTPBasicAuth.authenticate(request)
-    except AuthenticationFailed as e:
-        return Response({'error': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+    except:
+        return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
 
     if request.method == 'GET':
         # return users who follow author_id and author_id follows
@@ -222,11 +220,11 @@ def posts(request, author_id = None, post_id = None):
     # check BasicAuth for remote users
     try:
         HTTPBasicAuth.authenticate(request)
-    except AuthenticationFailed as e:
-        return Response({'error': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+    except:
+        return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
 
     if request.method == 'GET':
-        if not author_id:
+        if not author_id:  
             # get all public posts
             posts = Post.objects.all()
             posts = posts.filter(visibility = 'PUBLIC')
@@ -235,11 +233,33 @@ def posts(request, author_id = None, post_id = None):
                 post['author'] = AuthorSerializer(Author.objects.get(id = post['author'])).data
                 post['author']['url'] = post['author']['url'] + str(post['author']['id'])
                 post['origin'] = post['origin'] + str(post['id'])
+
+                #comments
+                count = Comment.objects.filter(post = post['id']).count()
+                post['count'] = count
+                 
             response = {
                 "type": "posts",
                 "items": serializer.data
             }
             return Response(response, status=status.HTTP_200_OK)
+        if author_id and not post_id:  
+            author = Author.objects.get(id = author_id)
+            posts = Post.objects.filter(author= author)
+            serializer = PostSerializer(posts, many=True)
+            for post in serializer.data:
+                #get all comments w/ that post
+                count = Comment.objects.filter(post = post['id']).count()
+                post['count'] = count
+                #get all likes
+                likes = Like.objects.filter(object = post['origin']+post['id']).count()
+                post['likes'] = likes               
+            response = {
+                "type": "posts",
+                "items": serializer.data
+            }
+            return Response(response, status=status.HTTP_200_OK)
+
         
         author = Author.objects.get(id = author_id)
         posts = Post.objects.filter(author= author, visibility = 'PUBLIC')
@@ -253,11 +273,24 @@ def posts(request, author_id = None, post_id = None):
                 posts = posts.filter(visibility = 'PUBLIC')
 
         if post_id:
+            
+            author = Author.objects.get(id = author_id)
+            posts = Post.objects.filter(author= author)
             posts = posts.filter(id = post_id)
             posts = PostSerializer(posts, many=True).data
             posts[0]['author'] = AuthorSerializer(Author.objects.get(id = posts[0]['author'])).data
             posts[0]['author']['url'] = posts[0]['author']['url'] + str(posts[0]['author']['id'])
             posts[0]['origin'] = posts[0]['origin'] + str(posts[0]['id'])
+
+            #find all like objects that have the object same as id
+            fullRequestPath  = request.get_host() +request.path
+            likes = Like.objects.filter(object = fullRequestPath)
+            posts[0]['likes'] = likes.count()
+
+            #find all the comments that are associated with that post and count
+            count = Comment.objects.filter(post =post_id).count()
+            posts[0]['count'] = count
+        
             return Response(posts[0], status=status.HTTP_200_OK)
         
         serializer = PostSerializer(posts, many=True)
@@ -317,8 +350,8 @@ def comments(request, author_id, post_id,comment_id=None):
     # check BasicAuth for remote users
     try:
         HTTPBasicAuth.authenticate(request)
-    except AuthenticationFailed as e:
-        return Response({'error': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+    except:
+        return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
 
     if request.method == 'GET':
         comments = Comment.objects.filter(post = post_id)
@@ -359,58 +392,119 @@ def comments(request, author_id, post_id,comment_id=None):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+@api_view(['GET','POST'])
+def authorLiked(request, author_id):
+    try:
+        HTTPBasicAuth.authenticate(request)
+    except:
+        return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
 
+    if request.method == 'GET':
+        likes =  Like.objects.filter(author = author_id)
+        items = []
+        serializer = LikeSerializer(likes,many=True)
+        for like in serializer.data:
+            like['author'] = AuthorSerializer(Author.objects.get(id = like['author'])).data
+            items.append(like)
+        response = {
+            "type": "liked",
+            "items":items,
+        }
+        return Response(response, status=status.HTTP_200_OK)
+    elif request.method == 'POST':
+        loggedin_author = JWTAuth.authenticate(request)
+        author = Author.objects.get(id = loggedin_author['id'])
+        data = request.data
+        data['author'] = author.id
+        serializer = LikeSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+     
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+   
+  
 
 @api_view(['GET', 'POST', 'DELETE'])
-def commentLikes(request, comment_id):
+def commentLikes(request,author_id,post_id,comment_id):
     # check BasicAuth for remote users
     try:
         HTTPBasicAuth.authenticate(request)
-    except AuthenticationFailed as e:
-        return Response({'error': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
-
+    except:
+        return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
     if request.method == 'GET':
-        return Response("Not implemented", status=status.HTTP_501_NOT_IMPLEMENTED)
+        path = "https://t20-social-distribution.herokuapp.com/service/authors/"+author_id+"/posts/"+post_id+"/comments/"+comment_id
+        likes =  Like.objects.filter(object = path)
+        items = []
+        serializer = LikeSerializer(likes,many=True)
+
+        for like in serializer.data:
+            like['author'] = AuthorSerializer(Author.objects.get(id = like['author'])).data
+            items.append(like)
+        response = {
+            "type": "likes",
+            "items":items,
+        }
+        return Response(response, status=status.HTTP_200_OK)
     elif request.method == 'POST':
-        return Response("Not implemented", status=status.HTTP_501_NOT_IMPLEMENTED)
+        loggedin_author = JWTAuth.authenticate(request)
+        author = Author.objects.get(id = loggedin_author['id'])
+        data = request.data
+        data['author'] = author.id
+        serializer = LikeSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+     
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     elif request.method == 'DELETE':
         return Response("Not implemented", status=status.HTTP_501_NOT_IMPLEMENTED)
     
-@api_view(['GET'])
-def likedPosts(request, author_id):
+@api_view(['GET','POST'])
+def postLikes(request, author_id,post_id):
     # check BasicAuth for remote users
     try:
         HTTPBasicAuth.authenticate(request)
-    except AuthenticationFailed as e:
-        return Response({'error': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
-
+    except:
+        return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
+    
     if request.method == 'GET':
-        likes = Like.objects.filter(author = author_id)
+        path = "https://t20-social-distribution.herokuapp.com/service/authors/"+author_id+"/posts/"+post_id
+        likes =  Like.objects.filter(object = path)
         items = []
-        for like in likes:
-            if like.post != None:
-                post = PostSerializer(Post.objects.get(id = like.post.id)).data
-                post['author'] = AuthorSerializer(Author.objects.get(id = post['author'])).data
-                post['author']['url'] = post['author']['url'] + str(post['author']['id'])
-                items.append(post)
-            elif like.comment != None:
-                comment = CommentSerializer(Comment.objects.get(id = like.comment.id)).data
-                comment['author'] = AuthorSerializer(Author.objects.get(id = comment['author'])).data
-                comment['author']['url'] = comment['author']['url'] + str(comment['author']['id'])
-                comment['post'] = PostSerializer(Post.objects.get(id = comment['post'])).data
-                comment['post']['origin'] = comment['post']['origin'] + str(comment['post']['id'])
-                comment['post']['author'] = AuthorSerializer(Author.objects.get(id = comment['post']['author'])).data
-                comment['post']['author']['url'] = comment['post']['author']['url'] + str(comment['post']['author']['id'])
-                items.append(comment)
-        return Response(items, status=status.HTTP_200_OK)
+        serializer = LikeSerializer(likes,many=True)
+        
+        for like in serializer.data:
+            like['author'] = AuthorSerializer(Author.objects.get(id = like['author'])).data
+            items.append(like)
+        response = {
+            "type": "likes",
+            "items":items,
+        }
+        return Response(response, status=status.HTTP_200_OK)
+    
+    elif request.method == 'POST':
+        loggedin_author = JWTAuth.authenticate(request)
+        author = Author.objects.get(id = loggedin_author['id'])
+        data = request.data
+        data['author'] = author.id
+        serializer = LikeSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+   
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 @api_view(['GET', 'POST', 'DELETE'])
 def inbox(request, author_id):
     # check BasicAuth for remote users
     try:
         HTTPBasicAuth.authenticate(request)
-    except AuthenticationFailed as e:
-        return Response({'error': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+    except:
+        return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
 
     if request.method == 'GET':
         # get all inbox items for author
@@ -421,12 +515,14 @@ def inbox(request, author_id):
         serializer = InboxSerializer(inbox)
 
         # get author data and add to serializer
+     
         author_data = AuthorSerializer(Author.objects.get(id=serializer.data['author'])).data
         serializer.data['author'] = author_data 
 
         #return Response(serializer.data, status=status.HTTP_200_OK)
 
         # process postUrls
+    
         for i in range(len(serializer.data['postURLs'])):
             posURL = PostURLSerializer(PostURL.objects.get(id=serializer.data['postURLs'][i])).data
             serializer.data['postURLs'][i] = posURL
@@ -456,8 +552,12 @@ def inbox(request, author_id):
         for i in range(len(serializer.data['likes'])):
             like_data = LikeSerializer(Like.objects.get(id=serializer.data['likes'][i])).data
             like_data['author'] = AuthorSerializer(Author.objects.get(id=like_data['author'])).data
-            like_data['post'] = PostSerializer(Post.objects.get(id=like_data['post'])).data
-            like_data['post']['author'] = AuthorSerializer(Author.objects.get(id=like_data['post']['author'])).data
+
+            if like_data['post']:
+                like_data['post'] = PostSerializer(Post.objects.get(id=like_data['post'])).data
+                like_data['post']['author'] = AuthorSerializer(Author.objects.get(id=like_data['post']['author'])).data
+            elif like_data['comment']:
+                like_data['comment'] = CommentSerializer(Comment.objects.get(id=like_data['comment'])).data
             serializer.data['likes'][i] = like_data
 
         # combine all items into a single list
@@ -518,14 +618,11 @@ def inbox(request, author_id):
             
             if not follower:
                 # if follower doesn't exist, then the follow is remote and need to check if we need to add ghost
-                actor['username'] = actor['displayName']
-                actor['hidden'] = True
-                followerSerializer = AuthorSerializer(data = actor)
-                
+                followerSerializer = AuthorSerializer(actor)
                 if followerSerializer.is_valid():
                     followerSerializer.save()
                 else:
-                    return Response(followerSerializer.data ,status=status.HTTP_400_BAD_REQUEST)
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
             follower = Author.objects.get(id = actor['id'])
             summary = follower.displayName + ' is now following ' + author.displayName
             # check if follow already exists
@@ -553,13 +650,15 @@ def inbox(request, author_id):
                 if not author:
                     # add a ghost author for remote like if it doesn't exist
                     author = Author.objects.create(id = author['id'], displayName = author['displayName'], username = author['displayName'], hidden = True, url = author['url'])
+              
                 postURL = request.data['post']
                 postId = postURL[postURL.rfind('/')+1:]
                 post = Post.objects.filter(id = postId).first()
-                if not post:
+                comment = Comment.objects.get(id = request.data['comment'])
+                if not post or not comment:
                     # if post doesn't exist, then return bad request
                     return Response(status=status.HTTP_400_BAD_REQUEST)
-                like = Like.objects.create(author = author, post = post)
+                like = Like.objects.create(author = author,object=object)
             if not like:
                 # if like doesn't exist, then return bad request
                 return Response(status=status.HTTP_400_BAD_REQUEST)
