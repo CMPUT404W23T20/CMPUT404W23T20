@@ -417,7 +417,7 @@ function Posts() {
 
             if (object.type.toLowerCase() === "comment"){
                
-                let inboxPath = `${getApiUrls()}/service/authors/${object.author.id}/inbox`; //send this to inbox of whoever posted
+                let inboxPath = `https://t20-social-distribution.herokuapp.com/service/authors/${object.author.id}/inbox`; //send this to inbox of whoever posted
                 await axios.post(inboxPath, foreignLikeData, {
                     headers: {
                         "Content-Type": "application/json",
