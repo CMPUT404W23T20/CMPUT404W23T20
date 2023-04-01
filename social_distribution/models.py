@@ -55,6 +55,7 @@ class Post(models.Model):
     origin = models.CharField(max_length=200, default= "no origin")
     description = models.CharField(max_length=2000, default="No description")
     contentType = models.CharField(max_length=200, default="text/plain")
+    image_data = models.CharField(max_length=100000, blank=True, null=True)
     author = models.ForeignKey(Author, on_delete=models.CASCADE, default=1)
     authorName = models.CharField(max_length=200, default="No authorName")
     categories = models.CharField(max_length=200, default="No categories")
@@ -97,6 +98,7 @@ class Like(models.Model):
 class PostURL(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     url = models.CharField(max_length=200)
+    source = models.CharField(max_length=200, default=None)
     type = models.CharField(max_length=200, default="postURL")
 
 class Inbox(models.Model):

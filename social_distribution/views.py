@@ -258,6 +258,9 @@ def posts(request, author_id = None, post_id = None):
             }
             return Response(response, status=status.HTTP_200_OK)
 
+        
+        author = Author.objects.get(id = author_id)
+        posts = Post.objects.filter(author= author, visibility = 'PUBLIC')
         try:
             loggedin_author = JWTAuth.authenticate(request)
         except:
@@ -575,16 +578,18 @@ def inbox(request, author_id):
 
         if request.data['type'].lower() == 'post':
             # add post to inbox remote or local
+            source = request.data['source']
             postData = request.data
             id = postData['id']
             id = id[id.rfind('/')+1:]
             post = Post.objects.filter(id = id).first()
-            if post:
+            if "https://t20-social-distribution.herokuapp.com" in postData['origin'] or id == postData['id']:
                 # if post exists, then it is a local post
-                inbox.posts.add(post)
+                postURL = PostURL.objects.create(url = postData['origin'] + postData['id'], source = source)
+                inbox.postURLs.add(postURL)
             else:
                 # if post does not exist, then it is a remote post
-                postURL = PostURL.objects.create(url = postData['id'])
+                postURL = PostURL.objects.create(url = postData['id'], source = source)
                 inbox.postURLs.add(postURL)
             inbox.save()
             return Response(status=status.HTTP_200_OK)
