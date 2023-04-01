@@ -16,6 +16,7 @@ function Posts() {
     const [Posts, setPosts] = React.useState([]);
     const [followingPosts, setFollowingPosts] = React.useState([]);
     const [Comments, setComments] = React.useState([]);
+    const [publicComments, setPublicComments] = React.useState([]);
     const [loadingFollowing, setLoadingFollowing] = React.useState(false);
     const [loadingPosts, setLoadingPosts] = React.useState(false);
     const [friends, setFriends] = React.useState([]);
@@ -144,7 +145,7 @@ function Posts() {
 
 
         let commentList = []
-        let postLikesList = []
+        let publicComments = []
 
         //get all comments in the "Public Posts" header
         for (let i = 0; i < posts.length; i++) {
@@ -181,20 +182,17 @@ function Posts() {
                     for (let i = 0; i < commentDataList.length; i++) {
                         commentList.push(commentDataList[i])
                     }
-
+            
                 }
 
             }
 
 
         }
-
-
         //getting all comments in the "Following" header
-
+        setPublicComments(publicComments)
         setComments(commentList)
     }
-
 
     React.useEffect(() => {
         if (localStorage.getItem("token") != null) {
@@ -351,7 +349,7 @@ function Posts() {
 
         if (object.author.host === "https://t20-social-distribution.herokuapp.com"){
             let data ={}
-            if (object.type === "post") { //liked post
+            if (object.type.toLowerCase() === "post") { //liked post
                  data = { 
                     author: localStorage.getItem("id"),
                     post:object.id,
@@ -397,7 +395,7 @@ function Posts() {
              }
 
             let foreignLikeData = {
-            author:"https://t20-social-distribution.herokuapp.com/service/authors/"+ localStorage.getItem("id"),
+            author:`${getApiUrls()}/service/authors/`+ localStorage.getItem("id"),
             object: object.id,
             type: "Like",
           }
@@ -406,35 +404,50 @@ function Posts() {
           let password = "jn8VWYcZDrLrkQDcVsRi"
           let authG6 = "Basic " + btoa(username + ":" + password);
 
-          await axios.post(inboxPath, foreignLikeData, {
+          await axios.post(inboxPath, foreignLikeData, { //send this to commentor's inbox
             headers: {
                 "Content-Type": "application/json",
                 "Authorization" : (object.author.host == path) ? "Bearer " + localStorage.getItem("token") : (object.author.host == "https://social-distribution-media.herokuapp.com/api") ? authG6 : (object.author.host == "https://cmput404-group6-instatonne.herokuapp.com") ? "Basic R3JvdXAyMDpncm91cDIwY21wdXQ0MDQ=" : ""
 
             }
-        }).catch((error) => {
+            }).catch((error) => {
             console.log(error);
-        });
+            });
 
 
+            if (object.type.toLowerCase() === "comment"){
+               
+                let inboxPath = `${getApiUrls()}/service/authors/${object.author.id}/inbox`; //send this to inbox of whoever posted
+                await axios.post(inboxPath, foreignLikeData, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer "+localStorage.getItem("token")
+                    }
+                }).catch((error) => {
+                    console.log(error);
+                });
+
+            }
+
+
+        }
+
+        const getPostLikes = async(post) =>{
+            let path = `${getApiUrls()}/service/authors/`+ post.author.id+"/posts/"+post.id+"/likes"
+            let postLikes = await axios.get(path, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer "+localStorage.getItem("token")
+                }
+             });
+        
+             return postLikes.data.items.length
 
         }
 
         
     }
-   
-    const getPostLikes = async(post) =>{
-        let path = `${getApiUrls()}/service/authors/`+ post.author.id+"/posts/"+post.id+"/likes"
-        let postLikes = await axios.get(path, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer "+localStorage.getItem("token")
-            }
-         });
-         return postLikes.data.items.length
-    }
-
-
+    
     const [openPost, setopenPost] = React.useState(false);
     const [post, setPost] = React.useState([{}]);
     const [openComments, setOpenComments] = React.useState(false);
@@ -477,6 +490,7 @@ function Posts() {
                             <List style={{ flex: 1, overflowY: "scroll", maxHeight: "100%" }}>
                                 {!loadingPosts && <CircularProgress />}
                                 {loadingPosts && Posts.map((post) => (
+                                    
                                     <ListItem key={post.id} onClick={() => { setopenPost(true); setPost(post) }}>
                                         <Card style={{ width: "100%" }}>
                                             <Box style={{ paddingLeft: 2 }}>
@@ -487,6 +501,7 @@ function Posts() {
                                                         <Typography variant="body2">Author: {post.author.displayName}</Typography>
                                                         <Typography variant="body2">Published: {post.published.substring(0, 10)}</Typography>
                                                         <Typography variant="body2">Node: {post.author.host}</Typography>
+                                                        <Typography id ={post.id} variant="body2">Likes: </Typography>
                                                     </Box>
                                                 </Box>)}
                                             </Box>
@@ -531,8 +546,7 @@ function Posts() {
                                        </Button> 
                                        <Button variant="outlined" title = "like"color="secondary" startIcon={<FavoriteIcon />} onClick ={() => likeObject(post)}style={{position: "absolute", bottom: "30px", right: "400px"}}   >  
                                         Like
-                                        </Button>
-                                        
+                                        </Button> 
                                     </div>
                                     
                                 )}
@@ -544,20 +558,26 @@ function Posts() {
                                     <Button variant="contained" color="primary" onClick ={() => postComment(document.getElementById("comment").value,post,`${post.author.id}`)}   style={{ margin: 10,position:"relative",top:"25px"}}>Comment</Button>
                                     {(`${post.author.id}`=== localStorage.getItem("id")) ? <Typography variant="h6" style = {{textAlign:"left", paddingLeft:30,fontSize:20}}>Comments:</Typography> :<h2></h2> }                                       
                                          {Comments.map((comments) => (
-                                            ((`${comments.post.id}` === `${post.id.split("/").pop()}`) && (`${post.author.id}`=== localStorage.getItem("id"))) ? 
+                                            (((`${comments.post.id}` === `${post.id.split("/").pop()}`) && (`${post.visibility}`=== "PUBLIC")) ? 
                                             ( <div style = {{display:'flex',alignItems:'center',wordWrap:"break-word"}}>
                                                 <img src= {comments.author.profileImage} alt = "" style = {{borderRadius:"50%",marginLeft:30,marginRight:15,marginBottom:10}} width={55} height = {55}/>
                                                 <Typography variant="h6" style = {{display: "inline-block",textAlign:"left", paddingLeft:15,fontSize:20}}>
                                                     {comments.author.displayName}: {comments.comment}
                                                 </Typography>
-                                                <IconButton  variant="outlined" color = "secondary" aria-label="likeComment" onClick ={() => likeObject(comments)}   style = {{ marginLeft:15}}>
+                                               
+                                               <IconButton id = "heartButton" variant="outlined" color = "secondary" aria-label="likeComment" onClick ={() => likeObject(comments)}   style = {{ marginLeft:15}}>
                                                     <FavoriteBorderIcon />
                                                 </IconButton>
+                                                    
                                                
                                             </div>
                                             )
-                                            : (<h2></h2>)
+                                            : (<h2></h2>))
+                                            
                                     ))}
+
+                                 
+                                      
                                 </Card>
                             )}
                         </Box>

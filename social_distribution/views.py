@@ -281,8 +281,7 @@ def posts(request, author_id = None, post_id = None):
             posts[0]['origin'] = posts[0]['origin'] + str(posts[0]['id'])
 
             #find all like objects that have the object same as id
-            #replace with request.get_host()
-            fullRequestPath  = "https://t20-social-distribution.herokuapp.com" +request.path
+            fullRequestPath  = request.get_host() +request.path
             likes = Like.objects.filter(object = fullRequestPath)
             posts[0]['likes'] = likes.count()
 

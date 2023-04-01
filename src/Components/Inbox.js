@@ -182,6 +182,8 @@ function Inbox() {
                                                     <Typography variant="body2">Author: {item.author.displayName}</Typography>
                                                     <Typography variant="body2">Published: {item.published.substring(0, 10)}</Typography>
                                                     <Typography variant="body2">Node: {item.author.host}</Typography>
+                                                    <Typography variant="body2">Likes: {item.likes}</Typography>
+                                                    
                                                 </Box>
                                             </Box>)}
                                         </Box>
