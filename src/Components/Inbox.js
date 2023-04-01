@@ -174,7 +174,7 @@ function Inbox() {
                                                 <img src={(item.author.profileImage != "no profileImage" && item.author.profileImage != "") ? item.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt="IMG" style={{ borderRadius: "50%" }} width="100px" height="100px" />
                                                 <Box style={{ display: "flex", flexDirection: "column", paddingLeft: "10px" }}>
                                                     <Typography variant="h5">Title: {item.title}</Typography>
-                                                    {(item.source != item.origin) && (item.source != "No source") && (item.source != null) (item.source && item.source.author && item.source.author.displayName) && (<Typography variant="body2">Sent By: {item.source.author.displayName}</Typography>)}
+                                                    {(item.source != item.origin) && (item.source != "No source") && (item.source != null) && (item.source && item.source.author && item.source.author.displayName) && (<Typography variant="body2">Sent By: {item.source.author.displayName}</Typography>)}
                                                     <Typography variant="body2">Author: {item.author.displayName}</Typography>
                                                     <Typography variant="body2">Published: {item.published.substring(0, 10)}</Typography>
                                                     <Typography variant="body2">Node: {item.author.host}</Typography>
