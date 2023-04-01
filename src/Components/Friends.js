@@ -28,6 +28,7 @@ function Friends() {
     const [loadingFriends, setLoadingFriends] = React.useState(true);
     const [loadingNotFollowing, setLoadingNotFollowing] = React.useState(true);
     const [loadingOtherUsers, setLoadingOtherUsers] = React.useState(true);
+    const [requested, setRequested] = React.useState([]);
     
     
     
@@ -303,29 +304,10 @@ function Friends() {
         let userId= userInfo().user_id;
         // remove host from id
         let id = other.id 
+        let path
         id = id.split("/").pop();
         if (other.host === "https://distributed-social-net.herokuapp.com/") id = id.replace(/-/g,'');
-        let path =  `${getApiUrls()}/service/authors/${id}/followers/${userId}`;
-        let data = {
-            "type": "author",
-            "id": id,
-            "host": other.host,
-            "displayName": other.displayName,
-            "url": other.url,
-            "github": other.github ? other.github : "no github",
-            "username": other.username ? other.username : "no username",
-            "profileImage": other.profileImage ? other.profileImage == 'none' ? "no profileImage" : other.profileImage : "no profileImage",
-            "hidden": 1
-        }
         // send follow request to server
-        let response = await axios.put(path, data,{
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + localStorage.getItem("token")
-            },
-        }).catch((error) => {
-            console.log(error);
-        });
         // sending follow for other servers
         // get follower info
         let userResponse = await axios.get(`${getApiUrls()}/service/authors/${userId}`, {
@@ -357,7 +339,7 @@ function Friends() {
         let authG6 = "Basic " + btoa(username + ":" + password);
         other.id = other.url
         userData.id = userData.url
-        data = {
+        let data = {
             "type": "Follow",
             "summary": "New follower",
             "actor": userData,
@@ -373,11 +355,10 @@ function Friends() {
             console.log(error);
         });
         
-        // remove item from other users list and add to following list
+        // remove item from other users or not following list and add to following list
+        setFilteredNotFollowing(filteredNotFollowing.filter((item) => item.id !== other.id));
         setFilteredOtherUsers(filteredOtherUsers.filter((item) => item.id !== other.id));
-        setFilteredFollowing(filteredFollowing.concat(other));
-        
-        getLists()
+        // setFilteredFollowing(filteredFollowing.concat(other)); other user has to accept follow request
     }
     
     const unfollowAuthor = async (other) => {
@@ -453,7 +434,7 @@ function Friends() {
                 <Box style = {{flex:1,display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'column'}}>
                     <Card style = {{width:500, height:450, backgroundColor:"#c3d3eb", borderColor: "grey", borderStyle: "solid"}}>
                         <Box style = {{display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'row'}}>
-                            <Typography variant="h5" style = {{paddingTop:5, alignSelf:'left'}}>Friends</Typography>
+                            <Typography variant="h5" style = {{paddingTop:5, alignSelf:'left'}}>True Friends</Typography>
                             <TextField id="searchFriends" label="Search by name and host" style = {{width: 370, marginLeft: 20}} onChange={searchFriends}/>
                         </Box>
                         <Box style = {{marginLeft:20,marginTop:20, height:385,overflowY:"scroll", overflowX:"hidden"}}>
@@ -478,7 +459,7 @@ function Friends() {
                     </Card>
                     <Card style = {{width:500, height:450, backgroundColor:"#c3d3eb", marginTop:20, borderColor: "grey", borderStyle: "solid"}}>
                         <Box style = {{display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'row'}}>
-                            <Typography variant="h5" style = {{paddingTop:5, alignSelf:'left'}}>Following</Typography>
+                            <Typography variant="h5" style = {{paddingTop:5, alignSelf:'left'}}>Following/Friends</Typography>
                             <TextField id="searchFollowing" label="Search by name and host" style = {{width: 350, marginLeft: 20}} onChange={searchFollowing}/>
                         </Box>
                         <Box style = {{marginLeft:20,marginTop:20, height:385,overflowY:"scroll", overflowX:"hidden"}}>
@@ -531,7 +512,7 @@ function Friends() {
                     </Card>
                     <Card style = {{width:500, height:450, backgroundColor:"#c3d3eb", marginTop:20, borderColor: "grey", borderStyle: "solid"}}>
                         <Box style = {{display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'row'}}>
-                            <Typography variant="h5" style = {{paddingTop:5}}>Other Authors</Typography>
+                            <Typography variant="h5" style = {{paddingTop:5}}>External Authors</Typography>
                             <TextField id="searchOther" label="Search by name and host" style = {{width: 300,marginLeft:20}} onChange={searchOtherUsers}/>
                         </Box>
                         <Box style = {{marginLeft:20,marginTop:20, height:385,overflowY:"scroll", overflowX:"hidden"}}>

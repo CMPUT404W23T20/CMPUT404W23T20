@@ -4,8 +4,8 @@ from django.shortcuts import render
 from django.template import Context
 import requests
 from rest_framework import viewsets, status
-from .serializers import PostSerializer, LoginSerializer, CommentSerializer, AuthorSerializer, InboxSerializer, LikeSerializer, FollowSerializer, PostURLSerializer
-from .models import Post, Author, Comment, Inbox, Like, Follow, PostURL
+from .serializers import PostSerializer, LoginSerializer, CommentSerializer, AuthorSerializer, InboxSerializer, LikeSerializer, FollowSerializer, PostURLSerializer, FollowRequestSerializer
+from .models import Post, Author, Comment, Inbox, Like, Follow, PostURL, FollowRequest
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.core import serializers
@@ -157,6 +157,8 @@ def followers(request, author_id = None, follower_id = None):
         summary = follower.displayName + ' is now following ' + author.displayName
         follow = Follow.objects.create(author = author, follower = follower, summary = summary)
         follow.save()
+        # remove follow request if it exists
+        FollowRequest.objects.filter(follower = follower_id, author = author_id).delete()
         return Response(FollowSerializer(follow).data, status=status.HTTP_200_OK)
 
     elif request.method == 'DELETE':
@@ -435,9 +437,9 @@ def inbox(request, author_id):
             post_data['author'] = AuthorSerializer(Author.objects.get(id=post_data['author'])).data
             serializer.data['posts'][i] = post_data
 
-        # process follows
+        # process followRequests
         for i in range(len(serializer.data['follows'])):
-            follow_data = FollowSerializer(Follow.objects.get(id=serializer.data['follows'][i])).data
+            follow_data = FollowRequestSerializer(FollowRequest.objects.get(id=serializer.data['follows'][i])).data
             follow_data['follower'] = AuthorSerializer(Author.objects.get(id=follow_data['follower'])).data
             follow_data['author'] = AuthorSerializer(Author.objects.get(id=follow_data['author'])).data
             serializer.data['follows'][i] = follow_data
@@ -527,10 +529,10 @@ def inbox(request, author_id):
             follower = Author.objects.get(id = actor['id'])
             summary = follower.displayName + ' is now following ' + author.displayName
             # check if follow already exists
-            if Follow.objects.filter(follower = follower, author = followee).exists():
-                follow = Follow.objects.get(follower = follower, author = followee)
+            if FollowRequest.objects.filter(follower = follower, author = followee).exists():
+                follow = FollowRequest.objects.get(follower = follower, author = followee)
             else:
-                follow = Follow.objects.create(follower = follower, author = followee, summary = summary)
+                follow = FollowRequest.objects.create(follower = follower, author = followee, summary = summary)
             inbox.follows.add(follow)
             inbox.save()
             return Response(status=status.HTTP_200_OK)
@@ -620,3 +622,14 @@ def inbox(request, author_id):
         inbox.save()
         return Response(status=status.HTTP_200_OK)
 
+@api_view(['GET'])
+def getRequests(request, author_id):
+    # get all the follow requests for the author with author_id = author_id
+    author = Author.objects.get(id = author_id)
+    followRequests = FollowRequest.objects.filter(follower = author)
+    serializer = FollowRequestSerializer(followRequests, many = True)
+    data = {
+        "type": "followRequests",
+        "items": serializer.data
+    }
+    return Response(data, status=status.HTTP_200_OK)

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Author, Post, Comment, Inbox, Like, Follow, PostURL
+from .models import Author, Post, Comment, Inbox, Like, Follow, PostURL, FollowRequest
 
 # Register your models here.
 
@@ -31,3 +31,7 @@ admin.site.register(Follow, FollowAdmin)
 class PostURLAdmin(admin.ModelAdmin):
     list_display = ('id', 'url')
 admin.site.register(PostURL, PostURLAdmin)
+
+class FollowRequestAdmin(admin.ModelAdmin):
+    list_display = ('id', 'follower', 'author')
+admin.site.register(FollowRequest, FollowRequestAdmin)

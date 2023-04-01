@@ -17,6 +17,13 @@ class Author(models.Model):
     def __str__(self):
         return self.displayName
     
+class FollowRequest(models.Model):
+    type = models.CharField(max_length=200, default="followRequest")
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    summary = models.CharField(max_length=200, default="No summary")
+    follower = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='requestFollower')
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='requestAuthor')
+    
 class Follow(models.Model):
     type = models.CharField(max_length=200, default="follow")
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -93,7 +100,7 @@ class Inbox(models.Model):
     type = models.CharField(max_length=200, default="inbox")
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
-    follows = models.ManyToManyField(Follow, blank=True)
+    follows = models.ManyToManyField(FollowRequest, blank=True)
     posts = models.ManyToManyField(Post, blank=True)
     postURLs = models.ManyToManyField(PostURL, blank=True)
     comments = models.ManyToManyField(Comment, blank=True)
