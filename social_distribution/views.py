@@ -482,7 +482,7 @@ def inbox(request, author_id):
             id = postData['id']
             id = id[id.rfind('/')+1:]
             post = Post.objects.filter(id = id).first()
-            if post:
+            if "https://t20-social-distribution.herokuapp.com" in postData['origin'] or id == postData['id']:
                 # if post exists, then it is a local post
                 postURL = PostURL.objects.create(url = postData['origin'], source = source)
                 inbox.postURLs.add(postURL)
