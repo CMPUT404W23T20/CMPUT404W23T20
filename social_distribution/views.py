@@ -252,8 +252,8 @@ def posts(request, author_id = None, post_id = None):
             loggedin_author = None
         if loggedin_author:
             requestAuthor = Author.objects.get(id = loggedin_author['id'])
-            if author_id != str(requestAuthor.id):
-                posts = posts.filter(visibility = 'PUBLIC')
+            if author_id == str(requestAuthor.id):
+                posts = Post.objects.filter(author= author)
 
         if post_id:
             
