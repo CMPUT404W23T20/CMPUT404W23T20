@@ -1,10 +1,12 @@
 import React from 'react';
 import { Box, Button, Card, List, ListItem, TextField, Typography } from '@material-ui/core';
+import FavoriteIcon from '@mui/icons-material/FavoriteBorder';
 import Nav from './Nav';
 import axios from 'axios';
 import { getApiUrls } from '../utils/utils';
 import CircularProgress from '@mui/material/CircularProgress';
 import { TypeSpecimenOutlined } from '@mui/icons-material';
+import jwt_decode from "jwt-decode";
 
 
 function Inbox() {
@@ -156,6 +158,154 @@ function Inbox() {
         }
         setLoadingPost(false);
     }
+    const userInfo = () =>{           
+        let token = localStorage.getItem("token")
+        if (token === null ){
+            console.log("Not logged in");
+         
+        }
+        var decoded = JSON.stringify(jwt_decode(token));
+       
+        var decode_info= JSON.parse(decoded)
+        //console.log(decode_info)
+        return decode_info;
+        
+    };
+    //check if you've already sent a like object 
+    //avoid duplicates
+    const likeExists = async(object) =>{
+        let path = `${getApiUrls()}/service/authors/`+localStorage.getItem("id") + "/liked";
+        let response = await axios.get(path, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer "+localStorage.getItem("token")
+            }
+            }).catch((error) => {
+                console.log(error);
+             });
+        let items = response.data.items
+        for (let i = 0; i < items.length; i++){
+            if (items[i].object === object){
+                return true;
+            }
+        }
+        return false;
+        
+    }
+    const likeObject= async(object) =>{
+        /* Make 2 posts requests for a local post
+         1) Add to the author's "liked" url
+         2) Post to inbox (only this for foreign posts)
+        */
+
+       //check if like already exists
+        let existingLike = false
+        if (object.author.host === "https://t20-social-distribution.herokuapp.com"){
+            const objectURL = (object.type === "post") ? object.origin : object.post.origin +"/comments/" + object.id
+            existingLike = await(likeExists(objectURL))
+        }
+        else{ //checking using id of foreign comment/post
+            const objectLikeExists = object.id;
+            existingLike = await(likeExists(objectLikeExists))
+        }
+        
+        if (existingLike === true){ //person has already liked this
+            return //don't got through with the rest of this function
+        }
+    
+        //local to local like 
+        let author =userInfo()
+        let path = `${getApiUrls()}/service/authors/`+author.user_id+ "/liked";
+        let objectType = (object.type ==="post")? "Post":"Comment"
+        let objectOrigin = (objectType === "Post") ? object.origin : object.post.origin +"/comments/" + object.id
+
+        if (object.author.host === "https://t20-social-distribution.herokuapp.com"){
+            let data ={}
+            if (object.type.toLowerCase() === "post") { //liked post
+                 data = { 
+                    author: localStorage.getItem("id"),
+                    post:object.id,
+                    summary: `${author.username} likes your ${object.type}`,
+                    objectLiked: objectType,
+                    object: objectOrigin,             
+                }
+            }
+            else{ //liked comment
+                data = { 
+                    author: localStorage.getItem("id"),
+                    comment: object.id,
+                    summary: `${author.username} likes your ${object.type}`,
+                    objectLiked: objectType,
+                    object: objectOrigin,     
+                }
+            }
+            
+
+            let postLike = await axios.post(path, data, {  //send this to author liked
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer "+localStorage.getItem("token")
+                }
+            });
+    
+            let inboxPath = `${getApiUrls()}/service/authors/${object.author.id}/inbox`; //send this to inbox of whoever posted
+                    await axios.post(inboxPath, postLike.data, {
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": "Bearer "+localStorage.getItem("token")
+                        }
+                    }).catch((error) => {
+                        console.log(error);
+                });
+
+        }
+        else{ //foreign node
+
+            let inboxPath = object.author.id+"/inbox";
+            if ( object.author.host == "https://group-13-epic-app.herokuapp.com/"){
+                inboxPath = object.author.id+"/inbox/" //send to inbox
+             }
+
+            let foreignLikeData = {
+            author:`${getApiUrls()}/service/authors/`+ localStorage.getItem("id"),
+            object: object.id,
+            type: "Like",
+          }
+          
+          let username = "Group20"
+          let password = "jn8VWYcZDrLrkQDcVsRi"
+          let authG6 = "Basic " + btoa(username + ":" + password);
+
+          await axios.post(inboxPath, foreignLikeData, { //send this to commentor's inbox
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization" : (object.author.host == path) ? "Bearer " + localStorage.getItem("token") : (object.author.host == "https://social-distribution-media.herokuapp.com/api") ? authG6 : (object.author.host == "https://cmput404-group6-instatonne.herokuapp.com") ? "Basic R3JvdXAyMDpncm91cDIwY21wdXQ0MDQ=" : ""
+
+            }
+            }).catch((error) => {
+            console.log(error);
+            });
+
+
+            if (object.type.toLowerCase() === "comment"){
+               
+                let inboxPath = `https://t20-social-distribution.herokuapp.com/service/authors/${object.author.id}/inbox`; //send this to inbox of whoever posted
+                await axios.post(inboxPath, foreignLikeData, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer "+localStorage.getItem("token")
+                    }
+                }).catch((error) => {
+                    console.log(error);
+                });
+
+            }
+
+
+        }
+    }
+
+
 
     const [openPost, setopenPost] = React.useState(false);
     const [post, setPost] = React.useState();
@@ -186,6 +336,9 @@ function Inbox() {
                                                     
                                                 </Box>
                                             </Box>)}
+                                            <Button  variant="contained" title = "like" color="secondary" startIcon={<FavoriteIcon />} onClick ={() => likeObject(item)}    style={{position: "absolute", bottom: "30px", right: "400px"}}>
+                                                        Like
+                                            </Button>  
                                         </Box>
                                     </Card>)}
                                     {item.type === "comment" && (<Card style={{ width: "100%" }} onClick={() => { handleOpenPost(item.post) }}>
@@ -234,6 +387,7 @@ function Inbox() {
                                                         </Box>
                                                         
                                                     </Box>
+                                                   
                                                 </Card>
                                         )}
                                 </ListItem>
@@ -294,6 +448,5 @@ function Inbox() {
 }
 
 export default Inbox;
-
 
 
