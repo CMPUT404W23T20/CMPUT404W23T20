@@ -227,7 +227,7 @@ def posts(request, author_id = None, post_id = None):
         if not author_id:  
             # get all public posts
             posts = Post.objects.all()
-            posts = posts.filter(visibility = 'PUBLIC')
+            posts = posts.filter(visibility = 'PUBLIC', unlisted = False)
             serializer = PostSerializer(posts, many=True)
             for post in serializer.data:
                 post['author'] = AuthorSerializer(Author.objects.get(id = post['author'])).data
@@ -245,7 +245,7 @@ def posts(request, author_id = None, post_id = None):
             return Response(response, status=status.HTTP_200_OK)
          
         author = Author.objects.get(id = author_id)
-        posts = Post.objects.filter(author= author, visibility = 'PUBLIC')
+        posts = Post.objects.filter(author= author, visibility = 'PUBLIC', unlisted = False)
         try:
             loggedin_author = JWTAuth.authenticate(request)
         except:
