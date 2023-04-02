@@ -90,7 +90,7 @@ function Posts() {
         // if post is not unlisted send to followers/friends
         if (!unlisted) {
             // if visility is set to friends and a friend is selected, send post to friend
-            if (visibility && friend != "") {
+            if (visibility && friend) {
                 path = `${getApiUrls()}/service/authors/${friend}/inbox`;
                 await axios.post(path, postResponse.data, {
                     headers: {
