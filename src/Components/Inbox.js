@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box, Button, Card, List, ListItem, TextField, Typography, MenuItem, InputLabel, ListItemText  } from '@material-ui/core';
+import { Box, Button, Card, List, ListItem, TextField, Typography, MenuItem, InputLabel, ListItemText } from '@material-ui/core';
+import Avatar from '@material-ui/core/Avatar';
 import Nav from './Nav';
 import axios from 'axios';
 import FavoriteIcon from '@mui/icons-material/FavoriteBorder';
@@ -62,11 +63,11 @@ function Inbox() {
             // send post to friend
             let path = `${getApiUrls()}/service/authors/${id}/inbox`;
             let response = await axios.post(path, post, {
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": "Bearer " + localStorage.getItem("token")
-                        }
-                    });
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                }
+            });
             console.log(response)
         }
     }
@@ -167,7 +168,7 @@ function Inbox() {
             }
         });
         // refresh inbox
-        setItems( await get_inbox_items());
+        setItems(await get_inbox_items());
         return response.data;
     }
 
@@ -217,142 +218,142 @@ function Inbox() {
         }
         setLoadingPost(false);
     }
-    const userInfo = () =>{           
+    const userInfo = () => {
         let token = localStorage.getItem("token")
-        if (token === null ){
+        if (token === null) {
             console.log("Not logged in");
-         
+
         }
         var decoded = JSON.stringify(jwt_decode(token));
-       
-        var decode_info= JSON.parse(decoded)
+
+        var decode_info = JSON.parse(decoded)
         //console.log(decode_info)
         return decode_info;
-        
+
     };
     //check if you've already sent a like object 
     //avoid duplicates
-    const likeExists = async(object) =>{
-        let path = `${getApiUrls()}/service/authors/`+localStorage.getItem("id") + "/liked";
+    const likeExists = async (object) => {
+        let path = `${getApiUrls()}/service/authors/` + localStorage.getItem("id") + "/liked";
         let response = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": "Bearer "+localStorage.getItem("token")
+                "Authorization": "Bearer " + localStorage.getItem("token")
             }
-            }).catch((error) => {
-                console.log(error);
-             });
+        }).catch((error) => {
+            console.log(error);
+        });
         let items = response.data.items
-        for (let i = 0; i < items.length; i++){
-            if (items[i].object === object){
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].object === object) {
                 return true;
             }
         }
         return false;
-        
+
     }
-    const likeObject= async(object) =>{
+    const likeObject = async (object) => {
         /* Make 2 posts requests for a local post
          1) Add to the author's "liked" url
          2) Post to inbox (only this for foreign posts)
         */
 
-       //check if like already exists
+        //check if like already exists
         let existingLike = false
-        if (object.author.host === "https://t20-social-distribution.herokuapp.com"){
-            const objectURL = (object.type === "post") ? object.origin : object.post.origin +"/comments/" + object.id
-            existingLike = await(likeExists(objectURL))
+        if (object.author.host === "https://t20-social-distribution.herokuapp.com") {
+            const objectURL = (object.type === "post") ? object.origin : object.post.origin + "/comments/" + object.id
+            existingLike = await (likeExists(objectURL))
         }
-        else{ //checking using id of foreign comment/post
+        else { //checking using id of foreign comment/post
             const objectLikeExists = object.id;
-            existingLike = await(likeExists(objectLikeExists))
+            existingLike = await (likeExists(objectLikeExists))
         }
-        
-        if (existingLike === true){ //person has already liked this
+
+        if (existingLike === true) { //person has already liked this
             return //don't got through with the rest of this function
         }
-    
-        //local to local like 
-        let author =userInfo()
-        let path = `${getApiUrls()}/service/authors/`+author.user_id+ "/liked";
-        let objectType = (object.type ==="post")? "Post":"Comment"
-        let objectOrigin = (objectType === "Post") ? object.origin : object.post.origin +"/comments/" + object.id
 
-        if (object.author.host === "https://t20-social-distribution.herokuapp.com"){
-            let data ={}
+        //local to local like 
+        let author = userInfo()
+        let path = `${getApiUrls()}/service/authors/` + author.user_id + "/liked";
+        let objectType = (object.type === "post") ? "Post" : "Comment"
+        let objectOrigin = (objectType === "Post") ? object.origin : object.post.origin + "/comments/" + object.id
+
+        if (object.author.host === "https://t20-social-distribution.herokuapp.com") {
+            let data = {}
             if (object.type.toLowerCase() === "post") { //liked post
-                 data = { 
+                data = {
                     author: localStorage.getItem("id"),
-                    post:object.id,
+                    post: object.id,
                     summary: `${author.username} likes your ${object.type}`,
                     objectLiked: objectType,
-                    object: objectOrigin,             
+                    object: objectOrigin,
                 }
             }
-            else{ //liked comment
-                data = { 
+            else { //liked comment
+                data = {
                     author: localStorage.getItem("id"),
                     comment: object.id,
                     summary: `${author.username} likes your ${object.type}`,
                     objectLiked: objectType,
-                    object: objectOrigin,     
+                    object: objectOrigin,
                 }
             }
-            
+
 
             let postLike = await axios.post(path, data, {  //send this to author liked
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer "+localStorage.getItem("token")
+                    "Authorization": "Bearer " + localStorage.getItem("token")
                 }
             });
-    
+
             let inboxPath = `${getApiUrls()}/service/authors/${object.author.id}/inbox`; //send this to inbox of whoever posted
-                    await axios.post(inboxPath, postLike.data, {
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": "Bearer "+localStorage.getItem("token")
-                        }
-                    }).catch((error) => {
-                        console.log(error);
-                });
+            await axios.post(inboxPath, postLike.data, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                }
+            }).catch((error) => {
+                console.log(error);
+            });
 
         }
-        else{ //foreign node
+        else { //foreign node
 
-            let inboxPath = object.author.id+"/inbox";
-            if ( object.author.host == "https://group-13-epic-app.herokuapp.com/"){
-                inboxPath = object.author.id+"/inbox/" //send to inbox
-             }
+            let inboxPath = object.author.id + "/inbox";
+            if (object.author.host == "https://group-13-epic-app.herokuapp.com/") {
+                inboxPath = object.author.id + "/inbox/" //send to inbox
+            }
 
             let foreignLikeData = {
-            author:`${getApiUrls()}/service/authors/`+ localStorage.getItem("id"),
-            object: object.id,
-            type: "Like",
-          }
-          
-          let username = "Group20"
-          let password = "jn8VWYcZDrLrkQDcVsRi"
-          let authG6 = "Basic " + btoa(username + ":" + password);
-
-          await axios.post(inboxPath, foreignLikeData, { //send this to commentor's inbox
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization" : (object.author.host == path) ? "Bearer " + localStorage.getItem("token") : (object.author.host == "https://social-distribution-media.herokuapp.com/api") ? authG6 : (object.author.host == "https://cmput404-group6-instatonne.herokuapp.com") ? "Basic R3JvdXAyMDpncm91cDIwY21wdXQ0MDQ=" : ""
-
+                author: `${getApiUrls()}/service/authors/` + localStorage.getItem("id"),
+                object: object.id,
+                type: "Like",
             }
+
+            let username = "Group20"
+            let password = "jn8VWYcZDrLrkQDcVsRi"
+            let authG6 = "Basic " + btoa(username + ":" + password);
+
+            await axios.post(inboxPath, foreignLikeData, { //send this to commentor's inbox
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": (object.author.host == path) ? "Bearer " + localStorage.getItem("token") : (object.author.host == "https://social-distribution-media.herokuapp.com/api") ? authG6 : (object.author.host == "https://cmput404-group6-instatonne.herokuapp.com") ? "Basic R3JvdXAyMDpncm91cDIwY21wdXQ0MDQ=" : ""
+
+                }
             }).catch((error) => {
-            console.log(error);
+                console.log(error);
             });
 
 
-            if (object.type.toLowerCase() === "comment"){
-               
+            if (object.type.toLowerCase() === "comment") {
+
                 let inboxPath = `https://t20-social-distribution.herokuapp.com/service/authors/${object.author.id}/inbox`; //send this to inbox of whoever posted
                 await axios.post(inboxPath, foreignLikeData, {
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": "Bearer "+localStorage.getItem("token")
+                        "Authorization": "Bearer " + localStorage.getItem("token")
                     }
                 }).catch((error) => {
                     console.log(error);
@@ -382,74 +383,85 @@ function Inbox() {
                             {loading && <CircularProgress />}
                             {!loading && items.map((item) => (
                                 <ListItem key={item.id}>
-                                    {item.type === "post" && (<Card style={{ width: "100%" }} onClick={() => { handleOpenPost(item) }}>
-                                        <Box style={{ paddingLeft: 2 }}>
-                                            {(item.type === 'post') && (<Box style={{ display: "flex", flexDirection: "row", marginTop: "10px", marginLeft: "10px" }}>
-                                                <img src={(item.author.profileImage != "no profileImage" && item.author.profileImage != "") ? item.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt="IMG" style={{ borderRadius: "50%" }} width="100px" height="100px" />
-                                                <Box style={{ display: "flex", flexDirection: "column", paddingLeft: "10px" }}>
-                                                    <Typography variant="h5">Title: {item.title}</Typography>
-                                                    {(item.source != item.origin) && (item.source != "No source") && (item.source != null) && (item.source && item.source.displayName) && (<Typography variant="body2">Sent By: {item.source.displayName}</Typography>)}
-                                                    <Typography variant="body2">Author: {item.author.displayName}</Typography>
-                                                    <Typography variant="body2">Published: {item.published.substring(0, 10)}</Typography>
-                                                    <Typography variant="body2">Node: {item.author.host}</Typography>
-                                                    <Typography variant="body2">Likes: {item.likes}</Typography>
-                                                    
-                                                </Box>
-                                            </Box>)}
-                                            <Button  variant="contained" title = "like" color="secondary" startIcon={<FavoriteIcon />} onClick ={() => likeObject(item)}    style={{position: "absolute", bottom: "30px", right: "400px"}}>
-                                                        Like
-                                            </Button>  
-                                        </Box>
-                                    </Card>)}
-                                    {item.type === "comment" && (<Card style={{ width: "100%" }} onClick={() => { handleOpenPost(item.post) }}>
-                                        <Box style={{ paddingLeft: 2 }}>
-                                            <Box style={{ display: "flex", flexDirection: "row", marginTop: "10px", marginLeft: "10px" }}>
-                                                <img src={(item.author.profileImage != "no profileImage" && item.author.profileImage != "") ? item.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt="IMG" style={{ borderRadius: "50%" }} width="100px" height="100px" />
-                                                <Box style={{ display: "flex", flexDirection: "column", paddingLeft: "10px" }}>
-                                                    <Typography variant="h5">Comment: {item.comment}</Typography>
-                                                    <Typography variant="body2">Author: {item.author.displayName}</Typography>
-                                                    <Typography variant="body2">Published: {item.published.substring(0, 10)}</Typography>
-                                                    <Typography variant="body2">Node: {item.author.host}</Typography>
+                                    {item.type === "post" && (
+                                        <Card style={{ width: "100%" }} onClick={() => { handleOpenPost(item) }}>
+                                            <Box style={{ paddingLeft: 2 }}>
+                                                {item.type === 'post' && (
+                                                    <Box style={{ display: "flex", flexDirection: "row", marginTop: "10px", marginLeft: "10px" }}>
+                                                        <Avatar src={(item.author.profileImage != "no profileImage" && item.author.profileImage != "") ? item.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt="Avatar" style={{ width: "100px", height: "100px", borderRadius: "50%" }} />
+                                                        <Box style={{ display: "flex", flexDirection: "column", paddingLeft: "10px" }}>
+                                                            <Typography variant="h5">Title: {item.title}</Typography>
+                                                            {(item.source != item.origin) && (item.source != "No source") && (item.source != null) && (item.source && item.source.displayName) && (<Typography variant="body2">Sent By: {item.source.displayName}</Typography>)}
+                                                            <Typography variant="body2">Author: {item.author.displayName}</Typography>
+                                                            <Typography variant="body2">Published: {item.published.substring(0, 10)}</Typography>
+                                                            <Typography variant="body2">Node: {item.author.host}</Typography>
+                                                            <Typography variant="body2">Likes: {item.likes}</Typography>
+                                                        </Box>
+                                                    </Box>
+                                                )}
+                                                <Button variant="contained" title="like" color="secondary" startIcon={<FavoriteIcon />} onClick={() => likeObject(item)} style={{ position: "absolute", bottom: "30px", right: "400px" }}>
+                                                    Like
+                                                </Button>
+                                            </Box>
+                                        </Card>
+                                    )}
+                                    {item.type === "comment" && (
+                                        <Card style={{ width: "100%" }} onClick={() => { handleOpenPost(item.post) }}>
+                                            <Box style={{ paddingLeft: 10, paddingTop: 10, paddingBottom: 10 }}>
+                                                <Box style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+                                                    <Avatar src={(item.author.profileImage != "no profileImage" && item.author.profileImage != "") ? item.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt="IMG" style={{ width: 70, height: 70 }} />
+                                                    <Box style={{ display: "flex", flexDirection: "column", paddingLeft: 10 }}>
+                                                        <Typography variant="h5">Comment: {item.comment}</Typography>
+                                                        <Typography variant="body2" style={{ fontWeight: 600 }}>{item.author.displayName}</Typography>
+                                                        <Typography variant="body2" style={{ color: "gray" }}>{item.published.substring(0, 10)}</Typography>
+                                                        <Typography variant="body2" style={{ color: "gray" }}>Node: {item.author.host}</Typography>
+                                                    </Box>
                                                 </Box>
                                             </Box>
-                                        </Box>
-                                    </Card>)}
-                                    {item.type == "followRequest" && (<Card style={{ width: "100%", display: "flex", flexDirection: "row", justifyContent: "space-between" }} onClick={() => setopenPost(false)}>
-                                        <Box style={{ paddingLeft: 2 }}>
-                                            <Box style={{ display: "flex", flexDirection: "row", marginTop: "10px", marginLeft: "10px" }}>
-                                                <img src={(item.follower.profileImage != "no profileImage" && item.follower.profileImage != "") ? item.follower.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt="IMG" style={{ borderRadius: "50%" }} width="100px" height="100px" />
-                                                <Box style={{ display: "flex", flexDirection: "column", paddingLeft: "10px" }}>
+                                        </Card>
+                                    )}
+
+                                    {item.type == "followRequest" && (
+                                        <Card style={{ width: "100%", display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: "10px" }} onClick={() => setopenPost(false)}>
+                                            <Box style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+                                                <Avatar src={(item.follower.profileImage != "no profileImage" && item.follower.profileImage != "") ? item.follower.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt="Avatar" style={{ marginRight: "10px" }} />
+                                                <Box>
                                                     <Typography variant="h5">Follow Request</Typography>
                                                     <Typography variant="body2">Author: {item.follower.displayName}</Typography>
                                                     <Typography variant="body2">Node: {item.follower.host}</Typography>
                                                 </Box>
                                             </Box>
-                                        </Box>
-                                        <Button id={item.follower} style={{ margin: 42, alignSelf: "flex-end", backgroundColor: "lightblue" }} onClick={() => acceptFollow(item.follower)} variant="contained">
-                                            Accept
-                                        </Button>
-                                    </Card>)}    
+                                            <Button id={item.follower} style={{ backgroundColor: "lightblue" }} onClick={() => acceptFollow(item.follower)} variant="contained">
+                                                Accept
+                                            </Button>
+                                        </Card>
+                                    )}
+
                                     {item.type.toLowerCase() === "like" && (
-                                                <Card style = {{ width: "100%"}} onClick={() => { handleOpenPost(item.post) }}> 
-                                                    <Box style = {{ paddingLeft: 2}}>
-                                                        <Box style = {{ display: "flex", flexDirection: "row", marginTop: "10px", marginLeft: "10px"}}>
-                                                        <img src= {(item.author.profileImage != "no profileImage" && item.author.profileImage != "") ? item.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt = "IMG" style = {{borderRadius:"50%"}} width="100px" height = "100px"/>   
-                                                        <Box style = {{ display: "flex", flexDirection: "column", paddingLeft: "10px"}} >
-                                                            <Typography variant="h5">{item.summary}</Typography>
-                                                             {(`${item.objectLiked}`==="Comment") ? (<Typography>Comment: "{item.comment.comment}"</Typography>): 
-                                                                <Box>
-                                                                    <Typography variant="body2">Author: {item.author.displayName}</Typography>
-                                                                    <Typography variant="body2">Node: {item.author.host}</Typography>
-                                                                </Box>
-                                                                
-                                                             }
-                                                        </Box>
-                                                        </Box>
-                                                        
+                                        <Card style={{ width: "100%" }} onClick={() => { handleOpenPost(item.post) }}>
+                                            <Box style={{ paddingLeft: 2 }}>
+                                                <Box style={{ display: "flex", flexDirection: "row", marginTop: "10px", marginLeft: "10px" }}>
+                                                    <img src={(item.author.profileImage !== "no profileImage" && item.author.profileImage !== "") ? item.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt="IMG" style={{ borderRadius: "50%" }} width="100px" height="100px" />
+                                                    <Box style={{ display: "flex", flexDirection: "column", paddingLeft: "10px" }} >
+                                                        <Typography variant="h5">{item.summary}</Typography>
+                                                        {(`${item.objectLiked}` === "Comment") ? (
+                                                            <Box>
+                                                                <Typography>Comment: "{item.comment.comment}"</Typography>
+                                                                <Typography variant="body2">Author: {item.comment.author.displayName}</Typography>
+                                                                <Typography variant="body2">Node: {item.comment.author.host}</Typography>
+                                                            </Box>
+                                                        ) : (
+                                                            <Box>
+                                                                <Typography variant="body2">Author: {item.author.displayName}</Typography>
+                                                                <Typography variant="body2">Node: {item.author.host}</Typography>
+                                                            </Box>
+                                                        )}
                                                     </Box>
-                                                   
-                                                </Card>
-                                        )}
+                                                </Box>
+                                            </Box>
+                                        </Card>
+                                    )}
+
                                 </ListItem>
                             ))}
                         </List>
@@ -464,29 +476,79 @@ function Inbox() {
                         <Box style={{ flex: 1, margin: "10px", borderColor: "grey", borderStyle: "solid", backgroundColor: "#c3d3eb", display: "flex", flexDirection: "column", overflowY: "scroll" }}>
                             {loadingPost && <CircularProgress />}
                             {!loadingPost && <Box style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-                                <Card style={{ marginRight: "10px", marginBottom: "10px", marginLeft: "10px", borderRadius: "10px", borderColor: "black", marginTop: "5px", flex: 1 }}>
-                                    <Typography variant="h2">{post.title}</Typography>
-                                    <Box>
-                                        <img src={(post.author.profileImage != "no profileImage" && post.author.profileImage != "") ? post.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt="IMG" style={{ borderRadius: "50%" }} width="100px" height="100px" />
-                                        <Box style={{ display: "flex", flexDirection: "column", paddingLeft: "10px", alignItems: "cen", justifyContent: "left" }}>
-                                            <Typography variant="body2">Author: {post.author.displayName}</Typography>
-                                            <Typography variant="body2">Published: {post.published.substring(0, 10)}</Typography>
-                                            <Typography variant="body2">Node: {post.author.host}</Typography>
+                                <Card style={{
+                                    margin: "20px",
+                                    padding: "20px",
+                                    borderRadius: "10px",
+                                    boxShadow: "0px 0px 5px rgba(0,0,0,0.3)",
+                                    backgroundColor: "#fff",
+                                }}>
+                                    <Typography variant="h4" style={{ marginBottom: "20px" }}>
+                                        {post.title}
+                                    </Typography>
+                                    <Box style={{ display: "flex", justifyContent: "center", alignItems: "center", marginBottom: "10px" }}>
+                                        <img
+                                            src={
+                                                (post.author.profileImage !== "no profileImage" && post.author.profileImage !== "")
+                                                    ? post.author.profileImage
+                                                    : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"
+                                            }
+                                            alt="Author Profile"
+                                            style={{
+                                                borderRadius: "50%",
+                                                width: "50px",
+                                                height: "50px",
+                                                marginRight: "10px"
+                                            }}
+                                        />
+                                        <Box>
+                                            <Typography variant="body2" style={{ fontSize: "14px", fontWeight: "bold", marginBottom: "5px" }}>
+                                                {post.author.displayName}
+                                            </Typography>
+                                            <Typography variant="body2" style={{ fontSize: "12px", color: "#999", marginBottom: "5px" }}>
+                                                {post.published.substring(0, 10)} | {post.author.host}
+                                            </Typography>
                                         </Box>
                                     </Box>
-                                    <Typography variant="h5">Description:</Typography>
-                                    <Typography variant="body2">{post.description}</Typography>
-                                    {post.image_data ? (
-                                        <Card style={{ marginRight: "10px", marginBottom: "10px", marginLeft: "10px", borderRadius: "10px", borderColor: "black", marginTop: "5px", flex: 1 }}>
-                                            <img src={`data:image/png;base64,${post.image_data}`} alt="Post Image" style={{ width: "100%" }} />
+                                    <Typography variant="body1" style={{ marginBottom: "20px" }}>
+                                        {post.description}
+                                    </Typography>
+                                    {post.image_data && (
+                                        <Card style={{
+                                            margin: "20px",
+                                            padding: "20px",
+                                            borderRadius: "10px",
+                                            borderColor: "black",
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            alignItems: "center",
+                                        }}>
+                                            <img
+                                                src={`data:image/png;base64,${post.image_data}`}
+                                                alt="Post Image"
+                                                style={{
+                                                    width: "100%",
+                                                    borderRadius: "10px"
+                                                }}
+                                            />
                                         </Card>
-                                    ) : null}
-                                    <div id="postedComment" style={{ display: "none", borderRadius: "25px", backgroundColor: "#bce3c0", width: "40%", margin: "10px", paddingLeft: "5%", marginLeft: "30%" }}>
-                                    </div>
+                                    )}
+                                    <div
+                                        id="postedComment"
+                                        style={{
+                                            display: "none",
+                                            borderRadius: "25px",
+                                            backgroundColor: "#bce3c0",
+                                            width: "40%",
+                                            margin: "20px auto",
+                                            padding: "10px",
+                                            textAlign: "center",
+                                        }}
+                                    ></div>
                                     <Button variant="contained" color="secondary" onClick={() => setopenPost(false)} style={{ position: "absolute", bottom: "30px", right: "30px" }}>
                                         Close
                                     </Button>
-                                    <Button onClick = {() => {setRepostModal(true)}} style={{ position: "absolute", bottom: "30px", right: "120px" }} color='primary' variant='contained'>Repost</Button>
+                                    <Button onClick={() => { setRepostModal(true) }} style={{ position: "absolute", bottom: "30px", right: "120px" }} color='primary' variant='contained'>Repost</Button>
                                 </Card>
                                 {(comments.length > 0) && <Card style={{ marginRight: "10px", marginBottom: "10px", marginLeft: "10px", borderRadius: "10px", borderColor: "black", marginTop: "5px", flex: 1, overflowY: "scroll" }}>
                                     <Typography variant="h6" style={{ textAlign: "left", paddingLeft: 30, fontSize: 20 }}>Comments:</Typography>
@@ -504,13 +566,13 @@ function Inbox() {
                     )}
                 </Box>
             </Box>
-            <Modal open={repostModal} onClose={() => {setRepostModal(false); setFriend([])}} style={{ display: "flex", alignItems: "center", justifyContent: "center" }} aria-labelledby="simple-modal-title" aria-describedby="simple-modal-description">
+            <Modal open={repostModal} onClose={() => { setRepostModal(false); setFriend([]) }} style={{ display: "flex", alignItems: "center", justifyContent: "center" }} aria-labelledby="simple-modal-title" aria-describedby="simple-modal-description">
                 <Box style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh" }}>
                     <Card style={{ padding: "20px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
                         <Typography variant="h4">Repost</Typography>
                         <FormControl style={{ width: "100%", margin: "10px" }}>
                             <InputLabel htmlFor="repostTitle">friend</InputLabel>
-                            <Select id="repostTitle" label="friend" renderValue={(selected) => selected.join(', ')} multiple MenuProps = {{ PaperProps: { style: { maxHeight: 48 * 4.5 + 8, width: 250 } } }} onChange ={handleChange} value={friend}>
+                            <Select id="repostTitle" label="friend" renderValue={(selected) => selected.join(', ')} multiple MenuProps={{ PaperProps: { style: { maxHeight: 48 * 4.5 + 8, width: 250 } } }} onChange={handleChange} value={friend}>
                                 {friends.map((friendItem) => (
                                     <MenuItem key={friendItem.id} value={friendItem.displayName}>
                                         <Checkbox checked={friend.indexOf(friendItem.displayName) > -1} />
