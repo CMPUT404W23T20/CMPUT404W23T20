@@ -296,7 +296,8 @@ function Inbox() {
                     comment: object.id,
                     summary: `${author.username} likes your ${object.type}`,
                     objectLiked: objectType,
-                    object: objectOrigin,
+                    object: objectOrigin,     
+                    post: object.post.id
                 }
             }
 
@@ -347,9 +348,8 @@ function Inbox() {
             });
 
 
-            if (object.type.toLowerCase() === "comment") {
-
-                let inboxPath = `https://t20-social-distribution.herokuapp.com/service/authors/${object.author.id}/inbox`; //send this to inbox of whoever posted
+            if (object.type.toLowerCase() === "comment"){
+                let inboxPath = `${object.author.host}/service/authors/${object.author.id}/inbox`; //send this to inbox of whoever posted
                 await axios.post(inboxPath, foreignLikeData, {
                     headers: {
                         "Content-Type": "application/json",
@@ -364,7 +364,6 @@ function Inbox() {
 
         }
     }
-
 
 
     const [openPost, setopenPost] = React.useState(false);
@@ -441,19 +440,21 @@ function Inbox() {
                                         <Card style={{ width: "100%" }} onClick={() => { handleOpenPost(item.post) }}>
                                             <Box style={{ paddingLeft: 2 }}>
                                                 <Box style={{ display: "flex", flexDirection: "row", marginTop: "10px", marginLeft: "10px" }}>
-                                                    <img src={(item.author.profileImage !== "no profileImage" && item.author.profileImage !== "") ? item.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt="IMG" style={{ borderRadius: "50%" }} width="100px" height="100px" />
+                                                    <Avatar src={(item.author.profileImage != "no profileImage" && item.author.profileImage != "") ? item.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt="IMG" style={{ width: 70, height: 70 }} />
+
                                                     <Box style={{ display: "flex", flexDirection: "column", paddingLeft: "10px" }} >
                                                         <Typography variant="h5">{item.summary}</Typography>
                                                         {(`${item.objectLiked}` === "Comment") ? (
                                                             <Box>
-                                                                <Typography>Comment: "{item.comment.comment}"</Typography>
-                                                                <Typography variant="body2">Author: {item.comment.author.displayName}</Typography>
-                                                                <Typography variant="body2">Node: {item.comment.author.host}</Typography>
+                                                                
+                                                                <Typography variant="body2" style={{ fontWeight: 600 }} >{item.author.displayName}</Typography>
+                                                                <Typography variant="body2" style={{ color: "gray" }} >Node: {item.author.host}</Typography>
+                                                                <Typography variant="body2" style = {{ color: "gray" }}  >Comment: "{item.comment.comment}"</Typography>
                                                             </Box>
                                                         ) : (
                                                             <Box>
-                                                                <Typography variant="body2">Author: {item.author.displayName}</Typography>
-                                                                <Typography variant="body2">Node: {item.author.host}</Typography>
+                                                                <Typography variant="body2" style={{ fontWeight: 600 }}  >{item.author.displayName}</Typography>
+                                                                <Typography variant="body2" style={{ color: "gray" }}  >Node: {item.author.host}</Typography>
                                                             </Box>
                                                         )}
                                                     </Box>
