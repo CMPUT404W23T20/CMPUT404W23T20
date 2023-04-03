@@ -19,7 +19,8 @@ from django.db.models import Q
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from .authentication import JWTAuth, HTTPBasicAuth   # import the JWTAuthentication backend
-
+import markdown
+import markdown2
 
 # need to be changed to proper format
 # proper format
@@ -295,14 +296,19 @@ def posts(request, author_id = None, post_id = None):
     
 
     elif request.method == 'POST':
+        print("HELLO")
         loggedin_author = JWTAuth.authenticate(request)
         author = Author.objects.get(id = loggedin_author['id'])
         if author_id != str(author.id):
             return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
         data = request.data
+        print(data)
         data['author'] = author.id
         data['authorName'] = author.displayName
         data['origin'] = author.host + "/service/authors/" + str(author.id) + "/posts/"
+
+    
+
         serializer = PostSerializer(data=data)
         if serializer.is_valid():
             serializer.save()

@@ -11,6 +11,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import jwt_decode from "jwt-decode";
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import Checkbox from '@mui/material/Checkbox';
+import MuiMarkdown from 'mui-markdown';
 
 function Posts() {
     const [Posts, setPosts] = React.useState([]);
@@ -522,7 +523,11 @@ function Posts() {
                                     </Box>
                                 </Box>
                                 <Typography variant="h5">Description:</Typography>
-                                <Typography variant="body2">{post.description}</Typography>
+                                {post.contentType === "text/markdown" ? (
+                                    <MuiMarkdown>{post.description}</MuiMarkdown>
+                                ) : (
+                                    <Typography variant="body1" style={{ maxHeight: "100%", overflowY: "auto" }}>{post.description}</Typography>
+                                )}
                                 {post.image_data ? (
                                     <Card style={{ marginRight: "10px", marginBottom: "10px", marginLeft: "10px", borderRadius: "10px", borderColor: "black", marginTop: "5px", flex: 1 }}>
                                         <img src={`data:image/png;base64,${post.image_data}`} alt="Post Image" style={{ width: "100%" }} />

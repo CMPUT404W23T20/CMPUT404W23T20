@@ -4,6 +4,7 @@ import Nav from './Nav';
 import axios from 'axios';
 import { getApiUrls } from '../utils/utils';
 import CircularProgress from '@mui/material/CircularProgress';
+import MuiMarkdown from 'mui-markdown';
 
 function Posts() {
     const [Comments, setComments] = React.useState([]);
@@ -71,12 +72,29 @@ function Posts() {
         console.log(visibility ? "FRIENDS" : "PUBLIC")
         console.log(unlisted)
         let path = `${getApiUrls()}/service/authors/${localStorage.getItem("id")}/posts`;
-        let data = {
+        let data ={}
+        
+        if (markdown) {
+            console.log(markdown)
+            data = {
             title: title,
             description: description,
             unlisted: unlisted,
             visibility: visibility ? "FRIENDS" : "PUBLIC",
+            contentType: 'text/markdown',
             image_data: imageData,
+            }
+
+        }
+        else{
+            data = {
+            title: title,
+            description: description,
+            unlisted: unlisted,
+            visibility: visibility ? "FRIENDS" : "PUBLIC",
+            contentType: 'text/plain',
+            image_data: imageData,
+            }
         }
         let token = "Bearer " + localStorage.getItem("token");
         console.log(token);
@@ -88,6 +106,7 @@ function Posts() {
         });
         console.log(postResponse.data);
         // if post is not unlisted send to followers/friends
+
         if (!unlisted) {
             // if visility is set to friends and a friend is selected, send post to friend
             if (visibility && friend) {
@@ -183,6 +202,7 @@ function Posts() {
     const [visibility, setVisibility] = React.useState(false);
     const [loadingPosts, setLoadingPosts] = React.useState(false);
     const [friend, setFriend] = React.useState();
+    const [markdown, setMarkdown] = React.useState(false);
     return (
         <Box>
             <Box className="App" style={{ display: "flex", flexDirection: "row", height: "100vh", width: "100vw", alignItems: "left", justifyContent: "left" }}>
@@ -230,8 +250,15 @@ function Posts() {
                                     {edit ? (
                                         <TextField id="description" label="Description" variant="outlined" style={{ width: "95%", margin: "25px" }} value={post.description} onChange={(e) => setPost({ ...post, description: e.target.value })} multiline maxRows={15} />
                                     ) : (
-                                        <Typography variant="body1" style={{ maxHeight: "100%", overflowY: "auto" }}>{post.description}</Typography>
+
+                                        post.contentType === "text/markdown" && markdown? (
+                                                <MuiMarkdown>{post.description}</MuiMarkdown>
+                                            ) : (
+                                                <Typography variant="body1" style={{ maxHeight: "100%", overflowY: "auto" }}>{post.description}</Typography>
+                                            )
+                                        
                                     )}
+
                                 </Card>
                             </Card>
 
@@ -284,6 +311,8 @@ function Posts() {
                                 <input type="file" accept="image/*" onChange={handleImageUpload} />
                                 <FormControlLabel control={<Checkbox id="unlisted" name="unlisted" />} onChange={() => setUnlisted(!unlisted)} label="Unlisted" />
                                 <FormControlLabel control={<Checkbox id="visibility" name="visibility" onChange={() => setVisibility(!visibility)} />} label="Friends Only" />
+                                <FormControlLabel control={<Checkbox id="markdown" name="markdown" onChange={() => setMarkdown(!markdown)} />} label="Use Markdown" />
+                                
                                 {visibility && <Select id = "select" label = "Friend" value={friend} onChange={(e) => setFriend(e.target.value)} style={{ width: "95%", margin: "25px" }}>
                                     {Friends.map((friend) => (
                                         <MenuItem value={friend.id}>{friend.displayName}</MenuItem>
