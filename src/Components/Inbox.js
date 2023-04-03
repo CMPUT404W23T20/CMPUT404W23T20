@@ -292,6 +292,7 @@ function Inbox() {
                     summary: `${author.username} likes your ${object.type}`,
                     objectLiked: objectType,
                     object: objectOrigin,     
+                    post: object.post.id
                 }
             }
             
