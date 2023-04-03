@@ -11,8 +11,51 @@ function Profile() {
 
     const [editProfile, setEditProfile] = React.useState(false);
     const [author, setAuthor] = useState({});
-    const authorId = localStorage.getItem("id")
+    const authorId = localStorage.getItem("id");
+    const [userInfo, setUserInfo] = React.useState([]);
 
+
+    const getUserInfo = async () => {
+      let path = `${getApiUrls()}/service/authors/${localStorage.getItem("id")}`;
+      let response = await axios.get(path, {
+          headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer " + localStorage.getItem("token")
+          }
+      });
+      console.log(response.data);
+      setUserInfo(response.data);
+      return response.data;
+    
+    }
+
+    const getGithubActivity = async (data) => {
+      if (data.github === null || data.github === undefined || data.github === "" || data.github === "no github") {
+          console.log("No github account", data.github);
+          return [];
+      }
+      // strip https and www from github url
+      data.github = data.github.replace("https://github.com/", "");
+      let path = `https://api.github.com/users/${data.github}/events/public`;
+      let response = await axios.get(path, {
+          headers: {
+              "Content-Type": "application/json",
+          }
+      });
+      console.log(response);
+      return response.data;
+    }
+    const [githubActivity, setGithubActivity] = React.useState([]);
+
+
+      React.useEffect(() => {
+          getUserInfo().then((data) => {
+              setUserInfo(data);
+              getGithubActivity(data).then((data) => {
+                  setGithubActivity(data);
+              });
+          });
+      }, []);
 
     // Grab author info, function to be used for other functions that need author info
     const getAuthor = async () => {
