@@ -609,11 +609,13 @@ def inbox(request, author_id):
             
             if not follower:
                 # if follower doesn't exist, then the follow is remote and need to check if we need to add ghost
-                followerSerializer = AuthorSerializer(actor)
+                actor['username'] = actor['displayName']
+                actor['hidden'] = True
+                followerSerializer = AuthorSerializer(data = actor)
                 if followerSerializer.is_valid():
                     followerSerializer.save()
                 else:
-                    return Response(status=status.HTTP_400_BAD_REQUEST)
+                    return Response(followerSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
             follower = Author.objects.get(id = actor['id'])
             summary = follower.displayName + ' is now following ' + author.displayName
             # check if follow already exists
