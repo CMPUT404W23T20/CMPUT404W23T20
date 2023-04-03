@@ -192,26 +192,27 @@ function Posts() {
                 <Box style={{ display: "flex", flexDirection: "row", backgroundColor: "white", flex: 1, height: "100vh" }}>
                     <Box style={{ display: "flex", flexDirection: "column", flex: 1, margin: "10px", borderColor: "grey", borderStyle: "solid", backgroundColor: "#c3d3eb" }}>
                         <Typography variant="h4">Posts</Typography>
-                        <List style={{ flex: 1, overflowY: "scroll", maxHeight: "100%" }}>
+                        <List style={{ flex: 1, overflowY: "scroll", maxHeight: "100%", marginTop: "10px" }}>
                             {!loadingPosts && <CircularProgress />}
                             {loadingPosts && Posts.map((post) => (
                                 <ListItem key={post.id} onClick={() => { setopenPost(true); setPost(post) }}>
-                                    <Card style={{ width: "100%" }}>
-                                        <Box style={{ paddingLeft: 2 }}>
-                                            {(post.type === 'post') && (<Box style={{ display: "flex", flexDirection: "row", marginTop: "10px", marginLeft: "10px" }}>
-                                                <img src={(post.author.profileImage != "no profileImage" && post.author.profileImage != "") ? post.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt="IMG" style={{ borderRadius: "50%" }} width="100px" height="100px" />
-                                                <Box style={{ display: "flex", flexDirection: "column", paddingLeft: "10px" }}>
-                                                    <Typography variant="h5">Title: {post.title}</Typography>
+                                    <Card style={{ width: "100%", padding: "10px", borderRadius: "10px", boxShadow: "0px 0px 5px 0px rgba(0,0,0,0.2)", display: "flex", flexDirection: "column", justifyContent: "flex-start", alignItems: "flex-start" }}>
+                                        {(post.type === 'post') && (
+                                            <Box style={{ display: "flex", flexDirection: "row", marginTop: "10px", marginBottom: "10px" }}>
+                                                <img src={(post.author.profileImage != "no profileImage" && post.author.profileImage != "") ? post.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt="Author profile" style={{ borderRadius: "50%", width: "100px", height: "100px", objectFit: "cover", marginRight: "10px" }} />
+                                                <Box style={{ display: "flex", flexDirection: "column" }}>
+                                                    <Typography variant="h5" style={{ marginBottom: "5px" }}>Title: {post.title}</Typography>
                                                     <Typography variant="body2">Author: {post.author.displayName}</Typography>
                                                     <Typography variant="body2">Published: {post.published.substring(0, 10)}</Typography>
                                                     <Typography variant="body2">Node: {post.author.host}</Typography>
                                                 </Box>
-                                            </Box>)}
-                                        </Box>
+                                            </Box>
+                                        )}
                                     </Card>
                                 </ListItem>
                             ))}
                         </List>
+
                         {!createPost &&
                             <Button variant="contained" color="primary" onClick={() => setcreatePost(true)} style={{ margin: 10, alignSelf: "flex-end" }}>
                                 Create Post
@@ -284,7 +285,7 @@ function Posts() {
                                 <input type="file" accept="image/*" onChange={handleImageUpload} />
                                 <FormControlLabel control={<Checkbox id="unlisted" name="unlisted" />} onChange={() => setUnlisted(!unlisted)} label="Unlisted" />
                                 <FormControlLabel control={<Checkbox id="visibility" name="visibility" onChange={() => setVisibility(!visibility)} />} label="Friends Only" />
-                                {visibility && <Select id = "select" label = "Friend" value={friend} onChange={(e) => setFriend(e.target.value)} style={{ width: "95%", margin: "25px" }}>
+                                {visibility && <Select id="select" label="Friend" value={friend} onChange={(e) => setFriend(e.target.value)} style={{ width: "95%", margin: "25px" }}>
                                     {Friends.map((friend) => (
                                         <MenuItem value={friend.id}>{friend.displayName}</MenuItem>
                                     ))}
