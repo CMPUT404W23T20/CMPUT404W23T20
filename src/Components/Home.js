@@ -532,84 +532,124 @@ function Posts() {
 
                     </Box>
                     {openPost && (
-                        <Box style={{ flex: 1, margin: "10px", borderColor: "grey", borderStyle: "solid", backgroundColor: "#c3d3eb", display: "flex", flexDirection: "column" }}>
-                            <Card style={{ marginRight: "10px", marginBottom: "10px", marginLeft: "10px", borderRadius: "10px", borderColor: "black", marginTop: "5px", flex: 1, overflowY: "scroll" }}>
-                                <Box style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                                    <Typography variant="h2">{post.title}</Typography>
-                                    <Box style={{ display: "flex", alignItems: "center", marginTop: "20px" }}>
+                        <Box style={{
+                            flex: 1,
+                            margin: "10px",
+                            borderColor: "grey",
+                            borderStyle: "solid",
+                            backgroundColor: "#c3d3eb",
+                            display: "flex",
+                            flexDirection: "column",
+                            overflowY: "scroll"
+                        }}>
+                            <Box style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                                <Card style={{
+                                    margin: "20px",
+                                    padding: "20px",
+                                    borderRadius: "10px",
+                                    boxShadow: "0px 0px 5px rgba(0,0,0,0.3)",
+                                    backgroundColor: "#fff",
+                                }}>
+                                    <Typography variant="h4" style={{ marginBottom: "20px" }}>
+                                        {post.title}
+                                    </Typography>
+                                    <Box style={{ display: "flex", justifyContent: "center", alignItems: "center", marginBottom: "10px" }}>
                                         <img
-                                            src={(post.author.profileImage !== "no profileImage" && post.author.profileImage !== "")
-                                                ? post.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"}
-                                            alt="Profile Image"
-                                            style={{ borderRadius: "50%", width: "100px", height: "100px", objectFit: "cover" }}
+                                            src={
+                                                (post.author.profileImage !== "no profileImage" && post.author.profileImage !== "")
+                                                    ? post.author.profileImage
+                                                    : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"
+                                            }
+                                            alt="Author Profile"
+                                            style={{
+                                                borderRadius: "50%",
+                                                width: "50px",
+                                                height: "50px",
+                                                marginRight: "10px"
+                                            }}
                                         />
-                                        <Box style={{ display: "flex", flexDirection: "column", paddingLeft: "10px" }}>
-                                            <Typography variant="body2">Author: {post.author.displayName}</Typography>
-                                            <Typography variant="body2">Published: {post.published.substring(0, 10)}</Typography>
-                                            <Typography variant="body2">Node: {post.author.host}</Typography>
+                                        <Box>
+                                            <Typography variant="body2" style={{ fontSize: "14px", fontWeight: "bold", marginBottom: "5px" }}>
+                                                {post.author.displayName}
+                                            </Typography>
+                                            <Typography variant="body2" style={{ fontSize: "12px", color: "#999", marginBottom: "5px" }}>
+                                                {post.published.substring(0, 10)} | {post.author.host}
+                                            </Typography>
                                         </Box>
                                     </Box>
-                                    <Typography variant="h5" style={{ marginTop: "20px" }}>Description:</Typography>
-                                    <Typography variant="body2" style={{ marginBottom: "20px" }}>{post.description}</Typography>
-                                    {post.image_data ? (
-                                        <Card style={{ borderRadius: "10px", borderColor: "black", marginTop: "5px", marginBottom: "20px" }}>
+                                    <Typography variant="body1" style={{ marginBottom: "20px" }}>
+                                        {post.description}
+                                    </Typography>
+                                    {post.image_data && (
+                                        <Card style={{
+                                            margin: "20px",
+                                            padding: "20px",
+                                            borderRadius: "10px",
+                                            borderColor: "black",
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            alignItems: "center",
+                                        }}>
                                             <img
                                                 src={`data:image/png;base64,${post.image_data}`}
                                                 alt="Post Image"
-                                                style={{ width: "100%", height: "auto", objectFit: "contain" }}
+                                                style={{
+                                                    width: "100%",
+                                                    borderRadius: "10px"
+                                                }}
                                             />
                                         </Card>
-                                    ) : null}
-                                </Box>
+                                    )}
 
-                                <div id="postedComment" style={{ display: "none", borderRadius: "25px", backgroundColor: "#bce3c0", width: "40%", margin: "10px", paddingLeft: "5%", marginLeft: "30%" }}>
-                                    <Typography variant="h6" style={{ textAlign: "left", fontSize: 15 }}>
-                                        {commentPosted ? "Your comment has been sent!" : ""}
-                                    </Typography>
-                                </div>
-                                <Button variant="contained" color="secondary" onClick={() => openComments ? setOpenComments(false) : setopenPost(false)} style={{ position: "absolute", bottom: "30px", right: "30px" }}>
-                                    Close
-                                </Button>
-                                {!openComments && (
-                                    <div>
-                                        <Button variant="contained" color="primary" onClick={() => setOpenComments(true)} style={{ position: "absolute", bottom: "30px", right: "120px" }}>
-                                            Comments
-                                        </Button>
-                                        <Button variant="contained" title="like" color="secondary" startIcon={<FavoriteBorderIcon />} onClick={() => likeObject(post)} style={{ position: "absolute", bottom: "30px", right: "400px" }}   >
-                                            Like
-                                        </Button>
+                                    <div id="postedComment" style={{ display: "none", borderRadius: "25px", backgroundColor: "#bce3c0", width: "40%", margin: "10px", paddingLeft: "5%", marginLeft: "30%" }}>
+                                        <Typography variant="h6" style={{ textAlign: "left", fontSize: 15 }}>
+                                            {commentPosted ? "Your comment has been sent!" : ""}
+                                        </Typography>
                                     </div>
+                                    <Button variant="contained" color="secondary" onClick={() => openComments ? setOpenComments(false) : setopenPost(false)} style={{ position: "absolute", bottom: "30px", right: "30px" }}>
+                                        Close
+                                    </Button>
+                                    {!openComments && (
+                                        <div>
+                                            <Button variant="contained" color="primary" onClick={() => setOpenComments(true)} style={{ position: "absolute", bottom: "30px", right: "120px" }}>
+                                                Comments
+                                            </Button>
+                                            <Button variant="contained" title="like" color="secondary" startIcon={<FavoriteBorderIcon />} onClick={() => likeObject(post)} style={{ position: "absolute", bottom: "30px", right: "400px" }}   >
+                                                Like
+                                            </Button>
+                                        </div>
 
-                                )}
-                                <Button onClick={() => { setRepostModal(true) }} style={{ position: "absolute", bottom: "30px", right: openComments ? "120px" : "250px" }} color='primary' variant='contained'>Repost</Button>
-                            </Card>
-                            {openComments && (
-                                <Card style={{ marginRight: "10px", marginBottom: "10px", marginLeft: "10px", borderRadius: "10px", borderColor: "black", marginTop: "5px", flex: 1, overflowY: "scroll" }}>
-                                    <TextField id="comment" label="Comment..." variant="outlined" style={{ width: "75%", margin: "25px" }} />
-                                    <Button variant="contained" color="primary" onClick={() => postComment(document.getElementById("comment").value, post, `${post.author.id}`)} style={{ margin: 10, position: "relative", top: "25px" }}>Comment</Button>
-                                    {(`${post.author.id}` === localStorage.getItem("id")) ? <Typography variant="h6" style={{ textAlign: "left", paddingLeft: 30, fontSize: 20 }}>Comments:</Typography> : <h2></h2>}
-                                    {Comments.map((comments) => (
-                                        (((`${comments.post.id}` === `${post.id.split("/").pop()}`) && (`${post.visibility}` === "PUBLIC")) ?
-                                            (<div style={{ display: 'flex', alignItems: 'center', wordWrap: "break-word" }}>
-                                                <img src={comments.author.profileImage} alt="" style={{ borderRadius: "50%", marginLeft: 30, marginRight: 15, marginBottom: 10 }} width={55} height={55} />
-                                                <Typography variant="h6" style={{ display: "inline-block", textAlign: "left", paddingLeft: 15, fontSize: 20 }}>
-                                                    {comments.author.displayName}: {comments.comment}
-                                                </Typography>
-
-                                                <IconButton id="heartButton" variant="outlined" color="secondary" aria-label="likeComment" onClick={() => likeObject(comments)} style={{ marginLeft: 15 }}>
-                                                    <FavoriteBorderIcon />
-                                                </IconButton>
-
-                                            </div>
-                                            )
-                                            : (<h2></h2>))
-
-                                    ))}
-
-
-
+                                    )}
+                                    <Button onClick={() => { setRepostModal(true) }} style={{ position: "absolute", bottom: "30px", right: openComments ? "120px" : "250px" }} color='primary' variant='contained'>Repost</Button>
                                 </Card>
-                            )}
+                                {openComments && (
+                                    <Card style={{ marginRight: "10px", marginBottom: "10px", marginLeft: "10px", borderRadius: "10px", borderColor: "black", marginTop: "5px", flex: 1, overflowY: "scroll" }}>
+                                        <TextField id="comment" label="Comment..." variant="outlined" style={{ width: "75%", margin: "25px" }} />
+                                        <Button variant="contained" color="primary" onClick={() => postComment(document.getElementById("comment").value, post, `${post.author.id}`)} style={{ margin: 10, position: "relative", top: "25px" }}>Comment</Button>
+                                        {(`${post.author.id}` === localStorage.getItem("id")) ? <Typography variant="h6" style={{ textAlign: "left", paddingLeft: 30, fontSize: 20 }}>Comments:</Typography> : <h2></h2>}
+                                        {Comments.map((comments) => (
+                                            (((`${comments.post.id}` === `${post.id.split("/").pop()}`) && (`${post.visibility}` === "PUBLIC")) ?
+                                                (<div style={{ display: 'flex', alignItems: 'center', wordWrap: "break-word" }}>
+                                                    <img src={comments.author.profileImage} alt="" style={{ borderRadius: "50%", marginLeft: 30, marginRight: 15, marginBottom: 10 }} width={55} height={55} />
+                                                    <Typography variant="h6" style={{ display: "inline-block", textAlign: "left", paddingLeft: 15, fontSize: 20 }}>
+                                                        {comments.author.displayName}: {comments.comment}
+                                                    </Typography>
+
+                                                    <IconButton id="heartButton" variant="outlined" color="secondary" aria-label="likeComment" onClick={() => likeObject(comments)} style={{ marginLeft: 15 }}>
+                                                        <FavoriteBorderIcon />
+                                                    </IconButton>
+
+                                                </div>
+                                                )
+                                                : (<h2></h2>))
+
+                                        ))}
+
+
+
+                                    </Card>
+                                )}
+                            </Box>
                         </Box>
                     )}
                 </Box>
