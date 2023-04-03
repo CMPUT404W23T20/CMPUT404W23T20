@@ -1,13 +1,21 @@
 import React from 'react';
 import { Box,Card,List,ListItem, ListItemText, Typography } from '@material-ui/core';
 import Nav from './Nav';
+import { margin } from '@mui/system';
+import { json } from 'react-router-dom';
 import axios from 'axios';
 import { getApiUrls } from '../utils/utils';
 
 function Profile() {
     const [userInfo, setUserInfo] = React.useState([]);
 
-    const getUserInfo = async () => {
+    const [editProfile, setEditProfile] = React.useState(false);
+    const [author, setAuthor] = useState({});
+    const authorId = localStorage.getItem("id")
+
+
+    // Grab author info, function to be used for other functions that need author info
+    const getAuthor = async () => {
         let path = `${getApiUrls()}/service/authors/${localStorage.getItem("id")}`;
         let response = await axios.get(path, {
             headers: {
