@@ -1,16 +1,71 @@
 import React from 'react';
-import { Box, Button, Card, List, ListItem, TextField, Typography } from '@material-ui/core';
-import FavoriteIcon from '@mui/icons-material/FavoriteBorder';
+import { Box, Button, Card, List, ListItem, TextField, Typography, MenuItem, InputLabel, ListItemText  } from '@material-ui/core';
 import Nav from './Nav';
 import axios from 'axios';
+import FavoriteIcon from '@mui/icons-material/FavoriteBorder';
 import { getApiUrls } from '../utils/utils';
 import CircularProgress from '@mui/material/CircularProgress';
 import { TypeSpecimenOutlined } from '@mui/icons-material';
 import jwt_decode from "jwt-decode";
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import Checkbox from '@mui/material/Checkbox';
+import { FormControl, Modal, getTextFieldUtilityClass } from '@mui/material';
+
 
 
 function Inbox() {
     const [loading, setLoading] = React.useState(true);
+    const [friends, setFriends] = React.useState([]);
+    const [friend, setFriend] = React.useState([]);
+
+    const handleChange = (event) => {
+        const {
+            target: { value },
+        } = event;
+        setFriend(
+            // On autofill we get a stringified value.
+            typeof value === 'string' ? value.split(',') : value,
+        );
+    };
+
+    const getFriends = async () => {
+        // gets all friends for use in creating posts
+        let path = `${getApiUrls()}/service/authors/${localStorage.getItem("id")}/friends`;
+        let response = await axios.get(path, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        });
+        let friends = response.data.items;
+        setFriends(friends);
+    }
+
+    const handleRepost = async (post) => {
+        post.source = `${getApiUrls()}/service/authors/` + localStorage.getItem("id")
+        console.log("repost", post)
+        console.log("sending to", friend)
+        // send to all friend with display name in friend
+        for (let i = 0; i < friend.length; i++) {
+            // get id of friend in friends with display name = friend[i]
+            let id = ""
+            for (let j = 0; j < friends.length; j++) {
+                if (friends[j].displayName == friend[i]) {
+                    id = friends[j].id
+                    break
+                }
+            }
+            // send post to friend
+            let path = `${getApiUrls()}/service/authors/${id}/inbox`;
+            let response = await axios.post(path, post, {
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": "Bearer " + localStorage.getItem("token")
+                        }
+                    });
+            console.log(response)
+        }
+    }
     const get_inbox_items = async () => {
         setLoading(true);
         // get inbox items
@@ -117,6 +172,7 @@ function Inbox() {
         get_inbox_items().then((data) => {
             setItems(data);
         });
+        getFriends();
     }, []);
 
     const [comments, setComments] = React.useState([]);
@@ -308,6 +364,7 @@ function Inbox() {
 
     const [openPost, setopenPost] = React.useState(false);
     const [post, setPost] = React.useState();
+    const [repostModal, setRepostModal] = React.useState(false);
     return (
         <Box>
             <Box className="App" style={{ display: "flex", flexDirection: "row", height: "100vh", width: "100vw", alignItems: "left", justifyContent: "left" }}>
@@ -425,6 +482,7 @@ function Inbox() {
                                     <Button variant="contained" color="secondary" onClick={() => setopenPost(false)} style={{ position: "absolute", bottom: "30px", right: "30px" }}>
                                         Close
                                     </Button>
+                                    <Button onClick = {() => {setRepostModal(true)}} style={{ position: "absolute", bottom: "30px", right: "120px" }} color='primary' variant='contained'>Repost</Button>
                                 </Card>
                                 {(comments.length > 0) && <Card style={{ marginRight: "10px", marginBottom: "10px", marginLeft: "10px", borderRadius: "10px", borderColor: "black", marginTop: "5px", flex: 1, overflowY: "scroll" }}>
                                     <Typography variant="h6" style={{ textAlign: "left", paddingLeft: 30, fontSize: 20 }}>Comments:</Typography>
@@ -442,6 +500,25 @@ function Inbox() {
                     )}
                 </Box>
             </Box>
+            <Modal open={repostModal} onClose={() => {setRepostModal(false); setFriend([])}} style={{ display: "flex", alignItems: "center", justifyContent: "center" }} aria-labelledby="simple-modal-title" aria-describedby="simple-modal-description">
+                <Box style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh" }}>
+                    <Card style={{ padding: "20px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                        <Typography variant="h4">Repost</Typography>
+                        <FormControl style={{ width: "100%", margin: "10px" }}>
+                            <InputLabel htmlFor="repostTitle">friend</InputLabel>
+                            <Select id="repostTitle" label="friend" renderValue={(selected) => selected.join(', ')} multiple MenuProps = {{ PaperProps: { style: { maxHeight: 48 * 4.5 + 8, width: 250 } } }} onChange ={handleChange} value={friend}>
+                                {friends.map((friendItem) => (
+                                    <MenuItem key={friendItem.id} value={friendItem.displayName}>
+                                        <Checkbox checked={friend.indexOf(friendItem.displayName) > -1} />
+                                        <ListItemText primary={friendItem.displayName} />
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                        <Button variant="contained" color="primary" onClick={() => handleRepost(post)} style={{ margin: 10, position: "relative", top: "25px" }}>Repost</Button>
+                    </Card>
+                </Box>
+            </Modal>
         </Box>
     )
 }
