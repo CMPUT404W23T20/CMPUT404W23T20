@@ -17,6 +17,7 @@ function Posts() {
     const [followingPosts, setFollowingPosts] = React.useState([]);
     const [Comments, setComments] = React.useState([]);
     const [publicComments, setPublicComments] = React.useState([]);
+    const [Likes,setLikes] = React.useState([]);
     const [loadingFollowing, setLoadingFollowing] = React.useState(false);
     const [loadingPosts, setLoadingPosts] = React.useState(false);
     const [friends, setFriends] = React.useState([]);
@@ -147,6 +148,7 @@ function Posts() {
 
         let commentList = []
         let publicComments = []
+        let publicLikeList = []
 
         //get all comments in the "Public Posts" header
         for (let i = 0; i < posts.length; i++) {
@@ -161,10 +163,26 @@ function Posts() {
             let commentDataList = comments.data.items
             if (commentDataList == undefined) commentDataList = []
     
-        for (let i = 0; i < commentDataList.length; i++) {
-                commentList.push(commentDataList[i])
+            for (let i = 0; i < commentDataList.length; i++) {
+                    commentList.push(commentDataList[i])
+            }
+
+
+            //get likes 
+
+            let likesPath = `${getApiUrls()}` + "/service/authors/" + posts[i].author.id + "/posts/" + posts[i].id + "/likes";
+            let likes = await axios.get(likesPath, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                }
+            });
+            let likeCount= likes.data.items.length
+            let obj = {}
+            obj[`${posts[i].id}`] = likeCount //store the like count as an array of dictionaries
+            publicLikeList.push(obj)
         }
-        }
+
 
         for (let i = 0; i < allFollowingPosts.length; i++) {
             //getting comments for LOCAL posts
@@ -181,13 +199,25 @@ function Posts() {
                     for (let i = 0; i < commentDataList.length; i++) {
                         commentList.push(commentDataList[i])
                     }
-            
+                    let likesPath = `${getApiUrls()}` + "/service/authors/" + allFollowingPosts[i].author.id + "/posts/" + allFollowingPosts[i].id + "/likes";
+                    let likes = await axios.get(likesPath, {
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": "Bearer " + localStorage.getItem("token")
+                        }
+                    });
+                    let likeCount= likes.data.items.length
+                    let obj = {}
+                    obj[`${allFollowingPosts[i].id}`] = likeCount
+                    publicLikeList.push(obj)
                 }
 
             }
 
 
         }
+        console.log("likes",publicLikeList)
+        setLikes(publicLikeList)
         setComments(commentList)
     }
 
@@ -200,7 +230,6 @@ function Posts() {
 
     const [commentPosted, setCommentPosted] = React.useState(false);
     const postComment = async (comment, post, authorId) => {
-
         let id = post.author.id.split("/").pop()
         let path = `${getApiUrls()}` + "/service/authors/" + authorId + "/posts/" + post.id + "/comments";
 
@@ -282,6 +311,7 @@ function Posts() {
                 setCommentPosted(false);
             }, 5000);
     }
+
     const userInfo = () =>{           
         let token = localStorage.getItem("token")
         if (token === null ){
@@ -298,6 +328,7 @@ function Posts() {
 
     //check if you've already sent a like object 
     //avoid duplicates
+    const [likedAlready, setLikedAlready] = React.useState(false);
     const likeExists = async(object) =>{
         let path = `${getApiUrls()}/service/authors/`+localStorage.getItem("id") + "/liked";
         let response = await axios.get(path, {
@@ -335,6 +366,7 @@ function Posts() {
         }
         
         if (existingLike === true){ //person has already liked this
+            setLikedAlready(true)
             return //don't got through with the rest of this function
         }
     
@@ -361,7 +393,7 @@ function Posts() {
                     comment: object.id,
                     summary: `${author.username} likes your ${object.type}`,
                     objectLiked: objectType,
-                    object: objectOrigin,     
+                    object: objectOrigin,    
                 }
             }
             
@@ -425,24 +457,9 @@ function Posts() {
                 });
 
             }
-
-
         }
-
-        const getPostLikes = async(post) =>{
-            let path = `${getApiUrls()}/service/authors/`+ post.author.id+"/posts/"+post.id+"/likes"
-            let postLikes = await axios.get(path, {
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer "+localStorage.getItem("token")
-                }
-             });
-        
-             return postLikes.data.items.length
-
-        }
-
-        
+        setLikedAlready(true)
+        getFeed()
     }
     
     const [openPost, setopenPost] = React.useState(false);
@@ -473,7 +490,8 @@ function Posts() {
                                                         <Typography variant="body2">Author: {post.author.displayName}</Typography>
                                                         <Typography variant="body2">Published: {post.published.substring(0, 10)}</Typography>
                                                         <Typography variant="body2">Node: {post.author.host}</Typography>
-                                                        
+                                                        {Likes.map((likes,index) => (likes[post.id]) ?
+                                                        <Typography variant="body2">Likes: {likes[post.id]} </Typography>:<div style={{ display: "none"}}></div>)}
                                                     </Box>
                                                 </Box>)}
                                             </Box>
@@ -498,7 +516,8 @@ function Posts() {
                                                         <Typography variant="body2">Author: {post.author.displayName}</Typography>
                                                         <Typography variant="body2">Published: {post.published.substring(0, 10)}</Typography>
                                                         <Typography variant="body2">Node: {post.author.host}</Typography>
-                                                        <Typography id ={post.id} variant="body2">Likes: </Typography>
+                                                        {Likes.map((likes) => (likes[post.id]) ?
+                                                        <Typography variant="body2">Likes: {likes[post.id]} </Typography>:<div style={{ display: "none"}}></div>)}
                                                     </Box>
                                                 </Box>)}
                                             </Box>
@@ -518,7 +537,7 @@ function Posts() {
                                     <Box style={{ display: "flex", flexDirection: "column", paddingLeft: "10px", alignItems: "cen", justifyContent: "left" }}>
                                         <Typography variant="body2">Author: {post.author.displayName}</Typography>
                                         <Typography variant="body2">Published: {post.published.substring(0, 10)}</Typography>
-                                        <Typography variant="body2">Node: {post.author.host}</Typography>                                     
+                                        <Typography variant="body2">Node: {post.author.host}</Typography>     
                                     </Box>
                                 </Box>
                                 <Typography variant="h5">Description:</Typography>
@@ -541,7 +560,7 @@ function Posts() {
                                         <Button variant="contained" color="primary" onClick={() => setOpenComments(true)} style={{ position: "absolute", bottom: "30px", right: "120px"}}>
                                         Comments
                                        </Button> 
-                                       <Button variant="outlined" title = "like"color="secondary" startIcon={<FavoriteIcon />} onClick ={() => likeObject(post)}style={{position: "absolute", bottom: "30px", right: "400px"}}   >  
+                                       <Button variant="contained" title = "like"color="secondary" startIcon={<FavoriteBorderIcon />} onClick ={() => likeObject(post)}style={{position: "absolute", bottom: "30px", right: "400px"}}   >  
                                         Like
                                         </Button> 
                                     </div>
@@ -566,7 +585,6 @@ function Posts() {
                                                     <FavoriteBorderIcon />
                                                 </IconButton>
                                                     
-                                               
                                             </div>
                                             )
                                             : (<h2></h2>))
