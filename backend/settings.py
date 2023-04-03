@@ -34,7 +34,7 @@ SECRET_KEY = 'django-insecure-hw=1yrhm5yi61$z6!oo*jwb8$m@vv8ryfmnq=aoa+#-4(z7v$#
 DEBUG = True
 
 ALLOWED_HOSTS = ['https://t20-social-distribution.herokuapp.com/','http://127.0.0.1:8000','http://localhost:8000','http://localhost:8001'
-                 ,'http://localhost:3000','https://*.epic-app.vercel.app','https://*.epic-app.vercel.app/']
+                 ,'http://localhost:3000','https://epic-app.vercel.app','https://epic-app.vercel.app/']
 
 
 # Application definition
