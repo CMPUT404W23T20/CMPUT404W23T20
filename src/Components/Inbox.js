@@ -18,6 +18,8 @@ function Inbox() {
     const [loading, setLoading] = React.useState(true);
     const [friends, setFriends] = React.useState([]);
     const [friend, setFriend] = React.useState([]);
+    const [Likes, setLikes] = React.useState([]);
+
 
     const handleChange = (event) => {
         const {
@@ -123,6 +125,7 @@ function Inbox() {
             }
         }
         // get all source authors data
+        let likeList = []
         for (let i = 0; i < responseItems.length; i++) {
             if (responseItems[i].type === "post") {
                 if (!responseItems[i].source.includes(responseItems[i].origin)) {
@@ -137,9 +140,24 @@ function Inbox() {
                         responseItems[i].source = response.data;
                     }
                 }
+
+                let likesPath = `${getApiUrls()}` + "/service/authors/" + responseItems[i].author.id + "/posts/" + responseItems[i].id + "/likes";
+                let likes = await axios.get(likesPath, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer " + localStorage.getItem("token")
+                    }
+                });
+                let likeCount = likes.data.items.length
+                let obj = {}
+                obj[`${responseItems[i].id}`] = likeCount //store the like count as an array of dictionaries
+                likeList.push(obj)
             }
         }
+        console.log("look at these likes:",likeList)
         console.log(responseItems);
+      
+        setLikes(likeList)
         setLoading(false);
         return response.data.items
     }
@@ -363,6 +381,8 @@ function Inbox() {
 
 
         }
+        get_inbox_items();
+
     }
 
 
@@ -387,20 +407,18 @@ function Inbox() {
                                             <Box style={{ paddingLeft: 2 }}>
                                                 {item.type === 'post' && (
                                                     <Box style={{ display: "flex", flexDirection: "row", marginTop: "10px", marginLeft: "10px" }}>
-                                                        <Avatar src={(item.author.profileImage != "no profileImage" && item.author.profileImage != "") ? item.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt="Avatar" style={{ width: "100px", height: "100px", borderRadius: "50%" }} />
+                                                        <Avatar src={(item.author.profileImage != "no profileImage" && item.author.profileImage != "") ? item.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt="Avatar" style={{width: 70, height: 70 }} />
                                                         <Box style={{ display: "flex", flexDirection: "column", paddingLeft: "10px" }}>
                                                             <Typography variant="h5">Title: {item.title}</Typography>
                                                             {(item.source != item.origin) && (item.source != "No source") && (item.source != null) && (item.source && item.source.displayName) && (<Typography variant="body2">Sent By: {item.source.displayName}</Typography>)}
-                                                            <Typography variant="body2">Author: {item.author.displayName}</Typography>
-                                                            <Typography variant="body2">Published: {item.published.substring(0, 10)}</Typography>
-                                                            <Typography variant="body2">Node: {item.author.host}</Typography>
-                                                            <Typography variant="body2">Likes: {item.likes}</Typography>
+                                                            <Typography variant="body2" style={{ fontWeight: 600 }} >Author: {item.author.displayName}</Typography>
+                                                            <Typography variant="body2" style={{ color: "gray" }} >Published: {item.published.substring(0, 10)}</Typography>
+                                                            <Typography variant="body2" style={{ color: "gray" }} >Node: {item.author.host}</Typography>
+                                                            {Likes.map((likes) => (likes[item.id]) ?
+                                                            <Typography variant="body2" style={{ color: "gray" }}  >Likes: {likes[item.id]}</Typography> : null)}
                                                         </Box>
                                                     </Box>
                                                 )}
-                                                <Button variant="contained" title="like" color="secondary" startIcon={<FavoriteIcon />} onClick={() => likeObject(item)} style={{ position: "absolute", bottom: "30px", right: "400px" }}>
-                                                    Like
-                                                </Button>
                                             </Box>
                                         </Card>
                                     )}
@@ -550,6 +568,9 @@ function Inbox() {
                                         Close
                                     </Button>
                                     <Button onClick={() => { setRepostModal(true) }} style={{ position: "absolute", bottom: "30px", right: "120px" }} color='primary' variant='contained'>Repost</Button>
+                                    <Button variant="contained" title="like" color="secondary" startIcon={<FavoriteIcon />} onClick={() => likeObject(post)} style={{ position: "absolute", bottom: "30px", right: "500" }}>
+                                                    Like
+                                    </Button>
                                 </Card>
                                 {(comments.length > 0) && <Card style={{ marginRight: "10px", marginBottom: "10px", marginLeft: "10px", borderRadius: "10px", borderColor: "black", marginTop: "5px", flex: 1, overflowY: "scroll" }}>
                                     <Typography variant="h6" style={{ textAlign: "left", paddingLeft: 30, fontSize: 20 }}>Comments:</Typography>
