@@ -659,24 +659,26 @@ def inbox(request, author_id):
                     object = request.data['object']
                     
                     #see if it's a comment or post that the author liked
-                    print("HIII")
+           
                     if Comment.objects.filter(id = object[-36:]).exists():
                   
                         comment = Comment.objects.get(id = object[-36:])
                         objectLike = "Comment"
-                        print(object[:-36])
-
                         author  = Author.objects.get(id = request.data['author'][-36:])
                         summary = author.displayName+" likes your comment"
 
-                        #set objectLike to comment
-                        #set to post and comment
-                        #set summaryl
+                        postId = object[:-46]
+                        postId = postId[-36:]
+                        
+                        post = Post.objects.get(id = postId)    
+                        
+
                         like = Like.objects.create(author = author,
                                                    object=request.data['object'],
                                                    summary =summary,
                                                    comment = comment,
                                                    objectLiked = objectLike,
+                                                   post = post
                                                    )
 
 
@@ -690,10 +692,7 @@ def inbox(request, author_id):
 
                     
                     if Post.objects.filter(id = object[-36:]).exists():
-                        print("BYE")
                         post = Post.objects.get(id = object[-36:])    
-                        
-                     
                         objectLike = "Post"
                         author  = Author.objects.get(id = request.data['author'][-36:])
                         summary = author.displayName+" likes your post"
@@ -715,9 +714,6 @@ def inbox(request, author_id):
                         inbox.save()
 
 
-                    
-
-                #like = Like.objects.create(author = author,object=request.data['object'])
     
             return Response(status=status.HTTP_200_OK)
         elif request.data['type'].lower() == 'comment':
