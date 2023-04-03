@@ -545,7 +545,7 @@ def inbox(request, author_id):
             if like_data['post']:
                 like_data['post'] = PostSerializer(Post.objects.get(id=like_data['post'])).data
                 like_data['post']['author'] = AuthorSerializer(Author.objects.get(id=like_data['post']['author'])).data
-            elif like_data['comment']:
+            if like_data['comment']:
                 like_data['comment'] = CommentSerializer(Comment.objects.get(id=like_data['comment'])).data
             serializer.data['likes'][i] = like_data
 
@@ -633,20 +633,34 @@ def inbox(request, author_id):
             if "id" in request.data:
                 # get like from database
                 like = Like.objects.get(id = request.data['id'])
+                if request.data['comment']:
+                    object = request.data['object']
+                    postId = object[:-46] #remove characters
+                    postId = postId[-36:]      
+                    post = Post.objects.get(id = postId)    
+                    like.post  = post
+                    like.save()
             else:
                 # create like if remote like
-                authorURL = request.data['author']
                 object = request.data['object']
-                authorResponse = requests.get(authorURL)
-                author = authorResponse.json()
-                author['id'] = author['id'][author['id'].rfind('/')+1:]
-                author = Author.objects.filter(id = author['id']).first() 
-              
-                if not author:
-                    # add a ghost author for remote like if it doesn't exist
-                    newAuthor = Author.objects.create(id = author['id'], displayName = author['displayName'], username = author['displayName'], hidden = True, url = author['url'])
-                    #see if it's a comment or post that the author liked
-           
+                author_url = request.data['author']
+                author_response = requests.get(author_url)
+                author_data = author_response.json()
+                author_data['id'] = author_data['id'][author_data['id'].rfind('/')+1:]
+                authorQuery = Author.objects.filter(id = author_data['id'])
+                if not authorQuery:
+                    # add ghost author if it doesn't exist
+                    author_data['username'] = author_data['displayName']
+                    author_data['hidden'] = True
+                    authorSerializer = AuthorSerializer(data = author_data)
+                    if authorSerializer.is_valid():
+                        authorSerializer.save()
+                    else:
+                        # if author serializer is not valid, then return bad request
+                        return Response(authorSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                # get author and post from database
+                author = Author.objects.get(id = author_data['id'])
+
                 if Comment.objects.filter(id = object[-36:]).exists():
                   
                     comment = Comment.objects.get(id = object[-36:])
@@ -702,9 +716,6 @@ def inbox(request, author_id):
 
             inbox.likes.add(like)
             inbox.save()
-
-
-    
             return Response(status=status.HTTP_200_OK)
         elif request.data['type'].lower() == 'comment':
             # handles both local and remote comments 

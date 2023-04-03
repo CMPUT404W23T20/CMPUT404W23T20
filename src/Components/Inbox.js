@@ -344,8 +344,7 @@ function Inbox() {
 
 
             if (object.type.toLowerCase() === "comment"){
-               
-                let inboxPath = `https://t20-social-distribution.herokuapp.com/service/authors/${object.author.id}/inbox`; //send this to inbox of whoever posted
+                let inboxPath = `${object.author.host}/service/authors/${object.author.id}/inbox`; //send this to inbox of whoever posted
                 await axios.post(inboxPath, foreignLikeData, {
                     headers: {
                         "Content-Type": "application/json",
@@ -360,7 +359,6 @@ function Inbox() {
 
         }
     }
-
 
 
     const [openPost, setopenPost] = React.useState(false);
