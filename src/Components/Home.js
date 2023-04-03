@@ -339,6 +339,19 @@ function Posts() {
     const [likedAlready, setLikedAlready] = React.useState(false);
     const likeExists = async (object) => {
         let path = `${getApiUrls()}/service/authors/` + localStorage.getItem("id") + "/liked";
+        if (object.author.host == "https://group-13-epic-app.herokuapp.com/") { 
+                path = object.author.id + "/liked"
+            }
+        if (object.author.host == "https://social-distribution-media.herokuapp.com/api") { 
+                path = object.author.id + "/liked"
+            }
+        if (object.author.host == "https://cmput404-group6-instatonne.herokuapp.com") {  
+                path = object.author.id + "/liked";
+        }
+        if (object.author.host == "https://distributed-social-net.herokuapp.com/") {
+                path = object.author.id + "/liked"
+        }
+
         let response = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json",
@@ -347,6 +360,7 @@ function Posts() {
         }).catch((error) => {
             console.log(error);
         });
+
         let items = response.data.items
         for (let i = 0; i < items.length; i++) {
             if (items[i].object === object) {
@@ -427,10 +441,20 @@ function Posts() {
         else { //foreign node
 
             let inboxPath = object.author.id + "/inbox";
-            if (object.author.host == "https://group-13-epic-app.herokuapp.com/") {
+            if (object.author.host == "https://group-13-epic-app.herokuapp.com/") { //check for posts + comments
                 inboxPath = object.author.id + "/inbox/" //send to inbox
+             }
+    
+            if (post.author.host == "https://social-distribution-media.herokuapp.com/api") { //checked
+                inboxPath = object.author.id + "/inbox"
             }
-
+            if (post.author.host == "https://cmput404-group6-instatonne.herokuapp.com") {  //checked for posts + comment
+                inboxPath = object.author.id + "/inbox";
+            }
+            if (post.author.host == "https://distributed-social-net.herokuapp.com/") {
+                inboxPath = object.author.id + "/inbox"
+            }
+    
             let foreignLikeData = {
                 author: `${getApiUrls()}/service/authors/` + localStorage.getItem("id"),
                 object: object.id,
@@ -441,7 +465,7 @@ function Posts() {
             let password = "jn8VWYcZDrLrkQDcVsRi"
             let authG6 = "Basic " + btoa(username + ":" + password);
 
-            await axios.post(inboxPath, foreignLikeData, { //send this to commentor's inbox
+            await axios.post(inboxPath, foreignLikeData, { //send this to the author of post, regardless if like is comment or post
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": (object.author.host == path) ? "Bearer " + localStorage.getItem("token") : (object.author.host == "https://social-distribution-media.herokuapp.com/api") ? authG6 : (object.author.host == "https://cmput404-group6-instatonne.herokuapp.com") ? "Basic R3JvdXAyMDpncm91cDIwY21wdXQ0MDQ=" : ""
@@ -451,20 +475,6 @@ function Posts() {
                 console.log(error);
             });
 
-
-            if (object.type.toLowerCase() === "comment") {
-
-                let inboxPath = `https://t20-social-distribution.herokuapp.com/service/authors/${object.author.id}/inbox`; //send this to inbox of whoever posted
-                await axios.post(inboxPath, foreignLikeData, {
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": "Bearer " + localStorage.getItem("token")
-                    }
-                }).catch((error) => {
-                    console.log(error);
-                });
-
-            }
         }
         setLikedAlready(true)
         getFeed()
