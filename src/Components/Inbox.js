@@ -472,25 +472,75 @@ function Inbox() {
                         <Box style={{ flex: 1, margin: "10px", borderColor: "grey", borderStyle: "solid", backgroundColor: "#c3d3eb", display: "flex", flexDirection: "column", overflowY: "scroll" }}>
                             {loadingPost && <CircularProgress />}
                             {!loadingPost && <Box style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-                                <Card style={{ marginRight: "10px", marginBottom: "10px", marginLeft: "10px", borderRadius: "10px", borderColor: "black", marginTop: "5px", flex: 1 }}>
-                                    <Typography variant="h2">{post.title}</Typography>
-                                    <Box>
-                                        <img src={(post.author.profileImage != "no profileImage" && post.author.profileImage != "") ? post.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt="IMG" style={{ borderRadius: "50%" }} width="100px" height="100px" />
-                                        <Box style={{ display: "flex", flexDirection: "column", paddingLeft: "10px", alignItems: "cen", justifyContent: "left" }}>
-                                            <Typography variant="body2">Author: {post.author.displayName}</Typography>
-                                            <Typography variant="body2">Published: {post.published.substring(0, 10)}</Typography>
-                                            <Typography variant="body2">Node: {post.author.host}</Typography>
+                                <Card style={{
+                                    margin: "20px",
+                                    padding: "20px",
+                                    borderRadius: "10px",
+                                    boxShadow: "0px 0px 5px rgba(0,0,0,0.3)",
+                                    backgroundColor: "#fff",
+                                }}>
+                                    <Typography variant="h4" style={{ marginBottom: "20px" }}>
+                                        {post.title}
+                                    </Typography>
+                                    <Box style={{ display: "flex", justifyContent: "center", alignItems: "center", marginBottom: "10px" }}>
+                                        <img
+                                            src={
+                                                (post.author.profileImage !== "no profileImage" && post.author.profileImage !== "")
+                                                    ? post.author.profileImage
+                                                    : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"
+                                            }
+                                            alt="Author Profile"
+                                            style={{
+                                                borderRadius: "50%",
+                                                width: "50px",
+                                                height: "50px",
+                                                marginRight: "10px"
+                                            }}
+                                        />
+                                        <Box>
+                                            <Typography variant="body2" style={{ fontSize: "14px", fontWeight: "bold", marginBottom: "5px" }}>
+                                                {post.author.displayName}
+                                            </Typography>
+                                            <Typography variant="body2" style={{ fontSize: "12px", color: "#999", marginBottom: "5px" }}>
+                                                {post.published.substring(0, 10)} | {post.author.host}
+                                            </Typography>
                                         </Box>
                                     </Box>
-                                    <Typography variant="h5">Description:</Typography>
-                                    <Typography variant="body2">{post.description}</Typography>
-                                    {post.image_data ? (
-                                        <Card style={{ marginRight: "10px", marginBottom: "10px", marginLeft: "10px", borderRadius: "10px", borderColor: "black", marginTop: "5px", flex: 1 }}>
-                                            <img src={`data:image/png;base64,${post.image_data}`} alt="Post Image" style={{ width: "100%" }} />
+                                    <Typography variant="body1" style={{ marginBottom: "20px" }}>
+                                        {post.description}
+                                    </Typography>
+                                    {post.image_data && (
+                                        <Card style={{
+                                            margin: "20px",
+                                            padding: "20px",
+                                            borderRadius: "10px",
+                                            borderColor: "black",
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            alignItems: "center",
+                                        }}>
+                                            <img
+                                                src={`data:image/png;base64,${post.image_data}`}
+                                                alt="Post Image"
+                                                style={{
+                                                    width: "100%",
+                                                    borderRadius: "10px"
+                                                }}
+                                            />
                                         </Card>
-                                    ) : null}
-                                    <div id="postedComment" style={{ display: "none", borderRadius: "25px", backgroundColor: "#bce3c0", width: "40%", margin: "10px", paddingLeft: "5%", marginLeft: "30%" }}>
-                                    </div>
+                                    )}
+                                    <div
+                                        id="postedComment"
+                                        style={{
+                                            display: "none",
+                                            borderRadius: "25px",
+                                            backgroundColor: "#bce3c0",
+                                            width: "40%",
+                                            margin: "20px auto",
+                                            padding: "10px",
+                                            textAlign: "center",
+                                        }}
+                                    ></div>
                                     <Button variant="contained" color="secondary" onClick={() => setopenPost(false)} style={{ position: "absolute", bottom: "30px", right: "30px" }}>
                                         Close
                                     </Button>
