@@ -82,6 +82,7 @@ function Posts() {
                 "Authorization": "Bearer " + localStorage.getItem("token")
             }
         });
+        /*
         let followingList = following.data.items
         let allFollowingPosts = []
         let username = "Group20"
@@ -122,7 +123,8 @@ function Posts() {
         console.log("followingPosts", allFollowingPosts)
         setFollowingPosts(allFollowingPosts)
         setLoadingFollowing(true)
-
+        */
+        // get all local public posts
         let path = `${getApiUrls()}/service/posts`;
         let response = await axios.get(path, {
             headers: {
@@ -131,7 +133,9 @@ function Posts() {
         });
 
         let posts = response.data.items;
+
         // remove posts that are in allFollowingPosts by id
+        /*
         posts = posts.filter((post) => {
             for (let i = 0; i < allFollowingPosts.length; i++) {
                 if (post.id == allFollowingPosts[i].id) {
@@ -140,6 +144,8 @@ function Posts() {
             }
             return true
         })
+        */
+
 
         console.log("posts", posts)
         setPosts(posts);
@@ -183,7 +189,7 @@ function Posts() {
             publicLikeList.push(obj)
         }
 
-
+        /*
         for (let i = 0; i < allFollowingPosts.length; i++) {
             //getting comments for LOCAL posts
             if (typeof allFollowingPosts[i].author !== 'undefined') { //running into weird bug at :3000 host w/out this
@@ -211,11 +217,9 @@ function Posts() {
                     obj[`${allFollowingPosts[i].id}`] = likeCount
                     publicLikeList.push(obj)
                 }
-
             }
-
-
         }
+        */
         console.log("likes",publicLikeList)
         setLikes(publicLikeList)
         setComments(commentList)
@@ -475,7 +479,7 @@ function Posts() {
                 </Box>
                 <Box style={{ display: "flex", flexDirection: "row", backgroundColor: "white", flex: 1, height: "100vh" }}>
                     <Box style={{ display: "flex", flexDirection: "row", flex: 1, margin: "10px", borderColor: "grey", borderStyle: "solid", backgroundColor: "#c3d3eb" }}>
-                        <Box style={{ display: "flex", flexDirection: "column", flex: 1, margin: "10px" }}>
+                        {/*<Box style={{ display: "flex", flexDirection: "column", flex: 1, margin: "10px" }}>
                             <Typography variant="h4">Following's Public Posts</Typography>
                             <List style={{ flex: 1, overflowY: "scroll", maxHeight: "100%" }}>
                                 {!loadingFollowing && <CircularProgress />}
@@ -499,9 +503,9 @@ function Posts() {
                                     </ListItem>
                                 ))}
                             </List>
-                        </Box>
+                                </Box>*/}
                         <Box style={{ display: "flex", flexDirection: "column", flex: 1, margin: "10px" }}>
-                            <Typography variant="h4">Public Posts</Typography>
+                            <Typography variant="h4">Local Public Posts</Typography>
                             <List style={{ flex: 1, overflowY: "scroll", maxHeight: "100%" }}>
                                 {!loadingPosts && <CircularProgress />}
                                 {loadingPosts && Posts.map((post) => (
