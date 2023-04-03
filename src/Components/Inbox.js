@@ -30,7 +30,7 @@ function Inbox() {
 
     const getFriends = async () => {
         // gets all friends for use in creating posts
-        let path = `${getApiUrls()}/service/authors/${localStorage.getItem("id")}/friends`;
+        let path = `${getApiUrls()}/service/authors/${localStorage.getItem("id")}/followers`;
         let response = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json",
@@ -43,8 +43,12 @@ function Inbox() {
 
     const handleRepost = async (post) => {
         post.source = `${getApiUrls()}/service/authors/` + localStorage.getItem("id")
-        console.log("repost", post)
-        console.log("sending to", friend)
+        // if friend is empty, send to all friends
+        if (friend.length == 0) {
+            for (let i = 0; i < friends.length; i++) {
+                friend.push(friends[i].displayName)
+            }
+        }
         // send to all friend with display name in friend
         for (let i = 0; i < friend.length; i++) {
             // get id of friend in friends with display name = friend[i]
