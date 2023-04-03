@@ -584,6 +584,9 @@ function Posts() {
                                     <Typography variant="body1" style={{ marginBottom: "20px" }}>
                                         {post.description}
                                     </Typography>
+                                    <Typography variant="body1" style={{ marginBottom: "20px" }}>
+                                        {post.content}
+                                    </Typography>
                                     {post.image_data && (
                                         <Card style={{
                                             margin: "20px",

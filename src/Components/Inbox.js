@@ -140,15 +140,23 @@ function Inbox() {
                         responseItems[i].source = response.data;
                     }
                 }
-
-                let likesPath = `${getApiUrls()}` + "/service/authors/" + responseItems[i].author.id + "/posts/" + responseItems[i].id + "/likes";
+                let likesPath
+                // if https://t20-social-distribution.herokuapp.co is in the origin, then it is a local post
+                if ( responseItems[i].origin.includes("https://t20-social-distribution.herokuapp.co")) {
+                    likesPath = `${getApiUrls()}` + "/service/authors/" + responseItems[i].source.id + "/posts/" + responseItems[i].id + "/likes";
+                } else {
+                    likesPath = responseItems[i].id + "/likes";
+                }
                 let likes = await axios.get(likesPath, {
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": "Bearer " + localStorage.getItem("token")
                     }
                 });
-                let likeCount = likes.data.items.length
+                let likeCount = 0;
+                if (likes && likes.data && likes.data.items) {
+                    likeCount = likes.data.items.length;
+                }
                 let obj = {}
                 obj[`${responseItems[i].id}`] = likeCount //store the like count as an array of dictionaries
                 likeList.push(obj)
@@ -531,6 +539,9 @@ function Inbox() {
                                     </Box>
                                     <Typography variant="body1" style={{ marginBottom: "20px" }}>
                                         {post.description}
+                                    </Typography>
+                                    <Typography variant="body1" style={{ marginBottom: "20px" }}>
+                                        {post.content}
                                     </Typography>
                                     {post.image_data && (
                                         <Card style={{

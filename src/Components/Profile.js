@@ -139,6 +139,12 @@ function Profile() {
 
   // Handles editing of profile
   const handleEditProfile = async (newDisplayName, newGithub) => {
+    if (newDisplayName === "") {
+      newDisplayName = author.displayName;
+    }
+    if (newGithub === "") {
+      newGithub = author.github;
+    }
 
     let payload = {
       "displayName": newDisplayName,
