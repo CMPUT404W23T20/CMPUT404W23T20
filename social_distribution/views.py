@@ -641,21 +641,84 @@ def inbox(request, author_id):
                 if not author:
                     # add a ghost author for remote like if it doesn't exist
                     author = Author.objects.create(id = author['id'], displayName = author['displayName'], username = author['displayName'], hidden = True, url = author['url'])
-              
-                postURL = request.data['post']
-                postId = postURL[postURL.rfind('/')+1:]
-                post = Post.objects.filter(id = postId).first()
-                comment = Comment.objects.get(id = request.data['comment'])
-                if not post or not comment:
-                    # if post doesn't exist, then return bad request
-                    return Response(status=status.HTTP_400_BAD_REQUEST)
-                like = Like.objects.create(author = author,object=object)
-            if not like:
-                # if like doesn't exist, then return bad request
-                return Response(status=status.HTTP_400_BAD_REQUEST)
-            # add like to inbox and save 
-            inbox.likes.add(like)
-            inbox.save()
+                if "https://t20-social-distribution.herokuapp.com" in request.data['author']: #local like
+                    if request.data['post']:
+                        postURL = request.data['post']
+                        postId = postURL[postURL.rfind('/')+1:]
+                        post = Post.objects.filter(id = postId).first()
+                        if not post:
+                            # if post doesn't exist, then return bad request
+                             return Response(status=status.HTTP_400_BAD_REQUEST)
+                    if request.data['comment']:
+                        comment = Comment.objects.get(id = request.data['comment'])
+                        if not comment:
+                            # if post doesn't exist, then return bad request
+                            return Response(status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    
+                    object = request.data['object']
+                    
+                    #see if it's a comment or post that the author liked
+                    print("HIII")
+                    if Comment.objects.filter(id = object[-36:]).exists():
+                  
+                        comment = Comment.objects.get(id = object[-36:])
+                        objectLike = "Comment"
+                        print(object[:-36])
+
+                        author  = Author.objects.get(id = request.data['author'][-36:])
+                        summary = author.displayName+" likes your comment"
+
+                        #set objectLike to comment
+                        #set to post and comment
+                        #set summaryl
+                        like = Like.objects.create(author = author,
+                                                   object=request.data['object'],
+                                                   summary =summary,
+                                                   comment = comment,
+                                                   objectLiked = objectLike,
+                                                   )
+
+
+                        if not like:
+                            # if like doesn't exist, then return bad request
+                            return Response(status=status.HTTP_400_BAD_REQUEST)
+                        
+                        # add like to inbox and save 
+                        inbox.likes.add(like)
+                        inbox.save()
+
+                    
+                    if Post.objects.filter(id = object[-36:]).exists():
+                        print("BYE")
+                        post = Post.objects.get(id = object[-36:])    
+                        
+                     
+                        objectLike = "Post"
+                        author  = Author.objects.get(id = request.data['author'][-36:])
+                        summary = author.displayName+" likes your post"
+
+                        like = Like.objects.create(author = author,
+                                                   object=request.data['object'],
+                                                   summary =summary,
+                                                   post = post,
+                                                   objectLiked = objectLike,
+                                                   )
+
+
+                        if not like:
+                            # if like doesn't exist, then return bad request
+                            return Response(status=status.HTTP_400_BAD_REQUEST)
+                        
+                        # add like to inbox and save 
+                        inbox.likes.add(like)
+                        inbox.save()
+
+
+                    
+
+                #like = Like.objects.create(author = author,object=request.data['object'])
+    
             return Response(status=status.HTTP_200_OK)
         elif request.data['type'].lower() == 'comment':
             # handles both local and remote comments 

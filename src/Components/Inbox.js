@@ -145,7 +145,6 @@ function Inbox() {
         setPost(post);
 
         // get comments on post
-
         let id = post.author.id.split("/").pop()
         if (id === localStorage.getItem("id")) {
             path = `${getApiUrls()}/service/authors/${post.author.id}/posts/${post.id}/comments`;
