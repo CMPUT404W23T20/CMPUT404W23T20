@@ -375,7 +375,7 @@ function Posts() {
 
         if (existingLike === true) { //person has already liked this
             setLikedAlready(true)
-            return //don't got through with the rest of this function
+            return //don't go through with the rest of this function
         }
 
         //local to local like 
