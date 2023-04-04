@@ -582,7 +582,7 @@ function Posts() {
                                     <Typography variant="body1" style={{ marginBottom: "20px" }}>
                                         {post.description}
                                     </Typography>
-                                    {post.content.includes("base64") ? (
+                                    {(post.content && post.content.includes("base64")) ? (
                                         <Card style={{
                                             margin: "20px",
                                             padding: "20px",
