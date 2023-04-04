@@ -10,7 +10,7 @@ class Author(models.Model):
     username = models.CharField(max_length=200)
     url = models.CharField(max_length=200, default=hostAddress + "/service/authors/")
     github = models.CharField(max_length=200, default="No github")
-    profileImage = models.CharField(max_length=200, default="https://i.imgur.com/k7XVwpB.jpeg")
+    profileImage = models.CharField(max_length=10000, default="https://i.imgur.com/k7XVwpB.jpeg")
     password = models.CharField(max_length=200, default="No password")
     hidden = models.BooleanField(default=False)
 

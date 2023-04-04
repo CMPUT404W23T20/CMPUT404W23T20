@@ -138,18 +138,22 @@ function Profile() {
   }
 
   // Handles editing of profile
-  const handleEditProfile = async (newDisplayName, newGithub) => {
+  const handleEditProfile = async (newDisplayName, newGithub,profileImage) => {
     if (newDisplayName === "") {
       newDisplayName = author.displayName;
     }
     if (newGithub === "") {
       newGithub = author.github;
     }
+    if (profileImage === "") {
+      profileImage = author.profileImage;
+    }
 
     let payload = {
       "displayName": newDisplayName,
       "github": newGithub,
       "username": author.username,
+      "profileImage": profileImage
     }
     console.log(payload);
     let path = `${getApiUrls()}/service/authors/${localStorage.getItem("id")}`;
@@ -222,11 +226,10 @@ function Profile() {
                 <Box style={{ display: "center", flexDirection: "column", flex: 1, margin: "40px", alignItems: "center" }}>
                   <TextField id="displayName" label="Display Name" variant="outlined" style={{ width: "95%", margin: "25px" }} />
                   <TextField id="github" label="Github" variant="outlined" style={{ width: "95%", margin: "25px" }} />
-
-
+                  <TextField id="profileImage" label="Profile Image" variant="outlined" style={{ width: "95%", margin: "25px" }} />
                 </Box>
                 <Box style={{ alignSelf: "flex-end" }}>
-                  <Button variant="contained" color="primary" onClick={() => handleEditProfile(document.getElementById("displayName").value, document.getElementById("github").value)} style={{ margin: 10, alignSelf: "flex-end" }}>
+                  <Button variant="contained" color="primary" onClick={() => handleEditProfile(document.getElementById("displayName").value, document.getElementById("github").value,document.getElementById("profileImage").value)} style={{ margin: 10, alignSelf: "flex-end" }}>
                     Submit
                   </Button>
                   <Button variant="contained" color="secondary" onClick={() => setEditProfile(false)} style={{ margin: 10, alignSelf: "flex-end" }}>
