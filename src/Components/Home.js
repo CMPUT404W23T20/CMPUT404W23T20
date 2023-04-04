@@ -505,7 +505,7 @@ function Posts() {
                             </List>
                                 </Box>*/}
                         <Box style={{ display: "flex", flexDirection: "column", flex: 1, margin: "10px" }}>
-                            <Typography variant="h4">Local Public Posts</Typography>
+                            <Typography variant="h4">Public Posts</Typography>
                             <List style={{ flex: 1, overflowY: "scroll", maxHeight: "100%", marginTop: "10px" }}>
                                 {!loadingPosts && <CircularProgress />}
                                 {loadingPosts && Posts.map((post) => (
@@ -582,9 +582,25 @@ function Posts() {
                                     <Typography variant="body1" style={{ marginBottom: "20px" }}>
                                         {post.description}
                                     </Typography>
-                                    <Typography variant="body1" style={{ marginBottom: "20px" }}>
-                                        {post.content}
-                                    </Typography>
+                                    {post.content.includes("base64") ? (
+                                        <Card style={{
+                                            margin: "20px",
+                                            padding: "20px",
+                                            borderRadius: "10px",
+                                            borderColor: "black",
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            alignItems: "center",
+                                        }}>
+                                            <img
+                                                src={post.content}
+                                                alt="Post Image"
+                                                style={{
+                                                    width: "100%",
+                                                    borderRadius: "10px"
+                                                }}
+                                            />
+                                        </Card>) : <Typography variant="body1" style={{ marginBottom: "20px" }}>post.content</Typography>}
                                     {post.image_data && (
                                         <Card style={{
                                             margin: "20px",
