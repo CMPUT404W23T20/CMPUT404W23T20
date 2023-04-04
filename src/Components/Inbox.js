@@ -19,6 +19,7 @@ function Inbox() {
     const [friends, setFriends] = React.useState([]);
     const [friend, setFriend] = React.useState([]);
     const [Likes, setLikes] = React.useState([]);
+    const [commentPosted, setCommentPosted] = React.useState(false);
 
 
     const handleChange = (event) => {
@@ -233,15 +234,17 @@ function Inbox() {
 
         // get comments on post
         let id = post.author.id.split("/").pop()
-        if (id === localStorage.getItem("id")) {
+        //console.log(id, localStorage.getItem("id"))
+        //if (id === localStorage.getItem("id")) {
             path = `${getApiUrls()}/service/authors/${post.author.id}/posts/${post.id}/comments`;
             response = await axios.get(path, {
                 headers: {
                     "Content-Type": "application/json",
                 }
             });
-            setComments(response.data.items);
-        }
+            console.log(response.data.items)
+            if (response && response.data && response.data.items)setComments(response.data.items);
+        //}
         setLoadingPost(false);
     }
     const userInfo = () => {
@@ -393,6 +396,88 @@ function Inbox() {
 
     }
 
+    const postComment = async (comment, post, authorId) => {
+        let id = post.author.id.split("/").pop()
+        let path = `${getApiUrls()}` + "/service/authors/" + authorId + "/posts/" + post.id + "/comments";
+
+        if (post.author.host == "https://social-distribution-media.herokuapp.com/api") {
+            path = post.author.id + "/inbox"
+        }
+        if (post.author.host == "https://group-13-epic-app.herokuapp.com/") {
+            path = post.author.id + "/inbox/" //send to inbox
+        }
+        if (post.author.host == "https://cmput404-group6-instatonne.herokuapp.com") { //have not verified this group to check if path is correct
+            path = post.author.id + "/inbox";
+        }
+        if (post.author.host == "https://distributed-social-net.herokuapp.com/") {
+            path = post.author.id + "/inbox"
+        }
+
+        if (post.author.host === "https://t20-social-distribution.herokuapp.com") { //sending this comment to a local post
+            let data = {
+                author: localStorage.getItem("id"),
+                comment: comment,
+                post: post.id
+            }
+
+            //post to comments
+            let postComment = await axios.post(path, data, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                }
+            });
+
+            //post to inbox
+            path = `${getApiUrls()}/service/authors/${post.author.id}/inbox`;
+            await axios.post(path, postComment.data, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                }
+            }).catch((error) => {
+                console.log(error);
+            });
+        }
+        else { //comment to a foreign node
+            let data = {
+                "type": "comment",
+                "author": "https://t20-social-distribution.herokuapp.com/service/authors/" + localStorage.getItem("id"),  //author of this comment
+                "contentType": "text/plain",
+                "comment": comment, //comment user made
+                "post": post.id, //author of the post
+            }
+
+            let username = "Group20"
+            let password = "jn8VWYcZDrLrkQDcVsRi"
+            let authG6 = "Basic " + btoa(username + ":" + password);
+
+            await axios.post(path, data, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": (post.author.host == path) ? "Bearer " + localStorage.getItem("token") : (post.author.host == "https://social-distribution-media.herokuapp.com/api") ? authG6 : (post.author.host == "https://cmput404-group6-instatonne.herokuapp.com") ? "Basic R3JvdXAyMDpncm91cDIwY21wdXQ0MDQ=" : ""
+
+                }
+            }).catch((error) => {
+                console.log(error);
+            });
+            console.log(data)
+
+
+        }
+
+        handleOpenPost(post);
+        setCommentPosted(true);
+        //clear the input box after sending comment*/
+        document.getElementById("comment").value = ""
+        document.getElementById("postedComment").style.display = "Block"
+
+        setTimeout(
+            function () {
+                setCommentPosted(false);
+            }, 5000);
+    }
+
 
     const [openPost, setopenPost] = React.useState(false);
     const [post, setPost] = React.useState();
@@ -509,6 +594,7 @@ function Inbox() {
                                     borderRadius: "10px",
                                     boxShadow: "0px 0px 5px rgba(0,0,0,0.3)",
                                     backgroundColor: "#fff",
+                                    flex:1
                                 }}>
                                     <Typography variant="h4" style={{ marginBottom: "20px" }}>
                                         {post.title}
@@ -583,9 +669,11 @@ function Inbox() {
                                                     Like
                                     </Button>
                                 </Card>
-                                {(comments.length > 0) && <Card style={{ marginRight: "10px", marginBottom: "10px", marginLeft: "10px", borderRadius: "10px", borderColor: "black", marginTop: "5px", flex: 1, overflowY: "scroll" }}>
+                                 <Card style={{ marginRight: "10px", marginBottom: "10px", marginLeft: "10px", borderRadius: "10px", borderColor: "black", marginTop: "5px", flex: 1, overflowY: "scroll" }}>
                                     <Typography variant="h6" style={{ textAlign: "left", paddingLeft: 30, fontSize: 20 }}>Comments:</Typography>
-                                    {comments.map((comments) => (
+                                    <TextField id="comment" label="Comment..." variant="outlined" style={{ width: "70%"}} />
+                                    <Button variant="contained" color="primary" onClick={() => postComment(document.getElementById("comment").value, post, `${post.author.id}`)} style={{position: "relative", top: "7px" }}>Comment</Button>
+                                    { (comments.length > 0) && comments.map((comments) => (
                                         <div style={{ display: 'flex', alignItems: 'center', wordWrap: "break-word" }}>
                                             <img src={comments.author.profileImage} alt="" style={{ borderRadius: "50%", marginLeft: 30, marginRight: 15, marginBottom: 10 }} width={55} height={55} />
                                             <Typography variant="h6" style={{ display: "inline-block", textAlign: "left", paddingLeft: 15, fontSize: 20 }}>
@@ -593,7 +681,7 @@ function Inbox() {
                                             </Typography>
                                         </div>
                                     ))}
-                                </Card>}
+                                </Card>
                             </Box>}
                         </Box>
                     )}

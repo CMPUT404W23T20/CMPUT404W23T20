@@ -553,6 +553,8 @@ function Posts() {
                                     borderRadius: "10px",
                                     boxShadow: "0px 0px 5px rgba(0,0,0,0.3)",
                                     backgroundColor: "#fff",
+                                    flex:2,
+                                    overflowY: "auto"
                                 }}>
                                     <Typography variant="h4" style={{ marginBottom: "20px" }}>
                                         {post.title}
@@ -630,9 +632,9 @@ function Posts() {
                                     <Button onClick={() => { setRepostModal(true) }} style={{ position: "absolute", bottom: "30px", right: openComments ? "120px" : "250px" }} color='primary' variant='contained'>Repost</Button>
                                 </Card>
                                 {openComments && (
-                                    <Card style={{ marginRight: "10px", marginBottom: "10px", marginLeft: "10px", borderRadius: "10px", borderColor: "black", marginTop: "5px", flex: 1, overflowY: "scroll" }}>
-                                        <TextField id="comment" label="Comment..." variant="outlined" style={{ width: "75%", margin: "25px" }} />
-                                        <Button variant="contained" color="primary" onClick={() => postComment(document.getElementById("comment").value, post, `${post.author.id}`)} style={{ margin: 10, position: "relative", top: "25px" }}>Comment</Button>
+                                    <Card style={{ marginRight: "10px", marginBottom: "10px", marginLeft: "10px", borderRadius: "10px", borderColor: "black", flex: 1, overflowY: "auto" }}>
+                                        <TextField id="comment" label="Comment..." variant="outlined" style={{ width: "70%"}} />
+                                        <Button variant="contained" color="primary" onClick={() => postComment(document.getElementById("comment").value, post, `${post.author.id}`)} style={{position: "relative", top: "7px" }}>Comment</Button>
                                         {(`${post.author.id}` === localStorage.getItem("id")) ? <Typography variant="h6" style={{ textAlign: "left", paddingLeft: 30, fontSize: 20 }}>Comments:</Typography> : <h2></h2>}
                                         {Comments.map((comments) => (
                                             (((`${comments.post.id}` === `${post.id.split("/").pop()}`) && (`${post.visibility}` === "PUBLIC")) ?
