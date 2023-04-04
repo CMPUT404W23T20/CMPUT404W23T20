@@ -138,6 +138,12 @@ def followers(request, author_id = None, follower_id = None):
         if not Author.objects.filter(id = author_id):
             # if author does not exist
             data = request.data
+            if not data['profileImage']:
+                data['profileImage'] = ''
+            if not data['github']:
+                data['github'] = ''
+            if not data['username']:
+                data['username'] = ''
             if data:
                 # create author
                 serializer = AuthorSerializer(data=data)

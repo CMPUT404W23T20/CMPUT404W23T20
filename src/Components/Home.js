@@ -86,7 +86,6 @@ function Posts() {
                 "Authorization": "Bearer " + localStorage.getItem("token")
             }
         });
-        /*
         let followingList = following.data.items
         let allFollowingPosts = []
         let username = "Group20"
@@ -127,7 +126,6 @@ function Posts() {
         console.log("followingPosts", allFollowingPosts)
         setFollowingPosts(allFollowingPosts)
         setLoadingFollowing(true)
-        */
         // get all local public posts
         let path = `${getApiUrls()}/service/posts`;
         let response = await axios.get(path, {
@@ -139,7 +137,6 @@ function Posts() {
         let posts = response.data.items;
 
         // remove posts that are in allFollowingPosts by id
-        /*
         posts = posts.filter((post) => {
             for (let i = 0; i < allFollowingPosts.length; i++) {
                 if (post.id == allFollowingPosts[i].id) {
@@ -148,7 +145,6 @@ function Posts() {
             }
             return true
         })
-        */
 
 
         console.log("posts", posts)
@@ -193,7 +189,6 @@ function Posts() {
             publicLikeList.push(obj)
         }
 
-        /*
         for (let i = 0; i < allFollowingPosts.length; i++) {
             //getting comments for LOCAL posts
             if (typeof allFollowingPosts[i].author !== 'undefined') { //running into weird bug at :3000 host w/out this
@@ -223,10 +218,11 @@ function Posts() {
                 }
             }
         }
-        */
         console.log("likes", publicLikeList)
         setLikes(publicLikeList)
         setComments(commentList)
+        // combine all posts and allFollowingPosts
+        setPosts(posts.concat(allFollowingPosts))
     }
 
     React.useEffect(() => {

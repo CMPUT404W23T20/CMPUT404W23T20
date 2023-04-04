@@ -317,6 +317,27 @@ function Friends() {
         }).catch((error) => {
             console.log(error);
         });
+        // create follow locally 
+        path = `${getApiUrls()}/service/authors/${id}/followers/${userId}`;
+        console.log(other)
+        let followResponse = await axios.put(path, {
+            "id": id,
+            "host": other.host ? other.host : "",
+            "displayName": other.displayName ? other.displayName : "",
+            "url": other.url ? other.url : "",
+            "github": other.github ? other.github : "",
+            "profileImage": other.profileImage ? other.profileImage : "",
+            "username": other.username ? other.username : other.displayName,
+        }, {
+            headers: {
+                "Content-Type": "application/json",
+            }
+        }).catch((error) => {
+            console.log(error);
+        });
+        // add other to followinglist
+        setFilteredFollowing([...filteredFollowing, other]);
+        
         let userData = userResponse.data;
         // add follow request to inbox of other
         path = `${getApiUrls()}/service/authors/${id}/inbox`;
@@ -459,7 +480,7 @@ function Friends() {
                     </Card>
                     <Card style = {{width:500, height:450, backgroundColor:"#c3d3eb", marginTop:20, borderColor: "grey", borderStyle: "solid"}}>
                         <Box style = {{display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'row'}}>
-                            <Typography variant="h5" style = {{paddingTop:5, alignSelf:'left'}}>Following/Friends</Typography>
+                            <Typography variant="h5" style = {{paddingTop:5, alignSelf:'left'}}>Following/Sent Requests</Typography>
                             <TextField id="searchFollowing" label="Search by name and host" style = {{width: 350, marginLeft: 20}} onChange={searchFollowing}/>
                         </Box>
                         <Box style = {{marginLeft:20,marginTop:20, height:385,overflowY:"scroll", overflowX:"hidden"}}>
