@@ -3,7 +3,7 @@ import axios from 'axios';
 import React from 'react';
 import { Link, useHistory } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
-
+import { getApiUrls } from '../utils/utils';
 
 
 function Login() {
@@ -14,7 +14,9 @@ function Login() {
     const handleLogin = () => {
         let username = document.getElementById("username").value;
         let password = document.getElementById("password").value;
-        axios.post("http://localhost:8000/login", {
+        let path = getApiUrls()
+        console.log(path)
+        axios.post(path + "/login", {
             username: username,
             password: password
         }   

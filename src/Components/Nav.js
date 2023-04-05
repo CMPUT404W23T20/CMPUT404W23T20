@@ -4,8 +4,14 @@ import {
     List,
     ListItem,
     ListItemText,
+    ListItemIcon,
   } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import HomeIcon from '@mui/icons-material/Home';
+import InboxIcon from "@mui/icons-material/Inbox";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import GroupIcon from '@mui/icons-material/Group';
+import DynamicFeedIcon from '@mui/icons-material/DynamicFeed';
 
 function Nav(){
     const navigate = useNavigate();
@@ -13,22 +19,27 @@ function Nav(){
         {
             text: "Home",
             location: "/",
+            icon: <HomeIcon />,
         },
         {
           text: "Inbox",
           location: "/inbox",
+          icon: <InboxIcon />,
         },
         {
             text: "Profile",
             location: "/profile",
+            icon : <AccountCircleIcon />,
         },
         {
             text: "Friends",
             location: "/friends",
+            icon: <GroupIcon />,
         },
         {
             text: "Posts",
             location: "/posts",
+            icon: <DynamicFeedIcon />,
         },
     ]
 
@@ -54,6 +65,9 @@ function Nav(){
                 className="sidebar_item"
                 onClick={(e) => navigate(item.location)}
               >
+                {item.icon && (
+                  <ListItemIcon sx={{ color: "white" }}>{item.icon}</ListItemIcon>
+                )}
                 <ListItemText primary={text} />
               </ListItem>
             );

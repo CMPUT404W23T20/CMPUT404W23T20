@@ -17,6 +17,12 @@ import django_on_heroku
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Base url to serve media files  
+MEDIA_URL = '/media/'  
+    
+# Path where media is stored  
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
@@ -28,7 +34,7 @@ SECRET_KEY = 'django-insecure-hw=1yrhm5yi61$z6!oo*jwb8$m@vv8ryfmnq=aoa+#-4(z7v$#
 DEBUG = True
 
 ALLOWED_HOSTS = ['https://t20-social-distribution.herokuapp.com/','http://127.0.0.1:8000','http://localhost:8000','http://localhost:8001'
-                 ,'http://localhost:3000']
+                 ,'http://localhost:3000','https://epic-app.vercel.app','https://epic-app.vercel.app/']
 
 
 # Application definition
@@ -38,6 +44,16 @@ jwt_auth = {
     'JWT_VERIFY': True,
     'JWT_AUTH_HEADER_PREFIX': 'Token',
 }
+
+""" REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'social_distribution.authentication.JWTAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ]
+}
+ """
 
 INSTALLED_APPS = [
     'social_distribution',
@@ -50,27 +66,43 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'rest_framework_swagger',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = [
     'http://localhost:3000','http://127.0.0.1:8000','http://localhost:8000',
-    'https://t20-social-distribution.herokuapp.com','http://localhost:8001'
+    'https://t20-social-distribution.herokuapp.com','http://localhost:8001',
+    'https://social-distribution-media.herokuapp.com','https://epic-app.vercel.app', 'https://epic-app.vercel.app/',
+    'https://group-13-epic-app.herokuapp.com', 'https://social-distribution-media.herokuapp.com',
+    'https://cmput404-group6-instatonne.herokuapp.com', 'https://*', 'http://*'
 ]
 
-CSRF_TRUSTED_ORIGINS = ['https://*.t20-social-distribution.herokuapp.com',
-                        'http://*.127.0.0.1:8000','http://*.localhost:8000','http://*.localhost:8001','http://*.localhost:3000']
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000','http://127.0.0.1:8000','http://localhost:8000',
+    'https://t20-social-distribution.herokuapp.com','http://localhost:8001',
+    'https://social-distribution-media.herokuapp.com','https://epic-app.vercel.app',
+    'https://group-13-epic-app.herokuapp.com', 'https://social-distribution-media.herokuapp.com',
+    'https://cmput404-group6-instatonne.herokuapp.com'
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.t20-social-distribution.herokuapp.com',
+    'http://*.127.0.0.1:8000','http://*.localhost:8000','http://*.localhost:8001','http://*.localhost:3000',
+    'https://*.epic-app.vercel.app','https://*.epic-app.vercel.app/',
+    'https://*.group-13-epic-app.herokuapp.com', 'https://*.social-distribution-media.herokuapp.com',
+    'https://*.cmput404-group6-instatonne.herokuapp.com'
+]
 
 ROOT_URLCONF = 'backend.urls'
 

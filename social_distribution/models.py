@@ -1,7 +1,7 @@
 from django.db import models
 import uuid
 # Create your models here.
-hostAddress = "http://127.0.0.1:8000"
+hostAddress = "https://t20-social-distribution.herokuapp.com"
 class Author(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     type = models.CharField(max_length=200, default="author")
@@ -10,12 +10,19 @@ class Author(models.Model):
     username = models.CharField(max_length=200, unique=True)
     url = models.CharField(max_length=200, default=hostAddress + "/service/authors/")
     github = models.CharField(max_length=200, default="No github")
-    profileImage = models.CharField(max_length=200, default="https://i.imgur.com/k7XVwpB.jpeg")
+    profileImage = models.CharField(max_length=10000, default="https://i.imgur.com/k7XVwpB.jpeg")
     password = models.CharField(max_length=200, default="No password")
     hidden = models.BooleanField(default=False)
 
     def __str__(self):
         return self.displayName
+    
+class FollowRequest(models.Model):
+    type = models.CharField(max_length=200, default="followRequest")
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    summary = models.CharField(max_length=200, default="No summary")
+    follower = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='requestFollower')
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='requestAuthor')
     
 class Follow(models.Model):
     type = models.CharField(max_length=200, default="follow")
@@ -30,27 +37,32 @@ class Follow(models.Model):
     summary = models.CharField(max_length=200)
     actor = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='actor')
     object = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='object') """
-    
+
+
 class Comment(models.Model):
     type = models.CharField(max_length=200, default="comment")
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
     comment = models.CharField(max_length=200)
     contentType = models.CharField(max_length=200, default="text/plain")
-    published = models.DateTimeField()
+    published = models.DateTimeField(auto_now_add=True)
     post = models.ForeignKey('Post', on_delete=models.CASCADE)
+    likes = models.IntegerField(default=0)
 
     def __str__(self):
         return self.comment
+
+
 
 class Post(models.Model):
     type = models.CharField(max_length=200, default="post")
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=200, default="No title")
     source = models.CharField(max_length=200, default="No source")
-    origin = models.CharField(max_length=200, default= hostAddress + "/service/posts/")
+    origin = models.CharField(max_length=200, default= "no origin")
     description = models.CharField(max_length=2000, default="No description")
     contentType = models.CharField(max_length=200, default="text/plain")
+    image_data = models.CharField(max_length=100000, blank=True, null=True)
     author = models.ForeignKey(Author, on_delete=models.CASCADE, default=1)
     authorName = models.CharField(max_length=200, default="No authorName")
     categories = models.CharField(max_length=200, default="No categories")
@@ -61,27 +73,47 @@ class Post(models.Model):
     visibility = models.CharField(max_length=200, default="PUBLIC")
     friend = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='friend', null=True, blank=True)
     unlisted = models.BooleanField(default=False)
+    likes = models.IntegerField(default=0)
 
     def __str__(self):
         return self.title
 
-class Like(models.Model):
-    type = models.CharField(max_length=200, default="like")
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    author = models.ForeignKey(Author, on_delete=models.CASCADE)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True, blank=True)
-    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, null=True, blank=True)
-
-    
-class InboxItem(models.Model):
+""" class InboxItem(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     follows = models.ManyToManyField(Follow, blank=True)
     posts = models.ManyToManyField(Post, blank=True)
     comments = models.ManyToManyField(Comment, blank=True)
-    likes = models.ManyToManyField(Like, blank=True)
+    likes = models.ManyToManyField(Like, blank=True) """
+
+class Like(models.Model):
+    type = models.CharField(max_length=200, default="Like")
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE)
+    summary = models.CharField(max_length=200, default="No summary")
+    object = models.CharField(max_length=200, default="None")
+
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True, blank=True)
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, null=True, blank=True)
+
+    OBJECT_CHOICES = [("Comment","Comment"),("Post","Post"),("None","None")]
+    objectLiked = models.CharField(
+        max_length=200,
+        choices=OBJECT_CHOICES,
+        default="None",
+    )
+
+class PostURL(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    url = models.CharField(max_length=200)
+    source = models.CharField(max_length=200, default=None)
+    type = models.CharField(max_length=200, default="postURL")
 
 class Inbox(models.Model):
     type = models.CharField(max_length=200, default="inbox")
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
-    items = models.ForeignKey(InboxItem, on_delete=models.CASCADE)
+    follows = models.ManyToManyField(FollowRequest, blank=True)
+    posts = models.ManyToManyField(Post, blank=True)
+    postURLs = models.ManyToManyField(PostURL, blank=True)
+    comments = models.ManyToManyField(Comment, blank=True)
+    likes = models.ManyToManyField(Like, blank=True)
