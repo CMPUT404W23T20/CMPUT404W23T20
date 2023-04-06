@@ -1,7 +1,7 @@
 import { Box, Button, Card, TextField, Typography } from '@mui/material';
 import axios from 'axios';
 import React from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import { Link} from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { getApiUrls } from '../utils/utils';
 
@@ -38,7 +38,7 @@ function Login() {
         <Box sx={{height: "100vh",width: "100%",display: "flex",flexDirection: "column",justifyContent: "center",alignItems: "center",}}>
             <Box sx={{flex: 1,width: "100%",display: "flex",flexDirection: "column",justifyContent: "center",}}>
             </Box>
-                <Box sx={{flex: 5,width: "100%",backgroundColor: "lightgrey",alignItems: "center",display: "flex",justifyContent: "center",}}>
+                <Box sx={{flex: 5,width: "100%",backgroundColor:"#c3d3eb" ,alignItems: "center",display: "flex",justifyContent: "center",}}>
                     <Box sx={{zIndex: 1,height: "400px",width: "400px",display: "flex",justifyContent: "right",alignItems: "center",}}>
                         <Card sx={{height: "500px",width: "500px",display: "flex",flexDirection: "column",justifyContent: "center",alignItems: "center",backgroundColor: "white",}}>
                             <Box sx={{flex: 2,display: "flex",flexDirection: "column",justifyContent: "center",alignItems: "center",}}>
@@ -50,13 +50,12 @@ function Login() {
                                 <Typography variant="h6" sx={{ fontWeight: "bold", color: "red"  }}>
                                     {invalid ? "Invalid Username or Password" : ""}
                                 </Typography>
-                                <TextField sx={{width: "300px",}} id="username" label="Username" variant="outlined" onChange={() => setInvalid(false)} onKeyPress={(e) => {if (e.key === 'Enter') {handleLogin()}}}/>
+                                <TextField sx={{width: "300px",marginBottom:"20px"}} id="username" label="Username" variant="outlined" onChange={() => setInvalid(false)} onKeyPress={(e) => {if (e.key === 'Enter') {handleLogin()}}}/>
                                 <TextField sx={{width: "300px",}} id="password" label="Password" variant="outlined" onChange={() => setInvalid(false)} type='password' onKeyPress={(e) => {if (e.key === 'Enter') {handleLogin()}}}/>
                                 <Box sx={{marginTop: "20px"}}>
-                                
-                                    <Typography variant="body1" onClick= {() => navigate("/register")} sx={{ fontWeight: "bold", color: "blue" }}>
-                                    Don't have an account? Register here
-                                    </Typography>
+                                    <Typography variant="body1" sx={{display:"inline",fontWeight: "bold", color: "black"}}>
+                                    Don't have an account? <Link to="/register">Register here </Link> 
+                                    </Typography> 
                                     
                                 </Box>
                             </Box>
