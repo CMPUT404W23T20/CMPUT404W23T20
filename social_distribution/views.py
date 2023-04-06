@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.template import Context
 import requests
 from rest_framework import viewsets, status
-from .serializers import PostSerializer, LoginSerializer, CommentSerializer, AuthorSerializer, InboxSerializer, LikeSerializer, FollowSerializer, PostURLSerializer, FollowRequestSerializer
+from .serializers import PostSerializer, LoginSerializer, CommentSerializer, AuthorSerializer, InboxSerializer, LikeSerializer, FollowSerializer, PostURLSerializer, FollowRequestSerializer, RegisterSerializer
 from .models import Post, Author, Comment, Inbox, Like, Follow, PostURL, FollowRequest
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -36,7 +36,26 @@ def login(request):
         return Response(jwt, status=status.HTTP_200_OK)
     
 
-'''
+
+@api_view(['POST'])
+def Register(request):
+    if request.method == "POST":
+         
+        data = request.data
+        
+        data['hidden']= True  # verify user 
+        data['displayName'] = data['username']
+        serializer = RegisterSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            # Save the new user object
+            author = serializer.save()
+            inbox = Inbox.objects.create(author=author)
+            inbox.save()
+            return Response( "ok", status=status.HTTP_201_CREATED)
+        else:
+            return Response("Failed",  status=status.HTTP_400_BAD_REQUEST)
+'''       
 class LoginView(APIView):
     def post(self, request):
         try:

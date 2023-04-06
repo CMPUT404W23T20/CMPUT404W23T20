@@ -6,7 +6,9 @@ import Profile from './Components/Profile';
 import Friends from './Components/Friends';
 import Posts from './Components/Posts';
 import Login from './Components/Login';
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes} from "react-router-dom";
+import Register from './Components/Register';
+import React from 'react';
 
 function App() {
   return (
@@ -19,6 +21,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/friends" element={<Friends />} />
           <Route path="/posts" element={<Posts />} />
+          <Route path="/register" element={<Register />} />
         </Routes>
       </Box>
     </BrowserRouter>
