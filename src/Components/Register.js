@@ -2,6 +2,7 @@ import { Box, Button, Card, TextField, Typography } from '@mui/material';
 import axios from 'axios';
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { getApiUrls } from '../utils/utils';
 
 function Register() {
 
@@ -13,15 +14,15 @@ function Register() {
     let username = document.getElementById("username").value;
     let password = document.getElementById("password").value;
     let confirmPassword = document.getElementById("confirmPassword").value;
+    let path = getApiUrls()
 
     if (password === confirmPassword){
-      axios.post("http://localhost:8000/register", {
+      axios.post(path + "/register", {
         username: username,
         password: password,
       }).then((response) => {
         if (response.status === 201) {
         //confirmation message  
-        console.log("HIIIII",response.status)
         document.getElementById("confirmation").style.display = "Block"
             setTimeout(
                 function () {

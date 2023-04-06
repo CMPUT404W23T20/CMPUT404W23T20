@@ -6,8 +6,9 @@ import Profile from './Components/Profile';
 import Friends from './Components/Friends';
 import Posts from './Components/Posts';
 import Login from './Components/Login';
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes} from "react-router-dom";
 import Register from './Components/Register';
+import React from 'react';
 
 function App() {
   return (

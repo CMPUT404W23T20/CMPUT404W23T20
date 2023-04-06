@@ -11,8 +11,10 @@ import CircularProgress from '@mui/material/CircularProgress';
 import jwt_decode from "jwt-decode";
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import Checkbox from '@mui/material/Checkbox';
+import {useNavigate } from "react-router-dom";
 
 function Posts() {
+    const navigate = useNavigate();
     const [Posts, setPosts] = React.useState([]);
     const [followingPosts, setFollowingPosts] = React.useState([]);
     const [Comments, setComments] = React.useState([]);
@@ -229,6 +231,9 @@ function Posts() {
         if (localStorage.getItem("token") != null) {
             getFeed()
             getFriends()
+        }
+        else{
+            navigate("/login");
         }
     }, []);
 
