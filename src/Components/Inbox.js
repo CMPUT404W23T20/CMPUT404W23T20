@@ -111,7 +111,7 @@ function Inbox() {
         }
         // check if follow request is already accepted
         for (let i = 0; i < responseItems.length; i++) {
-            if (responseItems[i].type === "follow") {
+            if (responseItems[i].type === "followRequest") {
                 let path = `${getApiUrls()}/service/authors/${responseItems[i].follower.id}/followers/${localStorage.getItem("id")}`;
                 let response = await axios.get(path, {
                     headers: {
@@ -120,6 +120,7 @@ function Inbox() {
                 }).catch((error) => {
                     console.log(error);
                 });
+                console.log(response)
                 if (response.data) {
                     // pop this item from the inbox
                     responseItems.splice(i, 1);

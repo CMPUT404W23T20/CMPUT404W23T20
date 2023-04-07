@@ -156,6 +156,7 @@ def followers(request, author_id = None, follower_id = None):
         if not Author.objects.filter(id = author_id):
             # if author does not exist
             data = request.data
+            data['hidden'] = True
             if not data['profileImage']:
                 data['profileImage'] = ''
             if not data['github']:
