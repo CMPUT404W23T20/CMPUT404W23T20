@@ -1,2 +1,0 @@
-(this.webpackJsonpfrontend=this.webpackJsonpfrontend||[]).push([[12],{173:function(t,n,r){"use strict";r.r(n);var s=r(114);r.d(n,"default",(function(){return s.a}));var a=r(143);r.d(n,"typographyClasses",(function(){return a.a})),r.d(n,"getTypographyUtilityClass",(function(){return a.b}))}}]);
-//# sourceMappingURL=12.3f4b9442.chunk.js.map

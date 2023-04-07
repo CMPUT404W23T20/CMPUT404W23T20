@@ -76,6 +76,12 @@ class FollowSerializer(serializers.ModelSerializer):
         model = Follow
         fields = '__all__'
 
+class RegisterSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Author
+        fields = ("id","host","displayName","username","url","github","profileImage","type","hidden", "password")
+
 class LoginSerializer(serializers.Serializer):
 
     def validate(data):
@@ -83,7 +89,7 @@ class LoginSerializer(serializers.Serializer):
         password = data.get("password", "")
 
         if username and password:
-            user = Author.objects.get(username=username, password=password)
+            user = Author.objects.get(username=username, password=password, hidden = False)
             if user:
                 try:
                     payload = jwt_payload_handler(user)

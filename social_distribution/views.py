@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.template import Context
 import requests
 from rest_framework import viewsets, status
-from .serializers import PostSerializer, LoginSerializer, CommentSerializer, AuthorSerializer, InboxSerializer, LikeSerializer, FollowSerializer, PostURLSerializer, FollowRequestSerializer
+from .serializers import PostSerializer, LoginSerializer, CommentSerializer, AuthorSerializer, InboxSerializer, LikeSerializer, FollowSerializer, PostURLSerializer, FollowRequestSerializer, RegisterSerializer
 from .models import Post, Author, Comment, Inbox, Like, Follow, PostURL, FollowRequest
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -19,8 +19,6 @@ from django.db.models import Q
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from .authentication import JWTAuth, HTTPBasicAuth   # import the JWTAuthentication backend
-import markdown
-import markdown2
 
 # need to be changed to proper format
 # proper format
@@ -37,7 +35,26 @@ def login(request):
         return Response(jwt, status=status.HTTP_200_OK)
     
 
-'''
+
+@api_view(['POST'])
+def Register(request):
+    if request.method == "POST":
+         
+        data = request.data
+        
+        data['hidden']= True  # verify user 
+        data['displayName'] = data['username']
+        serializer = RegisterSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            # Save the new user object
+            author = serializer.save()
+            inbox = Inbox.objects.create(author=author)
+            inbox.save()
+            return Response( "ok", status=status.HTTP_201_CREATED)
+        else:
+            return Response("Failed",  status=status.HTTP_400_BAD_REQUEST)
+'''       
 class LoginView(APIView):
     def post(self, request):
         try:
@@ -139,6 +156,12 @@ def followers(request, author_id = None, follower_id = None):
         if not Author.objects.filter(id = author_id):
             # if author does not exist
             data = request.data
+            if not data['profileImage']:
+                data['profileImage'] = ''
+            if not data['github']:
+                data['github'] = ''
+            if not data['username']:
+                data['username'] = ''
             if data:
                 # create author
                 serializer = AuthorSerializer(data=data)
@@ -296,18 +319,14 @@ def posts(request, author_id = None, post_id = None):
     
 
     elif request.method == 'POST':
-        print("HELLO")
         loggedin_author = JWTAuth.authenticate(request)
         author = Author.objects.get(id = loggedin_author['id'])
         if author_id != str(author.id):
             return Response("Not authorized", status=status.HTTP_401_UNAUTHORIZED)
         data = request.data
-        print(data)
         data['author'] = author.id
         data['authorName'] = author.displayName
         data['origin'] = author.host + "/service/authors/" + str(author.id) + "/posts/"
-
-    
 
         serializer = PostSerializer(data=data)
         if serializer.is_valid():
@@ -551,7 +570,7 @@ def inbox(request, author_id):
             if like_data['post']:
                 like_data['post'] = PostSerializer(Post.objects.get(id=like_data['post'])).data
                 like_data['post']['author'] = AuthorSerializer(Author.objects.get(id=like_data['post']['author'])).data
-            elif like_data['comment']:
+            if like_data['comment']:
                 like_data['comment'] = CommentSerializer(Comment.objects.get(id=like_data['comment'])).data
             serializer.data['likes'][i] = like_data
 
@@ -639,29 +658,87 @@ def inbox(request, author_id):
             if "id" in request.data:
                 # get like from database
                 like = Like.objects.get(id = request.data['id'])
+                if request.data['comment']:
+                    object = request.data['object']
+                    postId = object[:-46] #remove characters
+                    postId = postId[-36:]      
+                    post = Post.objects.get(id = postId)    
+                    like.post  = post
+                    like.save()
             else:
                 # create like if remote like
-                authorURL = request.data['author']
-                authorResponse = requests.get(authorURL)
-                author = authorResponse.json()
-                author['id'] = author['id'][author['id'].rfind('/')+1:]
-                author = Author.objects.filter(id = author['id']).first() 
-                if not author:
-                    # add a ghost author for remote like if it doesn't exist
-                    author = Author.objects.create(id = author['id'], displayName = author['displayName'], username = author['displayName'], hidden = True, url = author['url'])
-              
-                postURL = request.data['post']
-                postId = postURL[postURL.rfind('/')+1:]
-                post = Post.objects.filter(id = postId).first()
-                comment = Comment.objects.get(id = request.data['comment'])
-                if not post or not comment:
-                    # if post doesn't exist, then return bad request
-                    return Response(status=status.HTTP_400_BAD_REQUEST)
-                like = Like.objects.create(author = author,object=object)
-            if not like:
-                # if like doesn't exist, then return bad request
-                return Response(status=status.HTTP_400_BAD_REQUEST)
-            # add like to inbox and save 
+                object = request.data['object']
+                author_url = request.data['author']
+                author_response = requests.get(author_url)
+                author_data = author_response.json()
+                author_data['id'] = author_data['id'][author_data['id'].rfind('/')+1:]
+                authorQuery = Author.objects.filter(id = author_data['id'])
+                if not authorQuery:
+                    # add ghost author if it doesn't exist
+                    author_data['username'] = author_data['displayName']
+                    author_data['hidden'] = True
+                    authorSerializer = AuthorSerializer(data = author_data)
+                    if authorSerializer.is_valid():
+                        authorSerializer.save()
+                    else:
+                        # if author serializer is not valid, then return bad request
+                        return Response(authorSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                # get author and post from database
+                author = Author.objects.get(id = author_data['id'])
+
+                if Comment.objects.filter(id = object[-36:]).exists():
+                  
+                    comment = Comment.objects.get(id = object[-36:])
+                    objectLike = "Comment"
+                    author  = Author.objects.get(id = request.data['author'][-36:])
+                    summary = author.displayName+" likes your comment"
+
+                    postId = object[:-46]
+                    postId = postId[-36:]
+                        
+                    post = Post.objects.get(id = postId)    
+                        
+
+                    like = Like.objects.create(author = author,
+                                                object=request.data['object'],
+                                                summary =summary,
+                                                comment = comment,
+                                                objectLiked = objectLike,
+                                                post = post
+                                                )
+
+
+                    if not like:
+                            # if like doesn't exist, then return bad request
+                        return Response(status=status.HTTP_400_BAD_REQUEST)
+                        
+                        # add like to inbox and save 
+                    inbox.likes.add(like)
+                    inbox.save()
+
+                    
+                if Post.objects.filter(id = object[-36:]).exists():
+                    post = Post.objects.get(id = object[-36:])    
+                    objectLike = "Post"
+                    author  = Author.objects.get(id = request.data['author'][-36:])
+                    summary = author.displayName+" likes your post"
+
+                    like = Like.objects.create(author = author,
+                                                object=request.data['object'],
+                                                summary =summary,
+                                                post = post,
+                                                objectLiked = objectLike,
+                                                )
+
+
+                    if not like:
+                         # if like doesn't exist, then return bad request
+                        return Response(status=status.HTTP_400_BAD_REQUEST)
+                        
+                        # add like to inbox and save 
+                    inbox.likes.add(like)
+                    inbox.save()
+
             inbox.likes.add(like)
             inbox.save()
             return Response(status=status.HTTP_200_OK)
