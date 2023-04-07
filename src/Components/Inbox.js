@@ -238,14 +238,21 @@ function Inbox() {
         let id = post.author.id.split("/").pop()
         //console.log(id, localStorage.getItem("id"))
         //if (id === localStorage.getItem("id")) {
-        path = `${getApiUrls()}/service/authors/${post.author.id}/posts/${post.id}/comments`;
+        if (post.origin.includes("t20-social-distribution.herokuapp.com")) {
+            path = `${getApiUrls()}/service/authors/${post.author.id}/posts/${post.id}/comments`;
+        } else {
+            path = post.id + "/comments";
+        }
         response = await axios.get(path, {
             headers: {
                 "Content-Type": "application/json",
             }
         });
-        console.log(response.data.items)
+        console.log(response)
         if (response && response.data && response.data.items) setComments(response.data.items);
+        else {
+            if (response && response.data && response.data.comments) setComments(response.data.comments);
+        }
         //}
         setLoadingPost(false);
     }
