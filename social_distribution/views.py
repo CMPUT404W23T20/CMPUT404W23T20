@@ -378,12 +378,18 @@ def comments(request, author_id, post_id,comment_id=None):
                 comment= CommentSerializer(Comment.objects.get(id = comment_id)).data
                 comment['author'] = AuthorSerializer(Author.objects.get(id = comment['author'])).data
                 comment['id'] = commentUrl
-                comment['author']['url'] = comment['author']['url'] + str(comment['author']['id'])
+                if "t20-social-distribution.herokuapp.com" in comment['author']['url']:
+                    comment['author']['url'] = comment['author']['url'] + str(comment['author']['id'])
+                comment['post'] = PostSerializer(Post.objects.get(id = comment['post'])).data
+                comment['post']['origin'] = comment['post']['origin'] + str(comment['post']['id'])
+                comment['post']['author'] = AuthorSerializer(Author.objects.get(id = comment['post']['author'])).data
+                comment['post']['author']['url'] = comment['post']['author']['url'] + str(comment['post']['author']['id'])
                 return Response(comment, status=status.HTTP_200_OK)
 
         for comment in serializer.data:
             comment['author'] = AuthorSerializer(Author.objects.get(id = comment['author'])).data
-            comment['author']['url'] = comment['author']['url'] + str(comment['author']['id'])
+            if "t20-social-distribution.herokuapp.com" in comment['author']['url']:
+                comment['author']['url'] = comment['author']['url'] + str(comment['author']['id'])
             comment['post'] = PostSerializer(Post.objects.get(id = comment['post'])).data
             comment['post']['origin'] = comment['post']['origin'] + str(comment['post']['id'])
             comment['post']['author'] = AuthorSerializer(Author.objects.get(id = comment['post']['author'])).data
