@@ -11,7 +11,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import jwt_decode from "jwt-decode";
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import Checkbox from '@mui/material/Checkbox';
-import {useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import MuiMarkdown from 'mui-markdown';
 
 function Posts() {
@@ -112,7 +112,7 @@ function Posts() {
                 id = id.replace(/-/g, '');
                 path = followee.host + "service/authors/" + id + "/posts";
             }
-            console.log("path",path)
+            console.log("path", path)
             // for when group 6 has authorization working
             // (followee.host == "https://cmput404-group6-instatonne.herokuapp.com") ? "Basic R3JvdXAyMDpncm91cDIwY21wdXQ0MDQ=" : ""
             let followingPosts = await axios.get(path, {
@@ -214,7 +214,7 @@ function Posts() {
                             "Authorization": "Bearer " + localStorage.getItem("token")
                         }
                     });
-                    let likeCount= likes.data.items.length
+                    let likeCount = likes.data.items.length
                     let obj = {}
                     obj[`${allFollowingPosts[i].id}`] = likeCount
                     publicLikeList.push(obj)
@@ -233,7 +233,7 @@ function Posts() {
             getFeed()
             getFriends()
         }
-        else{
+        else {
             navigate("/login");
         }
     }, []);
@@ -555,7 +555,7 @@ function Posts() {
                                     borderRadius: "10px",
                                     boxShadow: "0px 0px 5px rgba(0,0,0,0.3)",
                                     backgroundColor: "#fff",
-                                    flex:2,
+                                    flex: 2,
                                     overflowY: "auto"
                                 }}>
                                     <Typography variant="h4" style={{ marginBottom: "20px" }}>
@@ -585,11 +585,11 @@ function Posts() {
                                             </Typography>
                                         </Box>
                                     </Box>
-                                    {((`${post.contentType}` === "text/markdown") ? (
-                                            <MuiMarkdown>Markdown: {post.content}</MuiMarkdown>
-                                        ) : (
-                                            <Typography variant="body1" style={{marginBottom: "20px",overflowY: "auto" }}>{post.description}</Typography>
-                                        ))}
+                                    {post.contentType === "text/markdown" ? (
+                                        <MuiMarkdown>{post.description}</MuiMarkdown>
+                                    ) : (
+                                        <Typography variant="body1" style={{ marginBottom: "20px", overflowY: "auto" }}>{post.description}</Typography>
+                                    )}
                                     {(post.content && post.content.includes("base64")) ? (
                                         <Card style={{
                                             margin: "20px",
@@ -608,11 +608,11 @@ function Posts() {
                                                     borderRadius: "10px"
                                                 }}
                                             />
-                                        </Card>) :  <Typography variant="body1" style={{ marginBottom: "20px" }}>{post.content}</Typography>}
+                                        </Card>) : <Typography variant="body1" style={{ marginBottom: "20px" }}>{post.content}</Typography>}
 
 
 
-                                       
+
                                     {post.image_data && (
                                         <Card style={{
                                             margin: "20px",
@@ -657,8 +657,8 @@ function Posts() {
                                 </Card>
                                 {openComments && (
                                     <Card style={{ marginRight: "10px", marginBottom: "10px", marginLeft: "10px", borderRadius: "10px", borderColor: "black", flex: 1, overflowY: "auto" }}>
-                                        <TextField id="comment" label="Comment..." variant="outlined" style={{ width: "70%"}} />
-                                        <Button variant="contained" color="primary" onClick={() => postComment(document.getElementById("comment").value, post, `${post.author.id}`)} style={{position: "relative", top: "7px" }}>Comment</Button>
+                                        <TextField id="comment" label="Comment..." variant="outlined" style={{ width: "70%" }} />
+                                        <Button variant="contained" color="primary" onClick={() => postComment(document.getElementById("comment").value, post, `${post.author.id}`)} style={{ position: "relative", top: "7px" }}>Comment</Button>
                                         {(`${post.author.id}` === localStorage.getItem("id")) ? <Typography variant="h6" style={{ textAlign: "left", paddingLeft: 30, fontSize: 20 }}>Comments:</Typography> : <h2></h2>}
                                         {Comments.map((comments) => (
                                             (((`${comments.post.id}` === `${post.id.split("/").pop()}`) && (`${post.visibility}` === "PUBLIC")) ?

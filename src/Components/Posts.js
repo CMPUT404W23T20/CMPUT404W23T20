@@ -72,30 +72,20 @@ function Posts() {
         console.log(visibility ? "FRIENDS" : "PUBLIC")
         console.log(unlisted)
         let path = `${getApiUrls()}/service/authors/${localStorage.getItem("id")}/posts`;
-        let data ={}
-        
-        if (markdown) {
-            console.log(markdown)
-            data = {
-            title: title,
-            description: description,
-            unlisted: unlisted,
-            visibility: visibility ? "FRIENDS" : "PUBLIC",
-            contentType: 'text/markdown',
-            image_data: imageData,
-            }
+        let data = {}
 
-        }
-        else{
-            data = {
+        data = {
             title: title,
             description: description,
             unlisted: unlisted,
             visibility: visibility ? "FRIENDS" : "PUBLIC",
             contentType: 'text/plain',
             image_data: imageData,
-            }
         }
+        if (markdown) {
+            data.contentType = 'text/markdown'
+        }
+
         let token = "Bearer " + localStorage.getItem("token");
         console.log(token);
         let postResponse = await axios.post(path, data, {
@@ -247,17 +237,17 @@ function Posts() {
                                 <Typography variant="h4">{post.title}</Typography>
                             )}
                             <Card style={{ marginRight: "10px", marginBottom: "10px", marginLeft: "10px", borderRadius: "10px", borderColor: "black", marginTop: "5px", flex: 1, overflowY: "scroll" }}>
-                                <Card style={{ width: "100%", height: "100%", borderRadius: "4px", boxShadow: "0 0 10px 0 rgba(0,0,0,0.5)" }}>
+                                <Card style={{ width: "100%", height: "100%", borderRadius: "4px", boxShadow: "0 0 10px 0 rgba(0,0,0,0.5)", flex: 1, overflowY: "scroll" }}>
                                     {edit ? (
                                         <TextField id="description" label="Description" variant="outlined" style={{ width: "95%", margin: "25px" }} value={post.description} onChange={(e) => setPost({ ...post, description: e.target.value })} multiline maxRows={15} />
                                     ) : (
 
-                                        post.contentType === "text/markdown" && markdown? (
-                                                <MuiMarkdown>{post.description}</MuiMarkdown>
-                                            ) : (
-                                                <Typography variant="body1" style={{ maxHeight: "100%", overflowY: "auto" }}>{post.description}</Typography>
-                                            )
-                                        
+                                        post.contentType === "text/markdown" ? (
+                                            <MuiMarkdown>{post.description}</MuiMarkdown>
+                                        ) : (
+                                            <Typography variant="body1" style={{ maxHeight: "100%", overflowY: "auto" }}>{post.description}</Typography>
+                                        )
+
                                     )}
 
                                 </Card>
@@ -313,7 +303,7 @@ function Posts() {
                                 <FormControlLabel control={<Checkbox id="unlisted" name="unlisted" />} onChange={() => setUnlisted(!unlisted)} label="Unlisted" />
                                 <FormControlLabel control={<Checkbox id="visibility" name="visibility" onChange={() => setVisibility(!visibility)} />} label="Friends Only" />
                                 <FormControlLabel control={<Checkbox id="markdown" name="markdown" onChange={() => setMarkdown(!markdown)} />} label="Use Markdown" />
-                                
+
                                 {visibility && <Select id="select" label="Friend" value={friend} onChange={(e) => setFriend(e.target.value)} style={{ width: "95%", margin: "25px" }}>
                                     {Friends.map((friend) => (
                                         <MenuItem value={friend.id}>{friend.displayName}</MenuItem>

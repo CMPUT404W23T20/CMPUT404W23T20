@@ -11,6 +11,8 @@ import jwt_decode from "jwt-decode";
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import Checkbox from '@mui/material/Checkbox';
 import { FormControl, Modal, getTextFieldUtilityClass } from '@mui/material';
+import MuiMarkdown from 'mui-markdown';
+
 
 
 
@@ -143,7 +145,7 @@ function Inbox() {
                 }
                 let likesPath
                 // if https://t20-social-distribution.herokuapp.co is in the origin, then it is a local post
-                if ( responseItems[i].origin.includes("https://t20-social-distribution.herokuapp.co")) {
+                if (responseItems[i].origin.includes("https://t20-social-distribution.herokuapp.co")) {
                     likesPath = `${getApiUrls()}` + "/service/authors/" + responseItems[i].source.id + "/posts/" + responseItems[i].id + "/likes";
                 } else {
                     likesPath = responseItems[i].id + "/likes";
@@ -163,9 +165,9 @@ function Inbox() {
                 likeList.push(obj)
             }
         }
-        console.log("look at these likes:",likeList)
+        console.log("look at these likes:", likeList)
         console.log(responseItems);
-      
+
         setLikes(likeList)
         setLoading(false);
         return response.data.items
@@ -236,14 +238,14 @@ function Inbox() {
         let id = post.author.id.split("/").pop()
         //console.log(id, localStorage.getItem("id"))
         //if (id === localStorage.getItem("id")) {
-            path = `${getApiUrls()}/service/authors/${post.author.id}/posts/${post.id}/comments`;
-            response = await axios.get(path, {
-                headers: {
-                    "Content-Type": "application/json",
-                }
-            });
-            console.log(response.data.items)
-            if (response && response.data && response.data.items)setComments(response.data.items);
+        path = `${getApiUrls()}/service/authors/${post.author.id}/posts/${post.id}/comments`;
+        response = await axios.get(path, {
+            headers: {
+                "Content-Type": "application/json",
+            }
+        });
+        console.log(response.data.items)
+        if (response && response.data && response.data.items) setComments(response.data.items);
         //}
         setLoadingPost(false);
     }
@@ -325,7 +327,7 @@ function Inbox() {
                     comment: object.id,
                     summary: `${author.username} likes your ${object.type}`,
                     objectLiked: objectType,
-                    object: objectOrigin,     
+                    object: objectOrigin,
                     post: object.post.id
                 }
             }
@@ -377,7 +379,7 @@ function Inbox() {
             });
 
 
-            if (object.type.toLowerCase() === "comment"){
+            if (object.type.toLowerCase() === "comment") {
                 let inboxPath = `${object.author.host}/service/authors/${object.author.id}/inbox`; //send this to inbox of whoever posted
                 await axios.post(inboxPath, foreignLikeData, {
                     headers: {
@@ -500,7 +502,7 @@ function Inbox() {
                                             <Box style={{ paddingLeft: 2 }}>
                                                 {item.type === 'post' && (
                                                     <Box style={{ display: "flex", flexDirection: "row", marginTop: "10px", marginLeft: "10px" }}>
-                                                        <Avatar src={(item.author.profileImage != "no profileImage" && item.author.profileImage != "") ? item.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt="Avatar" style={{width: 70, height: 70 }} />
+                                                        <Avatar src={(item.author.profileImage != "no profileImage" && item.author.profileImage != "") ? item.author.profileImage : "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"} alt="Avatar" style={{ width: 70, height: 70 }} />
                                                         <Box style={{ display: "flex", flexDirection: "column", paddingLeft: "10px" }}>
                                                             <Typography variant="h5">Title: {item.title}</Typography>
                                                             {(item.source != item.origin) && (item.source != "No source") && (item.source != null) && (item.source && item.source.displayName) && (<Typography variant="body2">Sent By: {item.source.displayName}</Typography>)}
@@ -508,7 +510,7 @@ function Inbox() {
                                                             <Typography variant="body2" style={{ color: "gray" }} >Published: {item.published.substring(0, 10)}</Typography>
                                                             <Typography variant="body2" style={{ color: "gray" }} >Node: {item.author.host}</Typography>
                                                             {Likes.map((likes) => (likes[item.id]) ?
-                                                            <Typography variant="body2" style={{ color: "gray" }}  >Likes: {likes[item.id]}</Typography> : null)}
+                                                                <Typography variant="body2" style={{ color: "gray" }}  >Likes: {likes[item.id]}</Typography> : null)}
                                                         </Box>
                                                     </Box>
                                                 )}
@@ -557,10 +559,10 @@ function Inbox() {
                                                         <Typography variant="h5">{item.summary}</Typography>
                                                         {(`${item.objectLiked}` === "Comment") ? (
                                                             <Box>
-                                                                
+
                                                                 <Typography variant="body2" style={{ fontWeight: 600 }} >{item.author.displayName}</Typography>
                                                                 <Typography variant="body2" style={{ color: "gray" }} >Node: {item.author.host}</Typography>
-                                                                <Typography variant="body2" style = {{ color: "gray" }}  >Comment: "{item.comment.comment}"</Typography>
+                                                                <Typography variant="body2" style={{ color: "gray" }}  >Comment: "{item.comment.comment}"</Typography>
                                                             </Box>
                                                         ) : (
                                                             <Box>
@@ -594,7 +596,7 @@ function Inbox() {
                                     borderRadius: "10px",
                                     boxShadow: "0px 0px 5px rgba(0,0,0,0.3)",
                                     backgroundColor: "#fff",
-                                    flex:1
+                                    flex: 1
                                 }}>
                                     <Typography variant="h4" style={{ marginBottom: "20px" }}>
                                         {post.title}
@@ -623,9 +625,14 @@ function Inbox() {
                                             </Typography>
                                         </Box>
                                     </Box>
-                                    <Typography variant="body1" style={{ marginBottom: "20px" }}>
-                                        {post.description}
-                                    </Typography>
+                                    {post.contentType === "text/markdown" ? (
+                                        <MuiMarkdown>{post.description}</MuiMarkdown>
+                                    ) : (
+                                        <Typography variant="body1" style={{ marginBottom: "20px" }}>
+                                            {post.description}
+                                        </Typography>
+                                    )}
+
                                     <Typography variant="body1" style={{ marginBottom: "20px" }}>
                                         {post.content}
                                     </Typography>
@@ -666,14 +673,14 @@ function Inbox() {
                                     </Button>
                                     <Button onClick={() => { setRepostModal(true) }} style={{ position: "absolute", bottom: "30px", right: "120px" }} color='primary' variant='contained'>Repost</Button>
                                     <Button variant="contained" title="like" color="secondary" startIcon={<FavoriteIcon />} onClick={() => likeObject(post)} style={{ position: "absolute", bottom: "30px", right: "500" }}>
-                                                    Like
+                                        Like
                                     </Button>
                                 </Card>
-                                 <Card style={{ marginRight: "10px", marginBottom: "10px", marginLeft: "10px", borderRadius: "10px", borderColor: "black", marginTop: "5px", flex: 1, overflowY: "scroll" }}>
+                                <Card style={{ marginRight: "10px", marginBottom: "10px", marginLeft: "10px", borderRadius: "10px", borderColor: "black", marginTop: "5px", flex: 1, overflowY: "scroll" }}>
                                     <Typography variant="h6" style={{ textAlign: "left", paddingLeft: 30, fontSize: 20 }}>Comments:</Typography>
-                                    <TextField id="comment" label="Comment..." variant="outlined" style={{ width: "70%"}} />
-                                    <Button variant="contained" color="primary" onClick={() => postComment(document.getElementById("comment").value, post, `${post.author.id}`)} style={{position: "relative", top: "7px" }}>Comment</Button>
-                                    { (comments.length > 0) && comments.map((comments) => (
+                                    <TextField id="comment" label="Comment..." variant="outlined" style={{ width: "70%" }} />
+                                    <Button variant="contained" color="primary" onClick={() => postComment(document.getElementById("comment").value, post, `${post.author.id}`)} style={{ position: "relative", top: "7px" }}>Comment</Button>
+                                    {(comments.length > 0) && comments.map((comments) => (
                                         <div style={{ display: 'flex', alignItems: 'center', wordWrap: "break-word" }}>
                                             <img src={comments.author.profileImage} alt="" style={{ borderRadius: "50%", marginLeft: 30, marginRight: 15, marginBottom: 10 }} width={55} height={55} />
                                             <Typography variant="h6" style={{ display: "inline-block", textAlign: "left", paddingLeft: 15, fontSize: 20 }}>
