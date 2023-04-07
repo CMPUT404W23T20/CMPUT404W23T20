@@ -487,7 +487,7 @@ function Posts() {
                     <Box style={{ display: "flex", flexDirection: "row", flex: 1, margin: "10px", borderColor: "grey", borderStyle: "solid", backgroundColor: "#c3d3eb" }}>
                         {/*<Box style={{ display: "flex", flexDirection: "column", flex: 1, margin: "10px" }}>
                             <Typography variant="h4">Following's Public Posts</Typography>
-                            <List style={{ flex: 1, overflowY: "scroll", maxHeight: "100%" }}>
+                            <List style={{ flex: 1, overflowY: "auto", maxHeight: "100%" }}>
                                 {!loadingFollowing && <CircularProgress />}
                                 {loadingFollowing && followingPosts.map((post) => (
                                     <ListItem key={post.id} onClick={() => { setopenPost(true); setPost(post) }}>
@@ -512,7 +512,7 @@ function Posts() {
                                 </Box>*/}
                         <Box style={{ display: "flex", flexDirection: "column", flex: 1, margin: "10px" }}>
                             <Typography variant="h4">Public Posts</Typography>
-                            <List style={{ flex: 1, overflowY: "scroll", maxHeight: "100%", marginTop: "10px" }}>
+                            <List style={{ flex: 1, overflowY: "auto", maxHeight: "100%", marginTop: "10px" }}>
                                 {!loadingPosts && <CircularProgress />}
                                 {loadingPosts && Posts.map((post) => (
                                     <ListItem key={post.id} onClick={() => { setopenPost(true); setPost(post) }}>
@@ -546,9 +546,9 @@ function Posts() {
                             backgroundColor: "#c3d3eb",
                             display: "flex",
                             flexDirection: "column",
-                            overflowY: "scroll"
+                            overflowY: "auto"
                         }}>
-                            <Box style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                            <Box style={{ flex: 1, display: "flex", flexDirection: "column", maxHeight: "100%" }}>
                                 <Card style={{
                                     margin: "20px",
                                     padding: "20px",
@@ -608,11 +608,13 @@ function Posts() {
                                                     borderRadius: "10px"
                                                 }}
                                             />
-                                        </Card>) : <Typography variant="body1" style={{ marginBottom: "20px" }}>{post.content}</Typography>}
-
-
-
-
+                                        </Card>) : (post.contentType === "text/markdown" ? (
+                                        <MuiMarkdown>{post.content}</MuiMarkdown>
+                                    ) : (
+                                        <Typography variant="body1" style={{ marginBottom: "20px" }}>
+                                            {post.content}
+                                        </Typography>
+                                    ))}
                                     {post.image_data && (
                                         <Card style={{
                                             margin: "20px",

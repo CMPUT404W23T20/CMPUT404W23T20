@@ -493,7 +493,7 @@ function Inbox() {
                 <Box style={{ display: "flex", flexDirection: "row", backgroundColor: "white", flex: 1, height: "100vh" }}>
                     <Box style={{ display: "flex", flexDirection: "column", flex: 1, margin: "10px", borderColor: "grey", borderStyle: "solid", borderRadius: "5px", backgroundColor: "#c3d3eb" }}>
                         <Typography variant="h4">Inbox</Typography>
-                        <List style={{ flex: 1, overflowY: "scroll", maxHeight: "100%" }}>
+                        <List style={{ flex: 1, overflowY: "auto", maxHeight: "100%" }}>
                             {loading && <CircularProgress />}
                             {!loading && items.map((item) => (
                                 <ListItem key={item.id}>
@@ -587,16 +587,17 @@ function Inbox() {
                         </Button>
                     </Box>
                     {openPost && (
-                        <Box style={{ flex: 1, margin: "10px", borderColor: "grey", borderStyle: "solid", backgroundColor: "#c3d3eb", display: "flex", flexDirection: "column", overflowY: "scroll" }}>
+                        <Box style={{ flex: 1, margin: "10px", borderColor: "grey", borderStyle: "solid", backgroundColor: "#c3d3eb", display: "flex", flexDirection: "column", overflowY: "auto" }}>
                             {loadingPost && <CircularProgress />}
-                            {!loadingPost && <Box style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                            {!loadingPost && <Box style={{ flex: 1, display: "flex", flexDirection: "column", maxHeight: "100%" }}>
                                 <Card style={{
                                     margin: "20px",
                                     padding: "20px",
                                     borderRadius: "10px",
                                     boxShadow: "0px 0px 5px rgba(0,0,0,0.3)",
                                     backgroundColor: "#fff",
-                                    flex: 1
+                                    overflowY: "auto", 
+                                    flex: 2
                                 }}>
                                     <Typography variant="h4" style={{ marginBottom: "20px" }}>
                                         {post.title}
@@ -633,9 +634,31 @@ function Inbox() {
                                         </Typography>
                                     )}
 
-                                    <Typography variant="body1" style={{ marginBottom: "20px" }}>
-                                        {post.content}
-                                    </Typography>
+                                    {(post.content && post.content.includes("base64")) ? (
+                                        <Card style={{
+                                            margin: "20px",
+                                            padding: "20px",
+                                            borderRadius: "10px",
+                                            borderColor: "black",
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            alignItems: "center",
+                                        }}>
+                                            <img
+                                                src={post.content}
+                                                alt="Post Image"
+                                                style={{
+                                                    width: "100%",
+                                                    borderRadius: "10px"
+                                                }}
+                                            />
+                                        </Card>) : (post.contentType === "text/markdown" ? (
+                                        <MuiMarkdown>{post.content}</MuiMarkdown>
+                                    ) : (
+                                        <Typography variant="body1" style={{ marginBottom: "20px" }}>
+                                            {post.content}
+                                        </Typography>
+                                    ))}
                                     {post.image_data && (
                                         <Card style={{
                                             margin: "20px",
@@ -676,7 +699,7 @@ function Inbox() {
                                         Like
                                     </Button>
                                 </Card>
-                                <Card style={{ marginRight: "10px", marginBottom: "10px", marginLeft: "10px", borderRadius: "10px", borderColor: "black", marginTop: "5px", flex: 1, overflowY: "scroll" }}>
+                                <Card style={{ marginRight: "10px", marginBottom: "10px", marginLeft: "10px", borderRadius: "10px", borderColor: "black", marginTop: "5px", flex: 1, overflowY: "auto" }}>
                                     <Typography variant="h6" style={{ textAlign: "left", paddingLeft: 30, fontSize: 20 }}>Comments:</Typography>
                                     <TextField id="comment" label="Comment..." variant="outlined" style={{ width: "70%" }} />
                                     <Button variant="contained" color="primary" onClick={() => postComment(document.getElementById("comment").value, post, `${post.author.id}`)} style={{ position: "relative", top: "7px" }}>Comment</Button>
