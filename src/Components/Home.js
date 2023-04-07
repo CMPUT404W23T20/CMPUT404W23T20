@@ -151,7 +151,6 @@ function Posts() {
 
 
         console.log("posts", posts)
-        setPosts(posts);
         setLoadingPosts(true)
 
         let publicLikeList = []
@@ -196,7 +195,12 @@ function Posts() {
         }
         setLikes(publicLikeList)
         // combine all posts and allFollowingPosts
-        setPosts(posts.concat(allFollowingPosts))
+        posts = posts.concat(allFollowingPosts)
+        // sort posts by published date
+        posts.sort((a, b) => {
+            return new Date(b.published) - new Date(a.published)
+        })
+        setPosts(posts)
         let followingLikeList = []
         // get likes for all following posts
         for (let i = 0; i < allFollowingPosts.length; i++) {
