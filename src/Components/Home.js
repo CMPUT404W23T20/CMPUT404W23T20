@@ -307,6 +307,7 @@ function Posts() {
         }
 
 
+        handleOpenPost(post);
         setCommentPosted(true);
         getFeed()
         //clear the input box after sending comment*/
