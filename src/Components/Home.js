@@ -191,17 +191,14 @@ function Posts() {
                     let obj = {}
                     obj[`${allFollowingPosts[i].id}`] = likeCount
                     publicLikeList.push(obj)
-                    console.log("likes", publicLikeList)
                 }
             }
         }
-        console.log("likes", publicLikeList)
         setLikes(publicLikeList)
         // combine all posts and allFollowingPosts
         setPosts(posts.concat(allFollowingPosts))
-
-        // get likes for all following posts
         let followingLikeList = []
+        // get likes for all following posts
         for (let i = 0; i < allFollowingPosts.length; i++) {
             //getting likes for local
             if (typeof allFollowingPosts[i].author !== 'undefined') { //running into weird bug at :3000 host w/out this
@@ -216,12 +213,12 @@ function Posts() {
                     let likeCount = likes.data.items.length
                     let obj = {}
                     obj[`${allFollowingPosts[i].id}`] = likeCount
-                    publicLikeList.push(obj)
-                    console.log("likes", publicLikeList)
+                    followingLikeList.push(obj)
                 }
             }
         }
-
+        // add followinglikes to publiclikes
+        setLikes(publicLikeList.concat(followingLikeList))
     }
 
     React.useEffect(() => {
