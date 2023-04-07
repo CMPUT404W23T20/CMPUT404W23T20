@@ -154,27 +154,11 @@ function Posts() {
         setPosts(posts);
         setLoadingPosts(true)
 
-
-        let commentList = []
-        let publicComments = []
         let publicLikeList = []
 
         //get all comments in the "Public Posts" header
         for (let i = 0; i < posts.length; i++) {
 
-            let commentListPath = `${getApiUrls()}` + "/service/authors/" + posts[i].author.id + "/posts/" + posts[i].id + "/comments";
-            let comments = await axios.get(commentListPath, {
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer " + localStorage.getItem("token")
-                }
-            });
-            let commentDataList = comments.data.items
-            if (commentDataList == undefined) commentDataList = []
-
-            for (let i = 0; i < commentDataList.length; i++) {
-                commentList.push(commentDataList[i])
-            }
 
 
             //get likes 
@@ -193,20 +177,9 @@ function Posts() {
         }
 
         for (let i = 0; i < allFollowingPosts.length; i++) {
-            //getting comments for LOCAL posts
+            //getting likes for local
             if (typeof allFollowingPosts[i].author !== 'undefined') { //running into weird bug at :3000 host w/out this
                 if (allFollowingPosts[i].author.host === "https://t20-social-distribution.herokuapp.com") {
-                    let commentListPath = `${getApiUrls()}` + "/service/authors/" + allFollowingPosts[i].author.id + "/posts/" + allFollowingPosts[i].id + "/comments";
-                    let comments = await axios.get(commentListPath, {
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": "Bearer " + localStorage.getItem("token")
-                        }
-                    });
-                    let commentDataList = comments.data.items
-                    for (let i = 0; i < commentDataList.length; i++) {
-                        commentList.push(commentDataList[i])
-                    }
                     let likesPath = `${getApiUrls()}` + "/service/authors/" + allFollowingPosts[i].author.id + "/posts/" + allFollowingPosts[i].id + "/likes";
                     let likes = await axios.get(likesPath, {
                         headers: {
@@ -218,12 +191,12 @@ function Posts() {
                     let obj = {}
                     obj[`${allFollowingPosts[i].id}`] = likeCount
                     publicLikeList.push(obj)
+                    console.log("likes", publicLikeList)
                 }
             }
         }
         console.log("likes", publicLikeList)
         setLikes(publicLikeList)
-        setComments(commentList)
         // combine all posts and allFollowingPosts
         setPosts(posts.concat(allFollowingPosts))
     }
@@ -471,6 +444,53 @@ function Posts() {
         setLikedAlready(true)
         getFeed()
     }
+    const [loadingPost, setLoadingPost] = React.useState(false);
+    
+    const handleOpenPost = async (post) => {
+        setopenPost(true);
+        setLoadingPost(true);
+        // get all information on post
+        setComments([])
+        let path
+        let response
+        // if https://t20-social-distribution.herokuapp.com is in the origin of the post, then we need to get the post from the local host
+        if (post.origin.includes("t20-social-distribution.herokuapp.com")) {
+            path = `${getApiUrls()}/service/authors/${post.author.id ? post.author.id : post.author}/posts/${post.id}`;
+            console.log(path)
+        } else {
+            path = post.id
+        }
+        response = await axios.get(path, {
+            headers: {
+                "Content-Type": "application/json",
+            }
+        });
+        post = response.data;
+        setPost(post);
+
+        // get comments on post
+        let id = post.author.id.split("/").pop()
+        //console.log(id, localStorage.getItem("id"))
+        //if (id === localStorage.getItem("id")) {
+        if (post.origin.includes("t20-social-distribution.herokuapp.com")) {
+            path = `${getApiUrls()}/service/authors/${post.author.id}/posts/${post.id}/comments`;
+        } else {
+            path = post.id + "/comments";
+        }
+        response = await axios.get(path, {
+            headers: {
+                "Content-Type": "application/json",
+            }
+        });
+        console.log(response)
+        if (response && response.data && response.data.items) setComments(response.data.items);
+        else {
+            if (response && response.data && response.data.comments) setComments(response.data.comments);
+        }
+        //}
+        setLoadingPost(false);
+    }
+        
 
     const [openPost, setopenPost] = React.useState(false);
     const [post, setPost] = React.useState([{}]);
@@ -515,7 +535,7 @@ function Posts() {
                             <List style={{ flex: 1, overflowY: "auto", maxHeight: "100%", marginTop: "10px" }}>
                                 {!loadingPosts && <CircularProgress />}
                                 {loadingPosts && Posts.map((post) => (
-                                    <ListItem key={post.id} onClick={() => { setopenPost(true); setPost(post) }}>
+                                    <ListItem key={post.id} onClick={() => { handleOpenPost(post)}}>
                                         <Card style={{ width: "100%", padding: "10px", borderRadius: "10px", boxShadow: "0px 0px 5px 0px rgba(0,0,0,0.2)", display: "flex", flexDirection: "column", justifyContent: "flex-start", alignItems: "flex-start" }}>
                                             {(post.type === 'post') && (
                                                 <Box style={{ display: "flex", flexDirection: "row", marginTop: "10px", marginBottom: "10px" }}>
@@ -537,6 +557,7 @@ function Posts() {
                         </Box>
 
                     </Box>
+                    
                     {openPost && (
                         <Box style={{
                             flex: 1,
@@ -548,7 +569,8 @@ function Posts() {
                             flexDirection: "column",
                             overflowY: "auto"
                         }}>
-                            <Box style={{ flex: 1, display: "flex", flexDirection: "column", maxHeight: "100%" }}>
+                            {loadingPost && <CircularProgress />}
+                            {!loadingPost && (<Box style={{ flex: 1, display: "flex", flexDirection: "column", maxHeight: "100%" }}>
                                 <Card style={{
                                     margin: "20px",
                                     padding: "20px",
@@ -658,34 +680,22 @@ function Posts() {
                                     <Button onClick={() => { setRepostModal(true) }} style={{ position: "absolute", bottom: "30px", right: openComments ? "120px" : "250px" }} color='primary' variant='contained'>Repost</Button>
                                 </Card>
                                 {openComments && (
-                                    <Card style={{ marginRight: "10px", marginBottom: "10px", marginLeft: "10px", borderRadius: "10px", borderColor: "black", flex: 1, overflowY: "auto" }}>
-                                        <TextField id="comment" label="Comment..." variant="outlined" style={{ width: "70%" }} />
-                                        <Button variant="contained" color="primary" onClick={() => postComment(document.getElementById("comment").value, post, `${post.author.id}`)} style={{ position: "relative", top: "7px" }}>Comment</Button>
-                                        {(`${post.author.id}` === localStorage.getItem("id")) ? <Typography variant="h6" style={{ textAlign: "left", paddingLeft: 30, fontSize: 20 }}>Comments:</Typography> : <h2></h2>}
-                                        {Comments.map((comments) => (
-                                            (((`${comments.post.id}` === `${post.id.split("/").pop()}`) && (`${post.visibility}` === "PUBLIC")) ?
-                                                (<div style={{ display: 'flex', alignItems: 'center', wordWrap: "break-word" }}>
-                                                    <img src={comments.author.profileImage} alt="" style={{ borderRadius: "50%", marginLeft: 30, marginRight: 15, marginBottom: 10 }} width={55} height={55} />
-                                                    <Typography variant="h6" style={{ display: "inline-block", textAlign: "left", paddingLeft: 15, fontSize: 20 }}>
-                                                        {comments.author.displayName}: {comments.comment}
-                                                    </Typography>
-
-                                                    <IconButton id="heartButton" variant="outlined" color="secondary" aria-label="likeComment" onClick={() => likeObject(comments)} style={{ marginLeft: 15 }}>
-                                                        <FavoriteBorderIcon />
-                                                    </IconButton>
-
-                                                </div>
-                                                )
-                                                : (<h2></h2>))
-
-                                        ))}
-
-
-
-                                    </Card>
+                                    <Card style={{ marginRight: "10px", marginBottom: "10px", marginLeft: "10px", borderRadius: "10px", borderColor: "black", marginTop: "5px", flex: 1, overflowY: "auto" }}>
+                                    <Typography variant="h6" style={{ textAlign: "left", paddingLeft: 30, fontSize: 20 }}>Comments:</Typography>
+                                    <TextField id="comment" label="Comment..." variant="outlined" style={{ width: "70%" }} />
+                                    <Button variant="contained" color="primary" onClick={() => postComment(document.getElementById("comment").value, post, `${post.author.id}`)} style={{ position: "relative", top: "7px" }}>Comment</Button>
+                                    {(Comments.length > 0) && Comments.map((comments) => (
+                                        <div style={{ display: 'flex', alignItems: 'center', wordWrap: "break-word" }}>
+                                            <img src={comments.author.profileImage} alt="" style={{ borderRadius: "50%", marginLeft: 30, marginRight: 15, marginBottom: 10 }} width={55} height={55} />
+                                            <Typography variant="h6" style={{ display: "inline-block", textAlign: "left", paddingLeft: 15, fontSize: 20 }}>
+                                                {comments.author.displayName}: {comments.comment}
+                                            </Typography>
+                                        </div>
+                                    ))}
+                                </Card>
                                 )}
-                            </Box>
-                        </Box>
+                            </Box> )}
+                        </Box> 
                     )}
                 </Box>
             </Box>
