@@ -57,6 +57,10 @@ function Posts() {
         //getting all comments in the "Following" header
         console.log("comments: ", commentList)
         setComments(commentList)
+        // sort posts by date
+        posts.sort((a, b) => {
+            return new Date(b.published) - new Date(a.published);
+        });
         return posts;
     }
     const [Posts, setPosts] = React.useState([]);

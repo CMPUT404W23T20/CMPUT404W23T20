@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkfrontend=self.webpackChunkfrontend||[]).push([[879],{1879:function(n,t,e){e.r(t),e.d(t,{default:function(){return u.Z},getTableUtilityClass:function(){return r.K},tableClasses:function(){return r.Z}});var u=e(5416),r=e(5275)}}]);
