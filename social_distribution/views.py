@@ -20,7 +20,6 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.permissions import IsAuthenticated
 from .authentication import JWTAuth, HTTPBasicAuth   # import the JWTAuthentication backend
 
-
 # need to be changed to proper format
 # proper format
 def index(request):
@@ -328,6 +327,7 @@ def posts(request, author_id = None, post_id = None):
         data['author'] = author.id
         data['authorName'] = author.displayName
         data['origin'] = author.host + "/service/authors/" + str(author.id) + "/posts/"
+
         serializer = PostSerializer(data=data)
         if serializer.is_valid():
             serializer.save()

@@ -74,7 +74,7 @@ class Post(models.Model):
     friend = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='friend', null=True, blank=True)
     unlisted = models.BooleanField(default=False)
     likes = models.IntegerField(default=0)
-
+    
     def __str__(self):
         return self.title
 
